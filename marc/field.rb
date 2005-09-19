@@ -6,7 +6,7 @@ module MARC
         include Enumerable
         attr_accessor :tag, :indicator1, :indicator2, :subfields
 
-        def initialize(tag,i1=nil,i2=nil,*subfields)
+        def initialize(tag, i1=nil, i2=nil, *subfields)
             @tag = tag 
             @indicator1 = i1
             @indicator2 = i2

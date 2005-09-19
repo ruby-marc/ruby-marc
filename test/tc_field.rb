@@ -20,34 +20,40 @@ class TestField < Test::Unit::TestCase
         f2 = MARC::Field.new(tag='100',i1='0',i2='1')
         assert_equal('0', f2.indicator1)
         assert_equal('1', f2.indicator2)
-        assert_equal(f1,f2)
-        f3 = MARC::Field.new(tag='100',i1='1',i2='1')
+        assert_equal(f1, f2)
+        f3 = MARC::Field.new(tag='100', i1='1', i2='1')
         assert_not_equal(f1, f3)
     end
 
     def test_subfields
         f1 = MARC::Field.new('100', '0', '1', 
-            MARC::Subfield.new('a','Foo'),
-            MARC::Subfield.new('b','Bar') )
+            MARC::Subfield.new('a', 'Foo'),
+            MARC::Subfield.new('b', 'Bar') )
         assert_equal("100 01 $aFoo$bBar", f1.to_s)
         f2 = MARC::Field.new('100', '0', '1', 
-            MARC::Subfield.new('a','Foo'),
-            MARC::Subfield.new('b','Bar') )
+            MARC::Subfield.new('a', 'Foo'),
+            MARC::Subfield.new('b', 'Bar') )
         assert_equal(f1,f2)
         f3 = MARC::Field.new('100', '0', '1', 
-            MARC::Subfield.new('a','Foo'),
-            MARC::Subfield.new('b','Bez') )
+            MARC::Subfield.new('a', 'Foo'),
+            MARC::Subfield.new('b', 'Bez') )
         assert_not_equal(f1,f3)
     end
 
-    def test_shorthand
-        f  = MARC::Field.new('100','0',1,['a','Foo'], ['b','Bar'])
+    def test_subfield_shorthand
+        f  = MARC::Field.new('100', '0', '1', ['a', 'Foo'], ['b', 'Bar'])
         assert_equal('100 01 $aFoo$bBar', f.to_s)
     end
             
 
     def test_enumerable
-        #f = MARC::Field.new('100','0','1', 'a','Foo','b','Bar','a','Bez')
+        field = MARC::Field.new('100','0','1', ['a', 'Foo'],['b', 'Bar'],
+            ['a', 'Bez'])
+        count = 0
+        for subfield in field:
+            count += 1
+        end
+        assert_equal(count,3)
     end
 
 end
