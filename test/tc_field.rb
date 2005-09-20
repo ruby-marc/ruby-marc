@@ -49,10 +49,15 @@ class TestField < Test::Unit::TestCase
     def test_enumerable
         field = MARC::Field.new('100','0','1', ['a', 'Foo'],['b', 'Bar'],
             ['a', 'Bez'])
+
         count = 0
         for subfield in field:
             count += 1
         end
+        assert_equal(count,3)
+        
+        count = 0
+        field.each {|x| count += 1}
         assert_equal(count,3)
     end
 
