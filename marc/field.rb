@@ -1,4 +1,5 @@
 require 'marc/subfield'
+require 'marc/record'
 
 module MARC
 
@@ -73,8 +74,15 @@ module MARC
         def to_s
             str = "#{tag} "
             str += "#{indicator1}#{indicator2} " unless is_control()
-            subfields.each { |subfield| str += subfield.to_s }
+            @subfields.each { |subfield| str += subfield.to_s }
             return str
+        end
+
+        # add a subfield (MARC::Subfield) to the field
+        #      field.append(MARC::Subfield('a','Dave Thomas'))
+
+        def append(subfield)
+            @subfields.push(subfield)
         end
 
         # You can iterate through the subfields in a Field:
@@ -101,5 +109,30 @@ module MARC
             end
             return true
         end
+
+        # To build a field from a MARC21 field definition
+        # Used by MARC::Record::decode
+
+        def Field.decode(tag, raw)
+            field = Field.new(tag)
+            subfields = raw.split(MARC::Record::SUBFIELD_INDICATOR)
+
+            # if it's not a control field pull off the indicators
+            if not field.is_control()
+                indicators = subfields.shift()
+                field.indicator1 = indicators[0]
+                field.indicator2 = indicators[1]
+            end
+
+            # add each subfield to the field
+            subfields.each() do |data|
+                subfield = MARC::Subfield.new(data[0],data[1..-1])
+                field.append(subfield)
+            end
+
+            # return the field
+            return field
+        end
+
     end
 end
