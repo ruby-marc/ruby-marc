@@ -71,6 +71,9 @@ module MARC
                 field_start = base_address + offset
                 field_end = field_start + length - 1
                 field_data = raw[field_start..field_end]
+
+                # remove end of field
+                field_data.delete!(END_OF_FIELD)
                 
                 # create a MARC::Field and add it to the record
                 field = MARC::Field.decode(tag,field_data)
@@ -79,6 +82,15 @@ module MARC
 
             return record
         end
+
+        def to_s
+            str = "LEADER #{leader}\n"
+            for field in fields:
+                str += field.to_s() + "\n"
+            end
+            return str
+        end
+
 
     end
 

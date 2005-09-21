@@ -120,13 +120,13 @@ module MARC
             # if it's not a control field pull off the indicators
             if not field.is_control()
                 indicators = subfields.shift()
-                field.indicator1 = indicators[0]
-                field.indicator2 = indicators[1]
+                field.indicator1 = indicators[0,1]
+                field.indicator2 = indicators[1,1]
             end
 
             # add each subfield to the field
             subfields.each() do |data|
-                subfield = MARC::Subfield.new(data[0],data[1..-1])
+                subfield = MARC::Subfield.new(data[0,1],data[1..-1])
                 field.append(subfield)
             end
 
