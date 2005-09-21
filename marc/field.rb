@@ -12,16 +12,16 @@ module MARC
         include Enumerable
 
         # The tag for the field
-        attr_accessor :tag,
+        attr_accessor :tag
 
         # The first indicator
-        :indicator1,
+        attr_accessor :indicator1
 
         # The second indicator
-        :indicator2,
+        attr_accessor :indicator2
 
         # A list of MARC::Subfield objects
-        :subfields
+        attr_accessor :subfields
 
         # Create a new field with tag, indicators and subfields.
         # Subfields are passed in as comma separated list of 

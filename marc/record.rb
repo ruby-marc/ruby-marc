@@ -6,7 +6,6 @@ module MARC
     class Record
         include Enumerable
 
-        # some constants used during encoding and decoding
         LEADER_LENGTH = 24
         DIRECTORY_ENTRY_LENGTH = 12
         SUBFIELD_INDICATOR = 0x1F.chr
@@ -30,8 +29,17 @@ module MARC
             @fields.push(field)
         end
 
-        # to support iterating on the fields in a record
+        # each() is here to support iterating and searching since MARC::Record
+        # mixes in Enumberable
+        #
+        # iterating through the fields in a record:
         #     record.each { |f| print f }
+        #
+        # getting the 245
+        #     title = record.find {|f| f.tag == '245'}
+        #
+        # getting all subjects
+        #     subjects = record.find_all {|f| ('600'..'699' === f.tag)}
 
         def each
             for field in @fields
@@ -39,8 +47,9 @@ module MARC
             end
         end
 
-        # Pass in raw marc21 and get back a MARC::Record  object. 
-        # Used by MARC::Reader to read records off of disk.
+        # Pass in raw MARC21 in transmission format and get back a 
+        # MARC::Record  object. Used by MARC::Reader to read records 
+        # off of disk.
 
         def Record::decode(raw)
             record = Record.new()
