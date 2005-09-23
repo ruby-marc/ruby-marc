@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-$:.push("lib")
+$LOAD_PATH.push("lib")
 
 require 'test/unit'
 require 'test/tc_subfield'
