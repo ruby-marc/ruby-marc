@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
 
-$LOAD_PATH.push("lib")
+# local marc library gets tested
+# not already installed one
+$LOAD_PATH.unshift("lib")
 
 require 'test/unit'
 require 'test/tc_subfield'
