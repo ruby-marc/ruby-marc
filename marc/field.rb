@@ -94,6 +94,16 @@ module MARC
             end
         end
 
+        # You can lookup subfields with this shorthand. Note it 
+        # will return a string and not a MARC::Subfield object.
+        #     subfield = field['a']
+        
+        def [](code)
+            subfield = self.find {|s| s.code == code}
+            return subfield.value if subfield
+            return
+        end
+
         # Two fields are equal if their tag, indicators and 
         # subfields are all equal.
 

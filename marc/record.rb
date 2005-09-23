@@ -47,6 +47,13 @@ module MARC
             end
         end
 
+        # You can lookup fields using this shorthand:
+        #     title = record['245']
+
+        def [](tag)
+            return self.find {|f| f.tag == tag}
+        end
+
         # Pass in raw MARC21 in transmission format and get back a 
         # MARC::Record  object. Used by MARC::Reader to read records 
         # off of disk.
