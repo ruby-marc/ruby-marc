@@ -53,5 +53,10 @@ class TestField < Test::Unit::TestCase
         field.each {|x| count += 1}
         assert_equal(count,3)
     end
+    
+    def lookup_shorthand
+        f  = MARC::Field.new('100', '0', '1', ['a', 'Foo'], ['b', 'Bar'])
+        assert_equal(f['b'], 'Bar')
+    end
 
 end

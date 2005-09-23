@@ -27,4 +27,22 @@ class TestRecord < Test::Unit::TestCase
         return r
     end
 
+    def test_decode
+        raw = IO.read('test/one.dat')
+        r = MARC::Record::decode(raw)
+        assert_equal(r.class, MARC::Record)
+        assert_equal(r.leader,'00755cam  22002414a 45000')
+        assert_equal(r.fields.length(), 18)
+        assert_equal(r.find {|f| f.tag == '245'}.to_s,
+            '245 10 $aActivePerl with ASP and ADO /$cTobias Martinsson.')
+    end
+
+    def test_lookup_shorthand
+        r = MARC::Record.new()
+        r.append(MARC::Field.new('100', '2', '0', ['a', 'Thomas, Dave'])) 
+        r.append(MARC::Field.new('245', '0', '4', ['The Pragmatic Programmer']))
+        assert_equal(r['100'].to_s, '100 20 $aThomas, Dave')
+        assert_equal(r['100']['a'], 'Thomas, Dave')
+    end
+
 end

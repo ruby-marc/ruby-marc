@@ -3,14 +3,15 @@ require 'marc'
 
 class ReaderTest < Test::Unit::TestCase
 
-    def test_decode
-        raw = IO.read('test/one.dat')
-        r = MARC::Record::decode(raw)
-        assert_equal(r.class, MARC::Record)
-        assert_equal(r.leader,'00755cam  22002414a 45000')
-        assert_equal(r.fields.length(), 18)
-        assert_equal(r.find {|f| f.tag == '245'}.to_s,
-            '245 10 $aActivePerl with ASP and ADO /$cTobias Martinsson.')
+    def test_batch
+        reader = MARC::Reader.new('test/batch.dat')
+        count = 0
+        reader.each { count += 1 }
+        assert_equal(count, 10)
+    end
+
+    def test_search
+        reader = MARC::Reader.new('test/batch.dat')
     end
 
     def test_encoder
