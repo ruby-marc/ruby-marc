@@ -12,6 +12,20 @@ class ReaderTest < Test::Unit::TestCase
 
     def test_search
         reader = MARC::Reader.new('test/batch.dat')
+        records = reader.find_all { |r| r =~ /Perl/ }
+        assert_equal(records.length,10)
+
+        reader = MARC::Reader.new('test/batch.dat')
+        records = reader.find_all { |r| r['245'] =~ /Perl/ }
+        assert_equal(records.length,10)
+
+        reader = MARC::Reader.new('test/batch.dat')
+        records = reader.find_all { |r| r['245']['a'] =~ /Perl/ }
+        assert_equal(records.length,10)
+
+        reader = MARC::Reader.new('test/batch.dat')
+        records = reader.find_all { |r| r =~ /Foo/ }
+        assert_equal(records.length,0)
     end
 
     def test_encoder

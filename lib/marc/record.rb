@@ -107,6 +107,9 @@ module MARC
             return str
         end
 
+        def =~(regex)
+            return self.to_s =~ regex 
+        end
 
     end
 

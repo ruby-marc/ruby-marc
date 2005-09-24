@@ -144,5 +144,9 @@ module MARC
             return field
         end
 
+        def =~(regex)
+            return self.to_s =~ regex
+        end
+
     end
 end
