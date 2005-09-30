@@ -7,5 +7,7 @@ marc is a ruby library for reading and writing MAchine Readable Cataloging
 
     reader = MARC::Reader.new('marc.dat')
     for record in reader
-        print record
+        puts record['245']['a']
     end
+
+Bugs, requests and comments to ehs@pobox.com

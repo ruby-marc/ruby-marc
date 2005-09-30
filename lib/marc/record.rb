@@ -99,6 +99,24 @@ module MARC
             return record
         end
 
+        # Returns the record serialized as MARC21
+
+        def encode
+            directory = ''
+            fields = ''
+            offset = 0
+            for field in @fields:
+                field_data = field.encode()
+                field_length = field_data.length()
+                directory += field.tag + sprintf('%04i',field_length) +
+                    sprintf("05i",offset)
+                fields += field_data
+                offset += field_length
+
+        end
+
+        # Returns a string version of the record, suitable for printing
+
         def to_s
             str = "LEADER #{leader}\n"
             for field in fields:
@@ -106,6 +124,9 @@ module MARC
             end
             return str
         end
+
+        # Handy for using a record in a regex:
+        #     if record =~ /Gravity's Rainbow/ then print "Slothrop" end
 
         def =~(regex)
             return self.to_s =~ regex 
