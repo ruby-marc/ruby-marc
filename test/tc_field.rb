@@ -54,9 +54,26 @@ class TestField < Test::Unit::TestCase
         assert_equal(count,3)
     end
     
-    def lookup_shorthand
+    def test_lookup_shorthand
         f  = MARC::Field.new('100', '0', '1', ['a', 'Foo'], ['b', 'Bar'])
         assert_equal(f['b'], 'Bar')
+    end
+
+    def test_control
+        control = MARC::Control.new('005','foobarbaz')
+        assert_equal(control.to_s,'005 foobarbaz')
+    end
+
+    def test_field_as_control
+        assert_raise(MARC::Exception) do
+            field = MARC::Field.new('007', '0', '1', ['a','foobar']) 
+        end
+    end
+
+    def test_control_as_field
+        assert_raise(MARC::Exception) do
+            f = MARC::Control.new('245', 'foobar')
+        end
     end
 
 end

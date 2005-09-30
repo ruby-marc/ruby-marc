@@ -90,10 +90,13 @@ module MARC
 
                 # remove end of field
                 field_data.delete!(END_OF_FIELD)
-                
-                # create a MARC::Field and add it to the record
-                field = MARC::Field.decode(tag,field_data)
-                record.append(field)
+               
+                # add a control field or variable field
+                if tag < '010'
+                    record.append(MARC::Control.new(tag,field_data))
+                else
+                    record.append(MARC::Field.decode(tag,field_data))
+                end
             end
 
             return record

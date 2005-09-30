@@ -44,6 +44,12 @@ module MARC
             @indicator2 = i2
             @subfields = []
 
+            # must use MARC::ControlField for tags < 010
+            if @tag.to_i < 10
+                raise MARC::Exception.new(),
+                    "MARC::Field objects can't have tags < 010"
+            end
+
             # allows MARC::Subfield objects to be passed directly
             # or a shorthand of ['a','Foo'], ['b','Bar']
             subfields.each do |subfield| 
@@ -52,12 +58,14 @@ module MARC
                     @subfields.push(subfield)
                 when Array
                     if subfield.length > 2
-                        raise "arrays must only have 2 elements" 
+                        raise MARC::Exception.new(),
+                            "arrays must only have 2 elements" 
                     end
                     @subfields.push(
                         MARC::Subfield.new(subfield[0],subfield[1]))
                 else 
-                    raise "invalid subfield type #{subfield.class}"
+                    raise MARC::Exception.new(), 
+                        "invalid subfield type #{subfield.class}"
                 end
             end
         end
