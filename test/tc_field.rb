@@ -66,13 +66,15 @@ class TestField < Test::Unit::TestCase
 
     def test_field_as_control
         assert_raise(MARC::Exception) do
-            field = MARC::Field.new('007', '0', '1', ['a','foobar']) 
+            # can't have a field with a tag < 010
+            field = MARC::Field.new('007') 
         end
     end
 
     def test_control_as_field
         assert_raise(MARC::Exception) do
-            f = MARC::Control.new('245', 'foobar')
+            # can't have a control with a tag > 009
+            f = MARC::Control.new('245')
         end
     end
 
