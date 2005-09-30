@@ -112,7 +112,7 @@ module MARC
                     sprintf("05i",offset)
                 fields += field_data
                 offset += field_length
-
+            end
         end
 
         # Returns a string version of the record, suitable for printing
@@ -135,3 +135,4 @@ module MARC
     end
 
 end
+
