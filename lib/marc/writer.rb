@@ -1,6 +1,6 @@
 module MARC
 
-    # A class for writing MARC records.
+    # A class for writing MARC records as MARC21.
 
     class Writer
 
@@ -9,7 +9,7 @@ module MARC
 
         def initialize(file)
             if file.class == String
-                @fh = File.new(file)
+                @fh = File.new(file,"w")
             elsif file.respond_to?(file)
                 @fh = file
             else
@@ -17,10 +17,18 @@ module MARC
             end
         end
 
+
         # write a record to the file or handle
 
         def write(record)
-            @fh.write(record.encode)
+            @fh.write(record.to_marc)
+        end
+
+
+        # close underlying filehandle
+
+        def close
+            @fh.close
         end
 
     end

@@ -3,13 +3,21 @@ require 'marc'
 
 class WriterTest < Test::Unit::TestCase
 
-    def test_encode()
-        #before = MARC::Record.new()
-        #before.append(MARC::Field.new('245', '0', '1', ['a','foo']))
-        #raw = before.encode()
+    def test_writer()
+        writer = MARC::Writer.new('test/writer.dat')
+        record = MARC::Record.new()
+        record.append(MARC::Field.new('245', '0', '1', ['a','foo']))
+        writer.write(record)
+        writer.close()
 
-        #after = MARC::Record::decode(raw)
-        #assert_equal(after['245'].to_s, '245 01 $afoo')
+        # read it back to make sure
+        reader = MARC::Reader.new('test/writer.dat')
+        records = reader.entries()
+        assert_equal(records.length(), 1)
+        assert_equal(records[0], record)
+
+        # cleanup
+        File.unlink('test/writer.dat')
     end
 
 end
