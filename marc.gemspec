@@ -1,7 +1,7 @@
 require 'rubygems'
 spec = Gem::Specification.new do |s|
     s.name = 'marc'
-    s.version = '0.0.1'
+    s.version = '0.1'
     s.author = 'Ed Summers'
     s.email = 'ehs@pobox.com'
     s.homepage = 'http://www.textualize.com/marc'
