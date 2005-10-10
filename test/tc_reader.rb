@@ -28,8 +28,4 @@ class ReaderTest < Test::Unit::TestCase
         assert_equal(records.length,0)
     end
 
-    def test_encoder
-        assert(true)
-    end
-
 end

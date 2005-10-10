@@ -23,6 +23,7 @@ module MARC
         # A list of MARC::Subfield objects
         attr_accessor :subfields
 
+
         # Create a new field with tag, indicators and subfields.
         # Subfields are passed in as comma separated list of 
         # MARC::Subfield objects, 
@@ -70,28 +71,25 @@ module MARC
             end
         end
 
-        # returns true if the field is between 000 and 009 and lacks indicators
-
-        def is_control
-            return ('000'..'009') === @tag
-        end
 
         # Returns a string representation of the field such as:
         #  245 00 $aConsilience :$bthe unity of knowledge $cby Edward O. Wilson.
 
         def to_s
             str = "#{tag} "
-            str += "#{indicator1}#{indicator2} " unless is_control()
+            str += "#{indicator1}#{indicator2} " 
             @subfields.each { |subfield| str += subfield.to_s }
             return str
         end
 
-        # add a subfield (MARC::Subfield) to the field
+
+        # Add a subfield (MARC::Subfield) to the field
         #      field.append(MARC::Subfield('a','Dave Thomas'))
 
         def append(subfield)
             @subfields.push(subfield)
         end
+
 
         # You can iterate through the subfields in a Field:
         #     field.each {|s| print s}
@@ -102,6 +100,7 @@ module MARC
             end
         end
 
+
         # You can lookup subfields with this shorthand. Note it 
         # will return a string and not a MARC::Subfield object.
         #     subfield = field['a']
@@ -111,6 +110,7 @@ module MARC
             return subfield.value if subfield
             return
         end
+
 
         # Two fields are equal if their tag, indicators and 
         # subfields are all equal.
@@ -128,29 +128,10 @@ module MARC
             return true
         end
 
-        # To build a field from a MARC21 field definition
-        # Used by MARC::Record::decode
 
-        def Field.decode(tag, raw)
-            field = Field.new(tag)
-            subfields = raw.split(MARC::Record::SUBFIELD_INDICATOR)
-
-            # if it's not a control field pull off the indicators
-            if not field.is_control()
-                indicators = subfields.shift()
-                field.indicator1 = indicators[0,1]
-                field.indicator2 = indicators[1,1]
-            end
-
-            # add each subfield to the field
-            subfields.each() do |data|
-                subfield = MARC::Subfield.new(data[0,1],data[1..-1])
-                field.append(subfield)
-            end
-
-            # return the field
-            return field
-        end
+        # To support regex matching with fields
+        #
+        #     if field =~ /Huckleberry/ ...
 
         def =~(regex)
             return self.to_s =~ regex

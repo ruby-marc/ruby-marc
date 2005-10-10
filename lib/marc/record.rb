@@ -6,12 +6,6 @@ module MARC
     class Record
         include Enumerable
 
-        LEADER_LENGTH = 24
-        DIRECTORY_ENTRY_LENGTH = 12
-        SUBFIELD_INDICATOR = 0x1F.chr
-        END_OF_FIELD = 0x1E.chr
-        END_OF_RECORD = 0x1D.chr
-
         # the record fields
         attr_accessor :fields,
 
@@ -20,6 +14,12 @@ module MARC
 
         def initialize
             @fields = []
+            # leader is 24 bytes
+            @leader = ' ' * 24
+            # leader defaults:
+            # http://www.loc.gov/marc/bibliographic/ecbdldrd.html
+            @leader[10..11] = '22'
+            @leader[20..23] = '4500';        
         end
 
         # add a field to the record
@@ -54,69 +54,28 @@ module MARC
             return self.find {|f| f.tag == tag}
         end
 
-        # Pass in raw MARC21 in transmission format and get back a 
-        # MARC::Record  object. Used by MARC::Reader to read records 
-        # off of disk.
+        # Factory method for creating a MARC::Record from MARC21 in 
+        # transmission format. Really this is just a wrapper around
+        # MARC::MARC21::decode
+        #
+        #     record = MARC::Record.new_from_marc(marc21)
 
-        def Record::decode(raw)
-            record = Record.new()
-            record.leader = raw[0..LEADER_LENGTH]
 
-            # where the field data starts
-            base_address = record.leader[12..16].to_i
-
-            # get the byte offsets from the record directory
-            directory = raw[LEADER_LENGTH..base_address-1]
-
-            # the number of fields in the record corresponds to 
-            # how many directory entries there are
-            num_fields = directory.length / DIRECTORY_ENTRY_LENGTH
-
-            0.upto(num_fields-1) do |field_num|
-
-                # pull the directory entry for a field out
-                entry_start = field_num * DIRECTORY_ENTRY_LENGTH
-                entry_end = entry_start + DIRECTORY_ENTRY_LENGTH
-                entry = directory[entry_start..entry_end]
-                
-                # extract the tag, length and offset for pulling the
-                # field out of the field portion
-                tag = entry[0..2]
-                length = entry[3..6].to_i
-                offset = entry[7..11].to_i
-                field_start = base_address + offset
-                field_end = field_start + length - 1
-                field_data = raw[field_start..field_end]
-
-                # remove end of field
-                field_data.delete!(END_OF_FIELD)
-               
-                # add a control field or variable field
-                if tag < '010'
-                    record.append(MARC::Control.new(tag,field_data))
-                else
-                    record.append(MARC::Field.decode(tag,field_data))
-                end
-            end
-
-            return record
+        def Record::new_from_marc(raw)
+            return MARC::MARC21.new().decode(raw)
         end
 
-        # Returns the record serialized as MARC21
 
-        def encode
-            directory = ''
-            fields = ''
-            offset = 0
-            for field in @fields:
-                field_data = field.encode()
-                field_length = field_data.length()
-                directory += field.tag + sprintf('%04i',field_length) +
-                    sprintf("05i",offset)
-                fields += field_data
-                offset += field_length
-            end
+        # Handy method for returning a the MARC21 serialization for a 
+        # MARC::Record object. Really this is just a wrapper around
+        # MARC::MARC21::encode
+        # 
+        #     marc = record.to_marc()
+
+        def to_marc 
+            return MARC::MARC21.new().encode(self)
         end
+
 
         # Returns a string version of the record, suitable for printing
 
@@ -127,6 +86,23 @@ module MARC
             end
             return str
         end
+
+
+        # For testing if two records can be considered equal.
+
+        def ==(other)
+            if @leader != other.leader:
+                return false
+            elsif @fields.length != other.fields.length()
+                return false
+            else 
+                for i in [0..@fields.length()]:
+                    return false if @fields[i] != other.fields[i]
+                end
+            end
+            return true
+        end
+
 
         # Handy for using a record in a regex:
         #     if record =~ /Gravity's Rainbow/ then print "Slothrop" end

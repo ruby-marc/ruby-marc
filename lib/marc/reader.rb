@@ -41,7 +41,7 @@ module MARC
                 raw = length + @handle.read(length.to_i-5)
 
                 # create a record from the data and return it
-                record = MARC::Record.decode(raw)
+                record = MARC::Record.new_from_marc(raw)
                 yield record 
             end
         end
