@@ -57,7 +57,7 @@ module MARC
             marc[0..4] = sprintf("%05i", marc.length())
             
             # store updated leader in the record that was passed in
-            record.leader = marc[0..LEADER_LENGTH]
+            record.leader = marc[0..LEADER_LENGTH-1]
 
             # return encoded marc
             return marc 
@@ -68,7 +68,7 @@ module MARC
 
         def decode(marc, params={})
             record = Record.new()
-            record.leader = marc[0..LEADER_LENGTH]
+            record.leader = marc[0..LEADER_LENGTH-1]
 
             # where the field data starts
             base_address = record.leader[12..16].to_i

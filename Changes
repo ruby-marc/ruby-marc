@@ -1,3 +1,7 @@
+v0.0.4  Tue Oct 18 00:39:50 CDT 2005
+- fixed off by one error when reading in leader, previous versions were
+  reading an extra character
+
 v0.0.3  Mon Oct 17 22:51:23 CDT 2005
 - added ForgivingReader class and support for reading records without using
   possibly faulty offsets when the user needs them.

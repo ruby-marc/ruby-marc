@@ -19,7 +19,7 @@ module MARC
             # leader defaults:
             # http://www.loc.gov/marc/bibliographic/ecbdldrd.html
             @leader[10..11] = '22'
-            @leader[20..23] = '4500';        
+            @leader[20..23] = '4500'
         end
 
         # add a field to the record
