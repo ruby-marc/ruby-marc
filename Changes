@@ -1,3 +1,8 @@
+v0.0.5  Tue Oct 18 01:50:40 CDT 2005
+- when unspecified field indicators are forced to blanks
+- checking for when a field appears to not have indicators and subfields in
+  which case the field is skipped entirely
+
 v0.0.4  Tue Oct 18 00:39:50 CDT 2005
 - fixed off by one error when reading in leader, previous versions were
   reading an extra character

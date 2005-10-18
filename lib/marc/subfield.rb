@@ -3,9 +3,11 @@ module MARC
     class Subfield
         attr_accessor :code, :value
 
-        def initialize(code,value)
-            @code = code
-            @value = value
+        def initialize(code='' ,value='')
+            # can't allow code of value to be nil
+            # or else it'll screw us up later on
+            @code = code == nil ? '' : code
+            @value = value == nil ? '' : value
         end
 
         def ==(other)

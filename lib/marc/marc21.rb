@@ -22,7 +22,7 @@ module MARC
 
                 # encode the field
                 field_data = ''
-                if field.class == MARC::Field
+                if field.class == MARC::Field 
                     field_data = field.indicator1 + field.indicator2 
                     for s in field.subfields
                         field_data += SUBFIELD_INDICATOR + s.code + s.value
@@ -124,6 +124,10 @@ module MARC
 
                     # get all subfields
                     subfields = field_data.split(SUBFIELD_INDICATOR)
+
+                    # must have at least 2 elements (indicators, and 1 subfield)
+                    # TODO some sort of logging?
+                    next if subfields.length() < 2
 
                     # get indicators
                     indicators = subfields.shift()

@@ -39,10 +39,12 @@ module MARC
         #         ['a', 'Consilience :'],['b','the unity of knowledge ',
         #         ['c', 'by Edward O. Wilson.'] )
 
-        def initialize(tag, i1=nil, i2=nil, *subfields)
+        def initialize(tag, i1=' ', i2=' ', *subfields)
             @tag = tag 
-            @indicator1 = i1
-            @indicator2 = i2
+            # can't allow nil to be passed in or else it'll 
+            # screw us up later when we try to encode
+            @indicator1 = i1 == nil ? ' ' : i1
+            @indicator2 = i2 == nil ? ' ' : i2
             @subfields = []
 
             # must use MARC::ControlField for tags < 010
