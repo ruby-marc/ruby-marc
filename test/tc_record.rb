@@ -30,6 +30,16 @@ class TestRecord < Test::Unit::TestCase
             '245 10 $aActivePerl with ASP and ADO /$cTobias Martinsson.')
     end
 
+    def test_decode_loose
+        raw = IO.read('test/one.dat')
+        r = MARC::Record::new_from_marc(raw, :loose => true)
+        assert_equal(r.class, MARC::Record)
+        assert_equal(r.leader,'00755cam  22002414a 45000')
+        assert_equal(r.fields.length(), 18)
+        assert_equal(r.find {|f| f.tag == '245'}.to_s,
+            '245 10 $aActivePerl with ASP and ADO /$cTobias Martinsson.')
+    end
+
     def test_encode
         r1 = MARC::Record.new()
         r1.append(MARC::Field.new('100','2','0', ['a','Thomas, Dave']))

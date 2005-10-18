@@ -66,7 +66,7 @@ module MARC
 
         # Deserializes MARC21 as a MARC::Record object
 
-        def decode(marc)
+        def decode(marc, params={})
             record = Record.new()
             record.leader = marc[0..LEADER_LENGTH]
 
@@ -80,6 +80,11 @@ module MARC
             # how many directory entries there are
             num_fields = directory.length / DIRECTORY_ENTRY_LENGTH
 
+            # when operating in forgiving mode we just split on end of
+            # field instead of using calculated byte offsets from the 
+            # directory
+            all_fields = marc[base_address..-1].split(END_OF_FIELD)
+
             0.upto(num_fields-1) do |field_num|
 
                 # pull the directory entry for a field out
@@ -87,14 +92,26 @@ module MARC
                 entry_end = entry_start + DIRECTORY_ENTRY_LENGTH
                 entry = directory[entry_start..entry_end]
                 
-                # extract the tag, length and offset for pulling the
-                # field out of the field portion
+                # extract the tag
                 tag = entry[0..2]
-                length = entry[3..6].to_i
-                offset = entry[7..11].to_i
-                field_start = base_address + offset
-                field_end = field_start + length - 1
-                field_data = marc[field_start..field_end]
+
+                # get the actual field data
+                # if we were told to be forgiving we just use the
+                # next available chuck of field data that we 
+                # split apart based on the END_OF_FIELD
+                field_data = ''
+                if params[:forgiving]
+                    field_data = all_fields.shift()
+
+                # otherwise we actually use the byte offsets in 
+                # directory to figure out what field data to extract
+                else
+                    length = entry[3..6].to_i
+                    offset = entry[7..11].to_i
+                    field_start = base_address + offset
+                    field_end = field_start + length - 1
+                    field_data = marc[field_start..field_end]
+                end
 
                 # remove end of field
                 field_data.delete!(END_OF_FIELD)

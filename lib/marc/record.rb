@@ -59,10 +59,16 @@ module MARC
         # MARC::MARC21::decode
         #
         #     record = MARC::Record.new_from_marc(marc21)
+        #
+        # in cases where you might be working with somewhat flawed 
+        # MARC data you may want to use the :forgiving parameter which
+        # will bypass using field byte offsets and simply look for the
+        # end of field byte to figure out the end of fields.
+        #
+        #    record = MARC::Record.new_from_marc(marc21, :forgiving => true)
 
-
-        def Record::new_from_marc(raw)
-            return MARC::MARC21.new().decode(raw)
+        def self.new_from_marc(raw, params={})
+            return MARC::MARC21.new().decode(raw, params)
         end
 
 
