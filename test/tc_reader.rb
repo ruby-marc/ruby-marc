@@ -14,25 +14,25 @@ class ReaderTest < Test::Unit::TestCase
         reader = MARC::ForgivingReader.new('test/batch.dat')
         count = 0
         reader.each { count += 1 }
-        assert_equal(count, 10)
+        assert_equal(10, count)
     end
 
     def test_search
         reader = MARC::Reader.new('test/batch.dat')
         records = reader.find_all { |r| r =~ /Perl/ }
-        assert_equal(records.length,10)
+        assert_equal(10, records.length)
 
         reader = MARC::Reader.new('test/batch.dat')
         records = reader.find_all { |r| r['245'] =~ /Perl/ }
-        assert_equal(records.length,10)
+        assert_equal(10, records.length)
 
         reader = MARC::Reader.new('test/batch.dat')
         records = reader.find_all { |r| r['245']['a'] =~ /Perl/ }
-        assert_equal(records.length,10)
+        assert_equal(10, records.length)
 
         reader = MARC::Reader.new('test/batch.dat')
         records = reader.find_all { |r| r =~ /Foo/ }
-        assert_equal(records.length,0)
+        assert_equal(0, records.length)
     end
 
 end

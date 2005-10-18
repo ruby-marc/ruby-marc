@@ -76,6 +76,8 @@ module MARC
             # get the byte offsets from the record directory
             directory = marc[LEADER_LENGTH..base_address-1]
 
+            throw "invalid directory in record" if directory == nil
+
             # the number of fields in the record corresponds to 
             # how many directory entries there are
             num_fields = directory.length / DIRECTORY_ENTRY_LENGTH

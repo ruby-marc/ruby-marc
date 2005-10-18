@@ -76,8 +76,13 @@ module MARC
 
         def each 
             @handle.each_line(MARC::MARC21::END_OF_RECORD) do |raw| 
-                record = MARC::Record.new_from_marc(raw, :forgiving => true)
-                yield record 
+                begin
+                    record = MARC::Record.new_from_marc(raw, :forgiving => true)
+                    yield record 
+                rescue StandardError => e
+                    # caught exception just keep barrelling along
+                    # TODO add logging
+                end
             end
         end
 
