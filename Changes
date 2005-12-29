@@ -1,3 +1,6 @@
+v0.0.7 
+- MARC::XMLWriter added (thanks ksclarke)
+
 v0.0.6  Tue Oct 18 09:33:12 CDT 2005
 - MARC::MARC21::decode throws an exception when a directory can't be found.
   Exception is caught and ignored in MARC::ForgivingReader
