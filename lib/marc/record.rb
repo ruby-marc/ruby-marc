@@ -82,6 +82,15 @@ module MARC
             return MARC::MARC21.new().encode(self)
         end
 
+        # Handy method for returning the MARCXML serialization for a
+        # MARC::Record object.  Really this is just a wrapper around
+        # MARC::MARCXML::encode
+        #
+        #     xml = record.to_xml()
+
+        def to_xml
+            return MARC::MARCXML.new().encode(self)
+        end
 
         # Returns a string version of the record, suitable for printing
 
