@@ -10,7 +10,7 @@ module MARC
         def initialize(file)
             if file.class == String
                 @fh = File.new(file,"w")
-            elsif file.respond_to?(file)
+            elsif file.respond_to?('write')
                 @fh = file
             else
                 throw "must pass in file name or handle"
