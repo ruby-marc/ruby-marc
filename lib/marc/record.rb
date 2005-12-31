@@ -55,8 +55,7 @@ module MARC
         end
 
         # Factory method for creating a MARC::Record from MARC21 in 
-        # transmission format. Really this is just a wrapper around
-        # MARC::MARC21::decode
+        # transmission format.
         #
         #     record = MARC::Record.new_from_marc(marc21)
         #
@@ -68,7 +67,7 @@ module MARC
         #    record = MARC::Record.new_from_marc(marc21, :forgiving => true)
 
         def self.new_from_marc(raw, params={})
-            return MARC::MARC21.new().decode(raw, params)
+            return MARC::Reader.decode(raw, params)
         end
 
 
@@ -79,7 +78,7 @@ module MARC
         #     marc = record.to_marc()
 
         def to_marc 
-            return MARC::MARC21.new().encode(self)
+            return MARC::Writer.encode(self)
         end
 
         # Handy method for returning the MARCXML serialization for a

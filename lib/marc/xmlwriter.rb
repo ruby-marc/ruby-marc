@@ -1,11 +1,10 @@
+require 'rexml/document'
+
 module MARC
   
   # A class for writing MARC records as MARC21.
   
   class XMLWriter
-    
-    MARC_NS = "http://www.loc.gov/MARC21/slim"
-    MARC_XSD = "http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd"
     
     # the constructor which you must pass a file path
     # or an object that responds to a write message
@@ -30,7 +29,7 @@ module MARC
     # write a record to the file or handle
     
     def write(record)
-      @fh.write(record.to_xml.to_s)
+      @fh.write(MARC::XMLWriter.encode(record).to_s)
     end
     
     
@@ -40,7 +39,51 @@ module MARC
       @fh.write("</marc:collection>")
       @fh.close
     end
+
     
+    # a static method that accepts a MARC::Record object
+    # and returns a REXML::Document for the XML serialization
+
+    def self.encode(record)
+      root = "<marc:record xmlns:marc='" + MARC_NS + "'/>"
+      doc = REXML::Document.new root
+
+      # MARCXML is particular about this; ILSes aren't
+      record.leader[20..24] = "4500"
+      
+      leader = REXML::Element.new "marc:leader"
+      leader.add_text record.leader
+      doc.root.add_element leader
+      
+      for field in record.fields
+        if field.class == MARC::Field 
+          dfElem = REXML::Element.new "marc:datafield"
+          dfElem.add_attributes({
+            "tag"=>field.tag,
+            "ind1"=>field.indicator1,
+            "ind2"=>field.indicator2
+          })
+
+          for subfield in field.subfields
+            sfElem = REXML::Element.new "marc:subfield"
+            sfElem.add_attribute("code", subfield.code)
+            sfElem.add_text subfield.value
+            dfElem.add_element sfElem
+          end
+          
+          doc.root.add_element dfElem
+        elsif field.class == MARC::Control
+          cfElem = REXML::Element.new "marc:controlfield"
+          cfElem.add_attribute("tag", field.tag)
+          cfElem.add_text field.value
+          doc.root.add_element cfElem
+        end
+      end
+      
+      # return xml
+      return doc
+    end
+   
   end
   
 end
