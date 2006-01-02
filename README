@@ -21,6 +21,11 @@ Here's some typical usage:
     writer.write(record)
     writer.close()
 
+    # writing a record as XML
+    writer = MARC::XMLWriter.new('marc.xml')
+    writer.write(record)
+    writer.close()
+
 Please send bugs, requests and comments to ehs@pobox.com. 
 
 This package is licensed using the Artistic License

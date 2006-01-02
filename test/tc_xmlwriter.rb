@@ -1,7 +1,7 @@
 require 'test/unit'
 require 'marc'
 
-class WriterTest < Test::Unit::TestCase
+class XMLWriterTest < Test::Unit::TestCase
 
   def test_writer()
     # get a record
