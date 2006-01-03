@@ -79,6 +79,5 @@ module MARC
         end
       end
     end
-
   end
 end

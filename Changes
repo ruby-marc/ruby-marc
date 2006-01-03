@@ -1,4 +1,4 @@
-v0.0.7 
+v0.0.7  Mon Jan  2 21:39:28 CST 2006
 - MARC::XMLWriter added (thanks ksclarke)
 - removed encode/decode methods in MARC::MARC21 into MARC::Writer and 
   MARC::Reader respectively. This required pushing MARC21 specific constants 
@@ -6,6 +6,8 @@ v0.0.7
 - moved encode from MARC::MARXML into MARC::XMLWriter and added constants
   to MARC::Constants
 - added MARC::XMLReader for reading MARX as XML
+- added xml reading tests
+- fixed indentation to be two spaces
 
 v0.0.6  Tue Oct 18 09:33:12 CDT 2005
 - MARC::MARC21::decode throws an exception when a directory can't be found.

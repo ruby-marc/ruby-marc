@@ -83,7 +83,5 @@ module MARC
       # return xml
       return doc
     end
-   
   end
-  
 end
