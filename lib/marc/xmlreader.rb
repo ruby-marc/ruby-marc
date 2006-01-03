@@ -56,6 +56,7 @@ module MARC
             data_field = MARC::Field.new(attrs['tag'], attrs['ind1'], 
               attrs['ind2'])
           when 'subfield'
+            text = ''
             subfield = MARC::Subfield.new(attrs['code'])
           end
         end

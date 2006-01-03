@@ -105,16 +105,7 @@ module MARC
         # For testing if two records can be considered equal.
 
         def ==(other)
-            if @leader != other.leader:
-                return false
-            elsif @fields.length != other.fields.length()
-                return false
-            else 
-                for i in [0..@fields.length()]:
-                    return false if @fields[i] != other.fields[i]
-                end
-            end
-            return true
+            return self.to_s == other.to_s
         end
 
 
