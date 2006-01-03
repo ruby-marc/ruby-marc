@@ -20,9 +20,9 @@ module MARC
       
       @fh.write("<?xml version='1.0'?>")
       
-      @fh.write("<marc:collection xmlns:marc='" + MARC_NS + "' " \
-      + "xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' " \
-      + "xsi:schemaLocation='" + MARC_NS + " " + MARC_XSD + "'>")
+      @fh.write("<marc:collection xmlns:marc='" + MARC_NS + "' " +
+        "xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' " +
+        "xsi:schemaLocation='" + MARC_NS + " " + MARC_XSD + "'>")
     end
     
     
@@ -57,26 +57,26 @@ module MARC
       
       for field in record.fields
         if field.class == MARC::Field 
-          dfElem = REXML::Element.new "marc:datafield"
-          dfElem.add_attributes({
+          datafield_elem = REXML::Element.new "marc:datafield"
+          datafield_elem.add_attributes({
             "tag"=>field.tag,
             "ind1"=>field.indicator1,
             "ind2"=>field.indicator2
           })
 
           for subfield in field.subfields
-            sfElem = REXML::Element.new "marc:subfield"
-            sfElem.add_attribute("code", subfield.code)
-            sfElem.add_text subfield.value
-            dfElem.add_element sfElem
+            subfield_element = REXML::Element.new "marc:subfield"
+            subfield_element.add_attribute("code", subfield.code)
+            subfield_element.add_text subfield.value
+            datafield_elem.add_element subfield_element
           end
           
-          doc.root.add_element dfElem
+          doc.root.add_element datafield_elem
         elsif field.class == MARC::Control
-          cfElem = REXML::Element.new "marc:controlfield"
-          cfElem.add_attribute("tag", field.tag)
-          cfElem.add_text field.value
-          doc.root.add_element cfElem
+          control_element = REXML::Element.new "marc:controlfield"
+          control_element.add_attribute("tag", field.tag)
+          control_element.add_text field.value
+          doc.root.add_element control_element
         end
       end
       
