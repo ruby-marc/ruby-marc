@@ -47,7 +47,7 @@ class TestField < Test::Unit::TestCase
             
 
     def test_iterator
-        field = MARC::Field.new('100','0','1', ['a', 'Foo'],['b', 'Bar'],
+        field = MARC::Field.new('100', '0', '1', ['a', 'Foo'],['b', 'Bar'],
             ['a', 'Bez'])
         count = 0
         field.each {|x| count += 1}

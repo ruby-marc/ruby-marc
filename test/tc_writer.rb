@@ -6,7 +6,7 @@ class WriterTest < Test::Unit::TestCase
     def test_writer()
         writer = MARC::Writer.new('test/writer.dat')
         record = MARC::Record.new()
-        record.append(MARC::Field.new('245', '0', '1', ['a','foo']))
+        record.append(MARC::Field.new('245', '0', '1', ['a', 'foo']))
         writer.write(record)
         writer.close()
 

@@ -24,7 +24,7 @@ class TestRecord < Test::Unit::TestCase
         raw = IO.read('test/one.dat')
         r = MARC::Record::new_from_marc(raw)
         assert_equal(r.class, MARC::Record)
-        assert_equal(r.leader,'00755cam  22002414a 4500')
+        assert_equal(r.leader, '00755cam  22002414a 4500')
         assert_equal(r.fields.length(), 18)
         assert_equal(r.find {|f| f.tag == '245'}.to_s,
             '245 10 $aActivePerl with ASP and ADO /$cTobias Martinsson.')
@@ -34,7 +34,7 @@ class TestRecord < Test::Unit::TestCase
         raw = IO.read('test/one.dat')
         r = MARC::Record::new_from_marc(raw, :forgiving => true)
         assert_equal(r.class, MARC::Record)
-        assert_equal(r.leader,'00755cam  22002414a 4500')
+        assert_equal(r.leader, '00755cam  22002414a 4500')
         assert_equal(r.fields.length(), 18)
         assert_equal(r.find {|f| f.tag == '245'}.to_s,
             '245 10 $aActivePerl with ASP and ADO /$cTobias Martinsson.')
@@ -42,8 +42,8 @@ class TestRecord < Test::Unit::TestCase
 
     def test_encode
         r1 = MARC::Record.new()
-        r1.append(MARC::Field.new('100','2','0', ['a','Thomas, Dave']))
-        r1.append(MARC::Field.new('245','0','0', ['a','Pragmatic Programmer']))
+        r1.append(MARC::Field.new('100', '2', '0', ['a', 'Thomas, Dave']))
+        r1.append(MARC::Field.new('245', '0', '0', ['a', 'Pragmatic Programmer']))
         raw = r1.to_marc()
         r2 = MARC::Record::new_from_marc(raw)
         assert_equal(r1, r2)

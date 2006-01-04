@@ -17,8 +17,8 @@ class XMLReaderTest < Test::Unit::TestCase
     record1 = MARC::Record.new
     record1.leader =  '00925njm  22002777a 4500'
     record1.append MARC::Control.new('007', 'sdubumennmplu')
-    record1.append MARC::Field.new('245','0','4', 
-      ['a','The Great Ray Charles'], ['h', '[sound recording].'])
+    record1.append MARC::Field.new('245', '0', '4', 
+      ['a', 'The Great Ray Charles'], ['h', '[sound recording].'])
 
     writer = MARC::XMLWriter.new('test/foo.xml')
     writer.write(record1)

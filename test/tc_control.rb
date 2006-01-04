@@ -4,8 +4,8 @@ require 'marc'
 class TestField < Test::Unit::TestCase
 
     def test_control
-        control = MARC::Control.new('005','foobarbaz')
-        assert_equal(control.to_s,'005 foobarbaz')
+        control = MARC::Control.new('005', 'foobarbaz')
+        assert_equal(control.to_s, '005 foobarbaz')
     end
 
     def test_field_as_control
