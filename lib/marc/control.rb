@@ -23,6 +23,17 @@ module MARC
       end
     end
 
+    # Two controls are equal if their tag and value are equal.
+
+    def ==(other)
+      if @tag != other.tag
+        return false 
+      elsif @value != other.value
+        return false
+      end
+      return true
+    end
+
     def to_s
       return "#{tag} #{value}" 
     end
