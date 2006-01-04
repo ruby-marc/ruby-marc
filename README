@@ -14,7 +14,7 @@ USAGE
 
     # creating a record 
     record = MARC::Record.new()
-    record.add_field(MARC::Field.new('100', '0',  ' ', ['a', 'John Doe']))
+    record.add_field(MARC::DataField.new('100', '0',  ' ', ['a', 'John Doe']))
 
     # writing a record
     writer = MARC::Writer.new('marc.dat')
