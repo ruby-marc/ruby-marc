@@ -1,3 +1,6 @@
+v0.0.8
+- removed control tests out of tc_field.rb into tc_control.rb 
+
 v0.0.7  Mon Jan  2 21:39:28 CST 2006
 - MARC::XMLWriter added (thanks ksclarke)
 - removed encode/decode methods in MARC::MARC21 into MARC::Writer and 
