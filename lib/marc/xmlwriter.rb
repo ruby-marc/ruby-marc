@@ -56,7 +56,7 @@ module MARC
       doc.root.add_element leader
       
       for field in record.fields
-        if field.class == MARC::Field 
+        if field.class == MARC::DataField 
           datafield_elem = REXML::Element.new "marc:datafield"
           datafield_elem.add_attributes({
             "tag"=>field.tag,
@@ -72,7 +72,7 @@ module MARC
           end
           
           doc.root.add_element datafield_elem
-        elsif field.class == MARC::Control
+        elsif field.class == MARC::ControlField
           control_element = REXML::Element.new "marc:controlfield"
           control_element.add_attribute("tag", field.tag)
           control_element.add_text field.value

@@ -50,10 +50,10 @@ module MARC
           case strip_ns(event[0])
           when 'controlfield'
             text = ''
-            control_field = MARC::Control.new(attrs['tag'])
+            control_field = MARC::ControlField.new(attrs['tag'])
           when 'datafield'
             text = ''
-            data_field = MARC::Field.new(attrs['tag'], attrs['ind1'], 
+            data_field = MARC::DataField.new(attrs['tag'], attrs['ind1'], 
               attrs['ind2'])
           when 'subfield'
             text = ''

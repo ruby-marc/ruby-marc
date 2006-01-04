@@ -103,11 +103,11 @@ module MARC
         # remove end of field
         field_data.delete!(END_OF_FIELD)
          
-        # add a control field or variable field
+        # add a control field or data field
         if tag < '010'
-          record.append(MARC::Control.new(tag,field_data))
+          record.append(MARC::ControlField.new(tag,field_data))
         else
-          field = MARC::Field.new(tag)
+          field = MARC::DataField.new(tag)
 
           # get all subfields
           subfields = field_data.split(SUBFIELD_INDICATOR)

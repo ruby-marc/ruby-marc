@@ -1,10 +1,10 @@
 module MARC
 
-  # A class for representing fields with a tag less than 010.
-  # Ordinary MARC::Field objects are for fields with tags >= 010
-  # which have indicators and subfields.
+  # MARC records contain control fields, each of which has a 
+  # tag and value. Tags for control fields must be in the
+  # 001-009 range.
 
-  class Control
+  class ControlField
 
     # the tag value (007, 008, etc)
     attr_accessor :tag
@@ -23,7 +23,7 @@ module MARC
       end
     end
 
-    # Two controls are equal if their tag and value are equal.
+    # Two control fields are equal if their tags and values are equal.
 
     def ==(other)
       if @tag != other.tag

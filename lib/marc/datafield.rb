@@ -3,12 +3,11 @@ require 'marc/record'
 
 module MARC
 
-  # MARC records are made up of fields, each of which has a tag, 
-  # indicators and subfields. If the tag is between 000-009 it is 
-  # known as a control field, and actually does not have any 
-  # indicators.
+  # MARC records contain data fields, each of which has a tag, 
+  # indicators and subfields. Tags for data fields must be in
+  # the range 010-999.
 
-  class Field
+  class DataField
     include Enumerable
 
     # The tag for the field
@@ -28,14 +27,14 @@ module MARC
     # Subfields are passed in as comma separated list of 
     # MARC::Subfield objects, 
     # 
-    #   field = MARC::Field.new('245','0','0',
+    #   field = MARC::DataField.new('245','0','0',
     #     MARC::Subfield.new('a', 'Consilience :'),
     #     MARC::Subfield.new('b', 'the unity of knowledge ',
     #     MARC::Subfield.new('c', 'by Edward O. Wilson.'))
     # 
     # or using a shorthand:
     # 
-    #   field = MARC::Field.new('245','0','0',
+    #   field = MARC::DataField.new('245','0','0',
     #     ['a', 'Consilience :'],['b','the unity of knowledge ',
     #     ['c', 'by Edward O. Wilson.'] )
 

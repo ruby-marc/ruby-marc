@@ -43,12 +43,12 @@ module MARC
 
         # encode the field
         field_data = ''
-        if field.class == MARC::Field 
+        if field.class == MARC::DataField 
           field_data = field.indicator1 + field.indicator2 
           for s in field.subfields
             field_data += SUBFIELD_INDICATOR + s.code + s.value
           end
-        elsif field.class == MARC::Control
+        elsif field.class == MARC::ControlField
           field_data = field.value
         end
         field_data += END_OF_FIELD
