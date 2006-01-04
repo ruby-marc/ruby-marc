@@ -42,8 +42,8 @@ class TestRecord < Test::Unit::TestCase
 
     def test_encode
         r1 = MARC::Record.new()
-        r1.append(MARC::Field.new('100', '2', '0', ['a', 'Thomas, Dave']))
-        r1.append(MARC::Field.new('245', '0', '0', ['a', 'Pragmatic Programmer']))
+        r1.append(MARC::DataField.new('100', '2', '0', ['a', 'Thomas, Dave']))
+        r1.append(MARC::DataField.new('245', '0', '0', ['a', 'Pragmatic Programmer']))
         raw = r1.to_marc()
         r2 = MARC::Record::new_from_marc(raw)
         assert_equal(r1, r2)
@@ -56,8 +56,8 @@ class TestRecord < Test::Unit::TestCase
 
     def get_record
         r = MARC::Record.new()
-        r.append(MARC::Field.new('100', '2', '0', ['a', 'Thomas, Dave'])) 
-        r.append(MARC::Field.new('245', '0', '4', ['The Pragmatic Programmer']))
+        r.append(MARC::DataField.new('100', '2', '0', ['a', 'Thomas, Dave'])) 
+        r.append(MARC::DataField.new('245', '0', '4', ['The Pragmatic Programmer']))
         return r
     end
 
