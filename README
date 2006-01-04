@@ -1,7 +1,7 @@
 marc is a ruby library for reading and writing MAchine Readable Cataloging
 (MARC). More information about MARC can be found at <http://www.loc.gov/marc>.
 
-Here's some typical usage:
+USAGE 
 
     require 'marc'
 
@@ -26,7 +26,14 @@ Here's some typical usage:
     writer.write(record)
     writer.close()
 
-Please send bugs, requests and comments to ehs@pobox.com. 
+AUTHORS
+
+Kevin Clarke <ksclarke@gmail.com>
+Ed Summers <ehs@pobox.com>
+
+Please send bugs, requests and comments to the authors. 
+
+LICENSE
 
 This package is licensed using the Artistic License
 <http://www.opensource.org/licenses/artistic-license.php>
