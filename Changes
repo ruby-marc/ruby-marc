@@ -3,9 +3,10 @@ v0.0.8
 - fixed some formatting
 - changed control/field to controlfield/datafield
 - added == check for controlfield
+  removed namespace declarations on record elements in favor of default namespace on collection element
 
 v0.0.7  Mon Jan  2 21:39:28 CST 2006
-- MARC::XMLWriter added (thanks ksclarke)
+- MARC::XMLWriter added
 - removed encode/decode methods in MARC::MARC21 into MARC::Writer and 
   MARC::Reader respectively. This required pushing MARC21 specific constants 
   out into MARC::Constants which is required as necessary.
