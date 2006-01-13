@@ -24,7 +24,7 @@ module MARC
     private
 
     def strip_ns(str)
-      return str.sub!(/^.*:/, '')
+      return str.sub(/^.*:/, '')
     end
 
     # will accept parse events until a record has been built up

@@ -27,7 +27,7 @@ class TestRecord < Test::Unit::TestCase
         assert_equal(r.leader, '00755cam  22002414a 4500')
         assert_equal(r.fields.length(), 18)
         assert_equal(r.find {|f| f.tag == '245'}.to_s,
-            '245 10 $aActivePerl with ASP and ADO /$cTobias Martinsson.')
+            '245 10 $a ActivePerl with ASP and ADO / $c Tobias Martinsson. ')
     end
 
     def test_decode_forgiving
@@ -37,7 +37,7 @@ class TestRecord < Test::Unit::TestCase
         assert_equal(r.leader, '00755cam  22002414a 4500')
         assert_equal(r.fields.length(), 18)
         assert_equal(r.find {|f| f.tag == '245'}.to_s,
-            '245 10 $aActivePerl with ASP and ADO /$cTobias Martinsson.')
+            '245 10 $a ActivePerl with ASP and ADO / $c Tobias Martinsson. ')
     end
 
     def test_encode

@@ -3,7 +3,7 @@ require 'marc'
 
 class XMLReaderTest < Test::Unit::TestCase
 
-  def test_batch
+  def otest_batch
     reader = MARC::XMLReader.new('test/batch.xml')
     count = 0
     for record in reader
@@ -28,7 +28,7 @@ class XMLReaderTest < Test::Unit::TestCase
     record2 = reader.entries[0]
     assert_equal(record1, record2)
 
-    File.unlink('test/foo.xml')
+    #File.unlink('test/foo.xml')
   end
 end
 

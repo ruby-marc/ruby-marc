@@ -3,8 +3,13 @@ v0.0.8
 - fixed some formatting
 - changed control/field to controlfield/datafield
 - added == check for controlfield
-  removed namespace declarations on record elements in favor of default namespace on collection element
-  added spaces around subfield code and delimeter in to_s
+- removed namespace declarations on record elements in favor of default 
+  namespace on collection element
+- added spaces around subfield code and delimeter in to_s
+- fixed up relevant tests that were expecting old formatting
+- fixed xmlreader strip_ns which was rerturning Nil when no namespace
+  was found on an element (exposed by namespace changes).
+
 
 v0.0.7  Mon Jan  2 21:39:28 CST 2006
 - MARC::XMLWriter added
