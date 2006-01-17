@@ -1,4 +1,4 @@
-v0.0.8
+v0.0.8  Mon Jan 16 22:31:00 EST 2006
 - removed control tests out of tc_field.rb into tc_control.rb 
 - fixed some formatting
 - changed control/field to controlfield/datafield
