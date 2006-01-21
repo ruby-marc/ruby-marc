@@ -1,7 +1,7 @@
 require 'test/unit'
 require 'marc'
 
-class XMLReaderTest < Test::Unit::TestCase
+class XMLTest < Test::Unit::TestCase
 
   def otest_batch
     reader = MARC::XMLReader.new('test/batch.xml')
@@ -20,15 +20,15 @@ class XMLReaderTest < Test::Unit::TestCase
     record1.append MARC::DataField.new('245', '0', '4', 
       ['a', 'The Great Ray Charles'], ['h', '[sound recording].'])
 
-    writer = MARC::XMLWriter.new('test/foo.xml')
+    writer = MARC::XMLWriter.new('test/test.xml')
     writer.write(record1)
     writer.close
 
-    reader = MARC::XMLReader.new('test/foo.xml')
+    reader = MARC::XMLReader.new('test/test.xml')
     record2 = reader.entries[0]
     assert_equal(record1, record2)
 
-    #File.unlink('test/foo.xml')
+    File.unlink('test/test.xml')
   end
 end
 

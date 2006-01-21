@@ -1,3 +1,8 @@
+v0.0.X
+- added bin/marc2xml
+- collapsed tc_xmlreader.rb tc_xmlwriter.rb into tc_xml.rb for full write/read
+  test.
+
 v0.0.8  Mon Jan 16 22:31:00 EST 2006
 - removed control tests out of tc_field.rb into tc_control.rb 
 - fixed some formatting
