@@ -1,4 +1,5 @@
 require 'rexml/document'
+require 'rexml/text'
 
 module MARC
   
@@ -19,17 +20,18 @@ module MARC
       end
       
       @fh.write("<?xml version='1.0'?>")
-      
       @fh.write("<collection xmlns='" + MARC_NS + "' " +
         "xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' " +
         "xsi:schemaLocation='" + MARC_NS + " " + MARC_XSD + "'>")
+      @fh.write("\n")
     end
     
     
     # write a record to the file or handle
     
     def write(record)
-      @fh.write(MARC::XMLWriter.encode(record).to_s)
+      MARC::XMLWriter.encode(record).write(@fh, 0)
+      @fh.write("\n");
     end
     
     
@@ -40,24 +42,54 @@ module MARC
       @fh.close
     end
 
+
+    # Converts from ISO 8859-1 to UTF-8, normalizes the UTF-8, and puts a
+    # 'clean up marker' in records that have control characters (which are
+    # not valid in XML). This is useful for locating these records once
+    # they are in XML so problems caused by removing the invalid characters
+    # can be fixed by a person.  This (or something in the module) needs to
+    # convert from MARC-8 to UTF-8, but it doesn't do this yet...
+
+    def self.convert_to_utf8(text)
+      cleaned_text = text.gsub(/[\x00-\x1f\x7f-\xff]+/, ' CLEAN_ME_UP ')
+      utf8_text = cleaned_text.unpack('C*').pack('U*')
+      normalized_text = REXML::Text::normalize(utf8_text)
+
+      return normalized_text
+    end
     
     # a static method that accepts a MARC::Record object
     # and returns a REXML::Document for the XML serialization
 
     def self.encode(record)
+      singleChar = Regexp.new(/[\da-z ]{1}/)
+    
       root = "<record/>"
-      doc = REXML::Document.new root
+      doc = REXML::Document.new(root)
 
       # MARCXML is particular about this; ILSes aren't
       record.leader[20..24] = "4500"
       
-      leader = REXML::Element.new "leader"
-      leader.add_text record.leader
-      doc.root.add_element leader
+      leader = REXML::Element.new("leader")
+      leader.add_text(record.leader)
+      doc.root.add_element(leader)
       
       for field in record.fields
         if field.class == MARC::DataField 
-          datafield_elem = REXML::Element.new "datafield"
+          datafield_elem = REXML::Element.new("datafield")
+          
+          # If marc is leniently parsed, we may have some dirty data; using
+          # the 'z' ind1 value should help us locate these later to fix
+          if (field.indicator1.match(singleChar) == nil)
+            field.indicator1 = 'z'
+          end
+          
+          # If marc is leniently parsed, we may have some dirty data; using
+          # the 'z' ind2 value should help us locate these later to fix
+          if (field.indicator2.match(singleChar) == nil)
+            field.indicator2 = 'z'
+          end
+          
           datafield_elem.add_attributes({
             "tag"=>field.tag,
             "ind1"=>field.indicator1,
@@ -65,18 +97,27 @@ module MARC
           })
 
           for subfield in field.subfields
-            subfield_element = REXML::Element.new "subfield"
+            subfield_element = REXML::Element.new("subfield")
+            
+            # If marc is leniently parsed, we may have some dirty data; using
+            # the blank subfield code should help us locate these later to fix
+            if (subfield.code.match(singleChar) == nil)
+              subfield.code = ' '
+            end
+            
             subfield_element.add_attribute("code", subfield.code)
-            subfield_element.add_text subfield.value
-            datafield_elem.add_element subfield_element
+            text = MARC::XMLWriter.convert_to_utf8(subfield.value)
+            subfield_element.add_text(text)
+            datafield_elem.add_element(subfield_element)
           end
           
           doc.root.add_element datafield_elem
         elsif field.class == MARC::ControlField
-          control_element = REXML::Element.new "controlfield"
+          control_element = REXML::Element.new("controlfield")
           control_element.add_attribute("tag", field.tag)
-          control_element.add_text field.value
-          doc.root.add_element control_element
+          text = MARC::XMLWriter.convert_to_utf8(field.value)
+          control_element.add_text(text)
+          doc.root.add_element(control_element)
         end
       end
       
