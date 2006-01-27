@@ -63,7 +63,7 @@ module MARC
 
     def self.encode(record)
       singleChar = Regexp.new(/[\da-z ]{1}/)
-      tagPattern = Regexp.new(/\d{3}/)
+      tagPattern = Regexp.new(/00[1-9A-Za-z]{1}s/)
       
       # Right now, this writer handles input from the strict and
       # lenient MARC readers. Because it can get 'loose' MARC in, it
@@ -115,7 +115,7 @@ module MARC
           
           # We need a marker for invalid tag values too
           if (field.tag.match(tagPattern) == nil)
-            field.tag = "000"
+            field.tag = "00z"
           end
           
           datafield_elem.add_attributes({
@@ -145,7 +145,7 @@ module MARC
           
           # We need a marker for invalid tag values (we use 000)
           if (field.tag.match(tagPattern) == nil)
-            field.tag = "000"
+            field.tag = "00z"
           end
           
           control_element.add_attribute("tag", field.tag)
