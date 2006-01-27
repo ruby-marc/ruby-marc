@@ -1,8 +1,11 @@
 v0.0.9
 - changed XMLWriter.write to output pretty-printed XML
 - normalized Text in XML output
-- added checks and replacements for bad subfield codes and indicator values
-- added check and replacement for invalid control codes in xml data values
+- added XMLWriter checks and replacements for bad subfield codes and indicator
+  values
+- added XMLWriter check and replacement for invalid control codes in xml data
+  values
+- added XMLWriter checks for values in the leader that are invalid MARCXML
 - added bin/marc2xml
 - collapsed tc_xmlreader.rb tc_xmlwriter.rb into tc_xml.rb for full write/read
   test.

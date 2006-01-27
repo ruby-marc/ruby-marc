@@ -59,16 +59,39 @@ module MARC
     end
     
     # a static method that accepts a MARC::Record object
-    # and returns a REXML::Document for the XML serialization
+    # and returns a REXML::Document for the XML serialization.
 
     def self.encode(record)
       singleChar = Regexp.new(/[\da-z ]{1}/)
-    
+      tagPattern = Regexp.new(/\d{3}/)
+      
+      # Right now, this writer handles input from the strict and
+      # lenient MARC readers. Because it can get 'loose' MARC in, it
+      # attempts to do some cleanup on data values that are not valid
+      # MARCXML.
+      
+      # TODO? Perhaps the 'loose MARC' checks should be split out
+      # into a tolerant MARCXMLWriter allowing the main one to skip
+      # this extra work.
+      
+      # TODO: At the very least there should be some logging
+      # to record our attempts to account for less than perfect MARC.
+      
       root = "<record/>"
       doc = REXML::Document.new(root)
 
-      # MARCXML is particular about this; ILSes aren't
-      record.leader[20..24] = "4500"
+      # MARCXML only allows alphanumerics or spaces in the leader
+      record.leader.gsub!(/[^\w|^\s]/, 'Z')
+      
+      # MARCXML is particular about last four characters; ILSes aren't
+      if (record.leader[20..23] != "4500")
+        record.leader[20..23] = "4500"
+      end
+
+      # MARCXML doesn't like a space here so we need a filler character: Z
+      if (record.leader[6..6] == " ")
+        record.leader[6..6] = "Z"
+      end
       
       leader = REXML::Element.new("leader")
       leader.add_text(record.leader)
@@ -88,6 +111,11 @@ module MARC
           # the 'z' ind2 value should help us locate these later to fix
           if (field.indicator2.match(singleChar) == nil)
             field.indicator2 = 'z'
+          end
+          
+          # We need a marker for invalid tag values too
+          if (field.tag.match(tagPattern) == nil)
+            field.tag = "000"
           end
           
           datafield_elem.add_attributes({
@@ -114,6 +142,12 @@ module MARC
           doc.root.add_element datafield_elem
         elsif field.class == MARC::ControlField
           control_element = REXML::Element.new("controlfield")
+          
+          # We need a marker for invalid tag values (we use 000)
+          if (field.tag.match(tagPattern) == nil)
+            field.tag = "000"
+          end
+          
           control_element.add_attribute("tag", field.tag)
           text = MARC::XMLWriter.convert_to_utf8(field.value)
           control_element.add_text(text)
