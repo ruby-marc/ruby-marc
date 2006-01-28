@@ -63,7 +63,7 @@ module MARC
 
     def self.encode(record)
       singleChar = Regexp.new(/[\da-z ]{1}/)
-      tagPattern = Regexp.new(/00[1-9A-Za-z]{1}s/)
+      ctrlFieldTag = Regexp.new(/00[1-9A-Za-z]{1}s/)
       
       # Right now, this writer handles input from the strict and
       # lenient MARC readers. Because it can get 'loose' MARC in, it
@@ -113,11 +113,6 @@ module MARC
             field.indicator2 = 'z'
           end
           
-          # We need a marker for invalid tag values too
-          if (field.tag.match(tagPattern) == nil)
-            field.tag = "00z"
-          end
-          
           datafield_elem.add_attributes({
             "tag"=>field.tag,
             "ind1"=>field.indicator1,
@@ -144,7 +139,7 @@ module MARC
           control_element = REXML::Element.new("controlfield")
           
           # We need a marker for invalid tag values (we use 000)
-          if (field.tag.match(tagPattern) == nil)
+          if (field.tag.match(ctrlFieldTag) == nil)
             field.tag = "00z"
           end
           
