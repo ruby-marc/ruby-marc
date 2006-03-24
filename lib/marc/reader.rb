@@ -12,7 +12,10 @@ module MARC
     #   fh = File.new('marc.dat')
     #   reader = MARC::Reader.new(fh)
     #
-    # or really any object that responds to read(n).
+    # or really any object that responds to read(n)
+    #
+    #   # marc is a string with a bunch of records in it
+    #   reader = MARC::Reader.new(StringIO.new(reader))
     
     def initialize(file)
       if file.class == String:

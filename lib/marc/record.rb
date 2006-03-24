@@ -39,7 +39,7 @@ module MARC
     #   title = record.find {|f| f.tag == '245'}
     #
     # getting all subjects
-    #   subjects = record.find_all {|f| ('600'..'699' === f.tag)}
+    #   subjects = record.find_all {|f| ('600'..'699') === f.tag}
 
     def each
       for field in @fields
