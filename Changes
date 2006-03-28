@@ -1,4 +1,4 @@
-v0.0.9
+v0.0.9  Tue Mar 28 10:02:16 CST 2006
 - changed XMLWriter.write to output pretty-printed XML
 - normalized Text in XML output
 - added XMLWriter checks and replacements for bad subfield codes and indicator
@@ -9,7 +9,7 @@ v0.0.9
 - added bin/marc2xml
 - collapsed tc_xmlreader.rb tc_xmlwriter.rb into tc_xml.rb for full write/read
   test.
-
+- added :stylesheet argument to XLMWriter.new
 
 v0.0.8  Mon Jan 16 22:31:00 EST 2006
 - removed control tests out of tc_field.rb into tc_control.rb 
@@ -22,7 +22,6 @@ v0.0.8  Mon Jan 16 22:31:00 EST 2006
 - fixed up relevant tests that were expecting old formatting
 - fixed xmlreader strip_ns which was rerturning Nil when no namespace
   was found on an element (exposed by namespace changes).
-
 
 v0.0.7  Mon Jan  2 21:39:28 CST 2006
 - MARC::XMLWriter added

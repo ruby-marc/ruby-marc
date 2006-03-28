@@ -9,8 +9,13 @@ module MARC
     
     # the constructor which you must pass a file path
     # or an object that responds to a write message
+    # the second argument is a hash of options, currently
+    # only supporting one option, stylesheet
+    # 
+    # writer = XMLWriter.new 'marc.xml', :stylesheet => 'style.xsl'
+    # writer.write record
     
-    def initialize(file)
+    def initialize(file, opts={})
       if file.class == String
         @fh = File.new(file,"w")
       elsif file.respond_to?('write')
@@ -20,6 +25,10 @@ module MARC
       end
       
       @fh.write("<?xml version='1.0'?>")
+      if opts[:stylesheet]
+        @fh.write(
+          %Q{<?xml-stylesheet type="text/xsl" href="#{opts[:stylesheet]}"?>})
+      end
       @fh.write("<collection xmlns='" + MARC_NS + "' " +
         "xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' " +
         "xsi:schemaLocation='" + MARC_NS + " " + MARC_XSD + "'>")

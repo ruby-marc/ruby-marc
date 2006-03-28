@@ -20,9 +20,12 @@ class XMLTest < Test::Unit::TestCase
     record1.append MARC::DataField.new('245', '0', '4', 
       ['a', 'The Great Ray Charles'], ['h', '[sound recording].'])
 
-    writer = MARC::XMLWriter.new('test/test.xml')
+    writer = MARC::XMLWriter.new('test/test.xml', :stylesheet => 'style.xsl')
     writer.write(record1)
     writer.close
+
+    xml = File.read('test/test.xml')
+    assert_match /<\?xml-stylesheet type="text\/xsl" href="style.xsl"\?>/, xml
 
     reader = MARC::XMLReader.new('test/test.xml')
     record2 = reader.entries[0]
