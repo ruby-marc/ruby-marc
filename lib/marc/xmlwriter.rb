@@ -24,10 +24,10 @@ module MARC
         throw "must pass in file name or handle"
       end
       
-      @fh.write("<?xml version='1.0'?>")
+      @fh.write("<?xml version='1.0'?>\n")
       if opts[:stylesheet]
         @fh.write(
-          %Q{<?xml-stylesheet type="text/xsl" href="#{opts[:stylesheet]}"?>})
+          %Q{<?xml-stylesheet type="text/xsl" href="#{opts[:stylesheet]}"?>\n})
       end
       @fh.write("<collection xmlns='" + MARC_NS + "' " +
         "xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' " +
