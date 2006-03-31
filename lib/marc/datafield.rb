@@ -138,5 +138,15 @@ module MARC
       return self.to_s =~ regex
     end
 
+
+    # to get the field as a string, without the tag and indicators
+    # useful in situations where you want a legible version of the field
+    #
+    # print record['245'].value
+
+    def value
+      return(@subfields.map {|s| s.value} .join '')
+    end
+
   end
 end
