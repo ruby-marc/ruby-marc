@@ -1,4 +1,4 @@
-v0.1.0
+v0.1.0  Wed Dec  6 15:40:40 EST 2006
 - fixed pretty xml when stylesheet is used
 - added value() to MARC::DataField
 - added Rakefile for testing/building
