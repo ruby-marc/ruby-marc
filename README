@@ -3,28 +3,43 @@ marc is a ruby library for reading and writing MAchine Readable Cataloging
 
 USAGE 
 
-    require 'marc'
+  require 'marc'
 
-    # reading records from a batch file
-    reader = MARC::Reader.new('marc.dat')
-    for record in reader
-        # print out field 245 subfield a
-        puts record['245']['a']
-    end
+  # reading records from a batch file
+  reader = MARC::Reader.new('marc.dat')
+  for record in reader
+      # print out field 245 subfield a
+      puts record['245']['a']
+  end
 
-    # creating a record 
-    record = MARC::Record.new()
-    record.add_field(MARC::DataField.new('100', '0',  ' ', ['a', 'John Doe']))
+  # creating a record 
+  record = MARC::Record.new()
+  record.add_field(MARC::DataField.new('100', '0',  ' ', ['a', 'John Doe']))
 
-    # writing a record
-    writer = MARC::Writer.new('marc.dat')
-    writer.write(record)
-    writer.close()
+  # writing a record
+  writer = MARC::Writer.new('marc.dat')
+  writer.write(record)
+  writer.close()
 
-    # writing a record as XML
-    writer = MARC::XMLWriter.new('marc.xml')
-    writer.write(record)
-    writer.close()
+  # writing a record as XML
+  writer = MARC::XMLWriter.new('marc.xml')
+  writer.write(record)
+  writer.close()
+
+INSTALLATION
+
+If you are looking at this file you may want to be able to install the code. 
+First you'll need to test:
+
+  rake test
+
+then build the gem:
+
+  rake package
+
+and install the versioned gem:
+
+  gem install pkg/marc-x.x.x.gem 
 
 AUTHORS
 
@@ -35,6 +50,7 @@ Please send bugs, requests and comments to the authors.
 
 LICENSE
 
-This package is licensed using the Artistic License
-<http://www.opensource.org/licenses/artistic-license.php>
+This package is licensed using the Artistic License because one of the authors 
+used to be a Perl hacker. If this is a problem (the license part) let us know.
 
+<http://www.opensource.org/licenses/artistic-license.php>

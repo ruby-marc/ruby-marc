@@ -1,6 +1,7 @@
 v0.1.0
 - fixed pretty xml when stylesheet is used
 - added value() to MARC::DataField
+- added Rakefile for testing/building
 
 v0.0.9  Tue Mar 28 10:02:16 CST 2006
 - changed XMLWriter.write to output pretty-printed XML
