@@ -1,3 +1,7 @@
+v0.1.1
+- added ability to pass File like objects to the constructor for 
+  MARC::XMLReader like MARC::Reader (thanks Jake Glenn)
+
 v0.1.0  Wed Dec  6 15:40:40 EST 2006
 - fixed pretty xml when stylesheet is used
 - added value() to MARC::DataField

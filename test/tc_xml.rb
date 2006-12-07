@@ -1,9 +1,10 @@
 require 'test/unit'
 require 'marc'
+require 'stringio'
 
 class XMLTest < Test::Unit::TestCase
 
-  def otest_batch
+  def test_batch
     reader = MARC::XMLReader.new('test/batch.xml')
     count = 0
     for record in reader
@@ -11,6 +12,12 @@ class XMLTest < Test::Unit::TestCase
       assert_instance_of(MARC::Record, record)
     end
     assert_equal(count, 2)
+  end
+
+  def test_read_string
+    xml = File.new('test/batch.xml').read
+    reader = MARC::XMLReader.new(StringIO.new(xml))
+    assert_equal reader.entries.length, 2 
   end
 
   def test_read_write
@@ -33,5 +40,6 @@ class XMLTest < Test::Unit::TestCase
 
     File.unlink('test/test.xml')
   end
+
 end
 

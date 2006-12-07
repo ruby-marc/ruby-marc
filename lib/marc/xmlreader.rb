@@ -6,9 +6,28 @@ module MARC
   class XMLReader
     include Enumerable
 
-    def initialize(filename)
-      source = File.new(filename)
-      @parser = REXML::Parsers::PullParser.new(source)
+    # the constructor which you can pass either a filename:
+    #
+    #   reader = MARC::XMLReader.new('/Users/edsu/marc.dat')
+    #
+    # or a File object, 
+    #
+    #   reader = Marc::XMLReader.new(File.new('/Users/edsu/marc.dat'))
+    #
+    # or really any object that responds to read(n)
+    # 
+    #   reader = MARC::XMLReader.new(StringIO.new(xml))
+ 
+    def initialize(file)
+      if file.class == String:
+        handle = File.new(file)
+      elsif file.respond_to?("read", 5)
+        handle = file
+      else
+        throw "must pass in path or File"
+      end
+
+      @parser = REXML::Parsers::PullParser.new(handle)
     end
 
     def each
