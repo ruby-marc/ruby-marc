@@ -1,4 +1,4 @@
-RUBY_MARC_VERSION = '0.1.0'
+RUBY_MARC_VERSION = '0.1.2'
 
 require 'rubygems'
 require 'rake'
@@ -18,7 +18,7 @@ end
 
 spec = Gem::Specification.new do |s|
   s.name = 'marc'
-  s.version = '0.1.0'
+  s.version = RUBY_MARC_VERSION
   s.author = 'Ed Summers'
   s.email = 'ehs@pobox.com'
   s.homepage = 'http://www.textualize.com/ruby_marc'
