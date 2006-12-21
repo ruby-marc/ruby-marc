@@ -82,13 +82,13 @@ module MARC
     end
 
     # Handy method for returning the MARCXML serialization for a
-    # MARC::Record object.  Really this is just a wrapper around
-    # MARC::MARCXML::encode
+    # MARC::Record object. You'll get back a REXML::Document object.
+    # Really this is just a wrapper around MARC::XMLWriter::encode
     #
-    #   xml = record.to_xml()
+    #   xml_doc = record.to_xml()
 
     def to_xml
-      return MARC::MARCXML.new().encode(self)
+      return MARC::XMLWriter.encode(self)
     end
 
     # Returns a string version of the record, suitable for printing
