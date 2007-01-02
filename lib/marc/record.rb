@@ -91,6 +91,15 @@ module MARC
       return MARC::XMLWriter.encode(self)
     end
 
+    # Handy method for returning a hash mapping this records values
+    # to the Dublin Core.
+    #
+    #   xml = record.to_xml()
+
+    def to_dublin_core
+      return MARC::DublinCore.map(self)
+    end
+
     # Returns a string version of the record, suitable for printing
 
     def to_s
