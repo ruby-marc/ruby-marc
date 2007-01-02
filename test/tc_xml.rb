@@ -32,6 +32,7 @@ class XMLTest < Test::Unit::TestCase
     writer.close
 
     xml = File.read('test/test.xml')
+    assert_match /<controlfield tag='007'>sdubumennmplu<\/controlfield>/, xml
     assert_match /<\?xml-stylesheet type="text\/xsl" href="style.xsl"\?>/, xml
 
     reader = MARC::XMLReader.new('test/test.xml')

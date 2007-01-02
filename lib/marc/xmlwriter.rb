@@ -70,9 +70,9 @@ module MARC
     # a static method that accepts a MARC::Record object
     # and returns a REXML::Document for the XML serialization.
 
-    def self.encode(record)
-      singleChar = Regexp.new(/[\da-z ]{1}/)
-      ctrlFieldTag = Regexp.new(/00[1-9A-Za-z]{1}s/)
+    def self.encode(record, opts={})
+      singleChar = Regexp.new('[\da-z ]{1}')
+      ctrlFieldTag = Regexp.new('00[1-9A-Za-z]{1}')
       
       # Right now, this writer handles input from the strict and
       # lenient MARC readers. Because it can get 'loose' MARC in, it
@@ -86,8 +86,8 @@ module MARC
       # TODO: At the very least there should be some logging
       # to record our attempts to account for less than perfect MARC.
       
-      root = "<record/>"
-      doc = REXML::Document.new(root)
+      e = REXML::Element.new('record')
+      e.add_namespace(MARC_NS) if opts[:include_namespace]
 
       # MARCXML only allows alphanumerics or spaces in the leader
       record.leader.gsub!(/[^\w|^\s]/, 'Z')
@@ -104,7 +104,7 @@ module MARC
       
       leader = REXML::Element.new("leader")
       leader.add_text(record.leader)
-      doc.root.add_element(leader)
+      e.add_element(leader)
       
       for field in record.fields
         if field.class == MARC::DataField 
@@ -143,24 +143,24 @@ module MARC
             datafield_elem.add_element(subfield_element)
           end
           
-          doc.root.add_element datafield_elem
+          e.add_element datafield_elem
         elsif field.class == MARC::ControlField
           control_element = REXML::Element.new("controlfield")
           
           # We need a marker for invalid tag values (we use 000)
-          if (field.tag.match(ctrlFieldTag) == nil)
+          unless field.tag.match(ctrlFieldTag)
             field.tag = "00z"
           end
           
           control_element.add_attribute("tag", field.tag)
           text = MARC::XMLWriter.convert_to_utf8(field.value)
           control_element.add_text(text)
-          doc.root.add_element(control_element)
+          e.add_element(control_element)
         end
       end
       
       # return xml
-      return doc
+      return e 
     end
   end
 end

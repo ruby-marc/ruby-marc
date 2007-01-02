@@ -88,7 +88,7 @@ module MARC
     #   xml_doc = record.to_xml()
 
     def to_xml
-      return MARC::XMLWriter.encode(self)
+      return MARC::XMLWriter.encode(self, :include_namespace => true)
     end
 
     # Handy method for returning a hash mapping this records values

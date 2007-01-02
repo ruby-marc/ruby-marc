@@ -11,8 +11,8 @@ class TestRecord < Test::Unit::TestCase
     def test_xml
       r = get_record()
       doc = r.to_xml
-      assert_kind_of REXML::Document, doc
-      assert_equal "<record><leader>      Z   22        4500</leader><datafield tag='100' ind1='2' ind2='0'><subfield code='a'>Thomas, Dave</subfield></datafield><datafield tag='245' ind1='0' ind2='4'><subfield code='The Pragmatic Programmer'></subfield></datafield></record>", doc.to_s
+      assert_kind_of REXML::Element, doc
+      assert_equal "<record xmlns='http://www.loc.gov/MARC21/slim'><leader>      Z   22        4500</leader><datafield tag='100' ind1='2' ind2='0'><subfield code='a'>Thomas, Dave</subfield></datafield><datafield tag='245' ind1='0' ind2='4'><subfield code='The Pragmatic Programmer'></subfield></datafield></record>", doc.to_s
     end
 
     def test_append_field
