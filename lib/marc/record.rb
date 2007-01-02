@@ -94,7 +94,8 @@ module MARC
     # Handy method for returning a hash mapping this records values
     # to the Dublin Core.
     #
-    #   xml = record.to_xml()
+    #   dc = record.to_dublin_core()
+    #   print dc['title']
 
     def to_dublin_core
       return MARC::DublinCore.map(self)

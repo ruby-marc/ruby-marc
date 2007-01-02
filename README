@@ -8,8 +8,8 @@ USAGE
   # reading records from a batch file
   reader = MARC::Reader.new('marc.dat')
   for record in reader
-      # print out field 245 subfield a
-      puts record['245']['a']
+    # print out field 245 subfield a
+    puts record['245']['a']
   end
 
   # creating a record 
@@ -44,6 +44,7 @@ and install the versioned gem:
 AUTHORS
 
 Kevin Clarke <ksclarke@gmail.com>
+William Groppe <will.groppe@gmail.com>
 Ed Summers <ehs@pobox.com>
 
 Please send bugs, requests and comments to the authors. 
