@@ -3,7 +3,7 @@ require 'rexml/text'
 
 module MARC
   
-  # A class for writing MARC records as MARC21.
+  # A class for writing MARC records as MARCXML.
   
   class XMLWriter
     
