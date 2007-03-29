@@ -3,7 +3,7 @@ v0.1.4 Tue Jan  2 15:45:53 EST 2007
   (thanks Ross Singer)
 - added :include_namespace option to MARC::XMLWriter::encode to include the
   marcxml namespace, which allows MARC::Record::to_xml to emit the namespace 
-  for a single record
+  for a single record.
 
 v0.1.3  Tue Jan  2 12:56:36 EST 2007
 - added ability to map a MARC record to the Dublin Core fields.  Calling
