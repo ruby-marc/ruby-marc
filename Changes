@@ -1,3 +1,6 @@
+vX.X.X 
+- docfix in MARC::DataField (thanks Jason Ronallo)
+
 v0.1.4 Tue Jan  2 15:45:53 EST 2007
 - fixed bug in MARC::XMLWriter that was outputting all control field tags as 00z
   (thanks Ross Singer)

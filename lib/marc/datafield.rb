@@ -85,7 +85,7 @@ module MARC
 
 
     # Add a subfield (MARC::Subfield) to the field
-    #    field.append(MARC::Subfield('a','Dave Thomas'))
+    #    field.append(MARC::Subfield.new('a','Dave Thomas'))
 
     def append(subfield)
       @subfields.push(subfield)
