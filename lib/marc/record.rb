@@ -19,10 +19,10 @@ module MARC
     include Enumerable
 
     # the record fields
-    attr_accessor :fields,
+    attr_accessor :fields
 
     # the record leader
-    :leader
+    attr_accessor :leader
 
     def initialize
       @fields = []
