@@ -1,4 +1,9 @@
 module MARC
+  
+  # A class to represents a subfield within a DataField. 
+  # Accessor attributes: code (letter subfield code) ; value
+  # Both can be empty string, but should not be nil. 
+
 
   class Subfield
     attr_accessor :code, :value

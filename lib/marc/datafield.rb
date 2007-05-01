@@ -6,6 +6,16 @@ module MARC
   # MARC records contain data fields, each of which has a tag, 
   # indicators and subfields. Tags for data fields must be in
   # the range 010-999.
+  # Accessor attributes: tag ; indicator1 ; indicator2
+  # 
+  # DataField includes enumerable for access to it's constituent
+  # Subfield objects. For instance, if you have a DataField representing
+  # a 856 tag, and want to find all 'z' subfields:
+  # urltag.find_all { |subfield| subfield.code == 'z' }
+  #
+  # Also, the accessor 'subfields' is an array of MARC::Subfield objects
+  # which can be accessed or modified by the client directly if
+  # neccesary. 
 
   class DataField
     include Enumerable
