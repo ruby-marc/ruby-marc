@@ -3,12 +3,15 @@ module MARC
   # A class that represents an individual MARC record. Every record
   # is made up of a collection of MARC::DataField objects. 
   #
-  # MARC::Record includes Enumerable for access to constituent
-  # DataFields. Eg, to return a list of all 650 DataFields:
-  # record.find_all { |field| field.tag == '650' }  
+  # MARC::Record mixes in Enumerable to enable access to constituent
+  # DataFields. For example, to return a list of all subject DataFields:
+  #
+  #   record.find_all {|field| field.tag =~ /^6../}  
   # 
   # The accessor 'fields' is also an Array of MARC::DataField objects which
   # the client can access or modifyi if neccesary.
+  #
+  #   record.fields.delete(field)
   # 
   # Other accessor attribute: 'leader' for record leader as String
  
