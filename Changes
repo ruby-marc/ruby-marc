@@ -1,4 +1,4 @@
-vx.x.x Wed May  2 16:50:16 EDT 2007
+v0.1.6 Wed May  2 16:50:16 EDT 2007
 - fixed bad record length test
 - removed MARC::XMLWriter convert_to_utf8 which wasn't really working and
   shouldn't be there if it isn't good
