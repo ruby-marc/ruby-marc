@@ -4,6 +4,8 @@ require 'rexml/text'
 module MARC
   
   # A class for writing MARC records as MARCXML.
+  # BIG CAVEAT! XMLWriter will *not* convert your MARC8 to UTF8
+  # bug the authors to do this if you need it
   
   class XMLWriter
     
@@ -51,21 +53,6 @@ module MARC
       @fh.close
     end
 
-
-    # Converts from ISO 8859-1 to UTF-8, normalizes the UTF-8, and puts a
-    # 'clean up marker' in records that have control characters (which are
-    # not valid in XML). This is useful for locating these records once
-    # they are in XML so problems caused by removing the invalid characters
-    # can be fixed by a person.  This (or something in the module) needs to
-    # convert from MARC-8 to UTF-8, but it doesn't do this yet...
-
-    def self.convert_to_utf8(text)
-      cleaned_text = text.gsub(/[\x00-\x1f\x7f-\xff]+/, ' CLEAN_ME_UP ')
-      utf8_text = cleaned_text.unpack('C*').pack('U*')
-      normalized_text = REXML::Text::normalize(utf8_text)
-
-      return normalized_text
-    end
     
     # a static method that accepts a MARC::Record object
     # and returns a REXML::Document for the XML serialization.
@@ -138,7 +125,7 @@ module MARC
             end
             
             subfield_element.add_attribute("code", subfield.code)
-            text = MARC::XMLWriter.convert_to_utf8(subfield.value)
+            text = subfield.value
             subfield_element.add_text(text)
             datafield_elem.add_element(subfield_element)
           end
@@ -153,7 +140,7 @@ module MARC
           end
           
           control_element.add_attribute("tag", field.tag)
-          text = MARC::XMLWriter.convert_to_utf8(field.value)
+          text = field.value
           control_element.add_text(text)
           e.add_element(control_element)
         end

@@ -1,4 +1,9 @@
-vX.X.X 
+vx.x.x Wed May  2 16:50:16 EDT 2007
+- fixed bad record length test
+- removed MARC::XMLWriter convert_to_utf8 which wasn't really working and
+  shouldn't be there if it isn't good
+
+v0.1.5 Tue May  1 16:50:02 EDT 2007
 - docfix in MARC::DataField (thanks Jason Ronallo)
 - multiple docfixes (thanks Jonathan Rochkind)
 
