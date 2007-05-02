@@ -37,11 +37,17 @@ module MARC
 
     def each 
       # while there is data left in the file
-      while length = @handle.read(5)
+      while rec_length_s = @handle.read(5)
+        # make sure the record length looks like an integer
+        rec_length_i = rec_length_s.to_i
+        if rec_length_i == 0:
+          raise MARC::Exception.new("invalid record length: #{rec_length_s}")
+        end
 
         # get the raw MARC21 for a record back from the file
         # using the record length
-        raw = length + @handle.read(length.to_i-5)
+        raw = rec_length_s + @handle.read(rec_length_i-5)
+        
 
         # create a record from the data and return it
         #record = MARC::Record.new_from_marc(raw)

@@ -19,7 +19,7 @@ class ReaderTest < Test::Unit::TestCase
 
   def test_bad_marc
     reader = MARC::Reader.new('test/tc_reader.rb')
-    record = reader.entries[0]
+    assert_raises(MARC::Exception) {reader.entries[0]}
   end
 
   def test_search
