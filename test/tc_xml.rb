@@ -4,6 +4,17 @@ require 'stringio'
 
 class XMLTest < Test::Unit::TestCase
 
+  def test_xml_entities
+    r1 = MARC::Record.new
+    r1 << MARC::DataField.new('245', '0', '0', ['a', 'foo & bar'])
+    xml = r1.to_xml.to_s
+    assert_match /foo &amp; bar/, xml
+
+    reader = MARC::XMLReader.new(StringIO.new(xml))
+    r2 = reader.entries[0]
+    assert_equal 'foo & bar', r2['245']['a']
+  end
+
   def test_batch
     reader = MARC::XMLReader.new('test/batch.xml')
     count = 0

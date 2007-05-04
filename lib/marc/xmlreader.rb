@@ -60,7 +60,7 @@ module MARC
         event = @parser.pull
 
         if event.text?
-          text += event[0].strip
+          text += REXML::Text::unnormalize(event[0].strip)
           next
         end
 

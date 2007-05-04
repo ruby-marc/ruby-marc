@@ -41,6 +41,12 @@ module MARC
       @fields.push(field)
     end
 
+    # alias to append
+    
+    def <<(field)
+      append(field)
+    end
+
     # each() is here to support iterating and searching since MARC::Record
     # mixes in Enumberable
     #
