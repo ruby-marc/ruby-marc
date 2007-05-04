@@ -1,7 +1,8 @@
-v0.1.6 Wed May  2 16:50:16 EDT 2007
+v0.1.6 Fri May  4 12:37:33 EDT 2007
 - fixed bad record length test
 - removed MARC::XMLWriter convert_to_utf8 which wasn't really working and
   shouldn't be there if it isn't good
+- added unescaping of entities to MARC::XMLReader
 
 v0.1.5 Tue May  1 16:50:02 EDT 2007
 - docfix in MARC::DataField (thanks Jason Ronallo)
