@@ -89,10 +89,9 @@ module MARC
     end
 
 
-    # Handy method for returning a the MARC21 serialization for a 
-    # MARC::Record object. Really this is just a wrapper around
-    # MARC::MARC21::encode
-    # 
+    # Returns a record in MARC21 transmission format (ANSI Z39.2). 
+    # Really this is just a wrapper around MARC::MARC21::encode
+    #
     #   marc = record.to_marc()
 
     def to_marc 

@@ -1,3 +1,6 @@
+v?.?.?
+- updated Record.to_marc documentation to be a bit more precise
+
 v0.1.6 Fri May  4 12:37:33 EDT 2007
 - fixed bad record length test
 - removed MARC::XMLWriter convert_to_utf8 which wasn't really working and
