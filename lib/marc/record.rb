@@ -35,7 +35,7 @@ module MARC
     end
 
     # add a field to the record
-    #   record.append(MARC::Field.new( '100', '2', '0', ['a', 'Fred']))
+    #   record.append(MARC::DataField.new( '100', '2', '0', ['a', 'Fred']))
 
     def append(field)
       @fields.push(field)

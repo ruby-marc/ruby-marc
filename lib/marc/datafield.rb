@@ -60,7 +60,7 @@ module MARC
       # must use MARC::ControlField for tags < 010
       if @tag.to_i < 10
         raise MARC::Exception.new(),
-          "MARC::Field objects can't have tags < 010"
+          "MARC::DataField objects can't have tags < 010"
       end
 
       # allows MARC::Subfield objects to be passed directly
