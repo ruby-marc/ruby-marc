@@ -24,7 +24,8 @@ spec = Gem::Specification.new do |s|
   s.homepage = 'http://www.textualize.com/ruby_marc'
   s.platform = Gem::Platform::RUBY
   s.summary = 'A ruby library for working with Machine Readable Cataloging'
-  s.files = Dir.glob("{lib,test}/**/*")
+  s.files = Dir.glob("{lib,test}/**/*") + ["Rakefile", "README", "Changes",
+    "LICENSE"]
   s.require_path = 'lib'
   s.autorequire = 'marc'
   s.has_rdoc = true
