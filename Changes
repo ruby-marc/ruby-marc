@@ -1,3 +1,6 @@
+v?.?.? 
+- added examples directory
+
 v0.1.7 Mon Nov 12 09:33:57 EST 2007
 - updated Record.to_marc documentation to be a bit more precise
 - removed doc references to MARC::Field which is no longer around
