@@ -28,7 +28,13 @@ class XMLTest < Test::Unit::TestCase
   def test_read_string
     xml = File.new('test/batch.xml').read
     reader = MARC::XMLReader.new(StringIO.new(xml))
-    assert_equal reader.entries.length, 2 
+    assert_equal 2, reader.entries.length
+  end
+
+  def test_leader_from_xml
+    reader = MARC::XMLReader.new('test/one.xml')
+    record = reader.entries[0]
+    assert_equal '     njm a22     uu 4500', record.leader
   end
 
   def test_read_write

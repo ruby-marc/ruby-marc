@@ -60,11 +60,12 @@ module MARC
         event = @parser.pull
 
         if event.text?
-          text += REXML::Text::unnormalize(event[0].strip)
+          text += REXML::Text::unnormalize(event[0])
           next
         end
 
         if event.start_element?
+          text = ''
           attrs = event[1]
           case strip_ns(event[0])
           when 'controlfield'

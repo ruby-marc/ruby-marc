@@ -1,5 +1,7 @@
-v?.?.? 
+v0.1.8 Tue Nov 13 22:51:03 EST 2007
 - added examples directory
+- fixed problem with leading whitespace and the leader in xml reader 
+  (thanks Morgan Cundiff)
 
 v0.1.7 Mon Nov 12 09:33:57 EST 2007
 - updated Record.to_marc documentation to be a bit more precise
