@@ -35,6 +35,9 @@ class XMLTest < Test::Unit::TestCase
     reader = MARC::XMLReader.new('test/one.xml')
     record = reader.entries[0]
     assert_equal '     njm a22     uu 4500', record.leader
+    # serializing as MARC should populate the record length and directory offset
+    record = MARC::Record.new_from_marc(record.to_marc)
+    assert_equal '00734njm a2200217uu 4500', record.leader
   end
 
   def test_read_write
