@@ -3,7 +3,7 @@ require 'marc'
 
 class WriterTest < Test::Unit::TestCase
 
-    def test_writer()
+    def test_writer
         writer = MARC::Writer.new('test/writer.dat')
         record = MARC::Record.new()
         record.append(MARC::DataField.new('245', '0', '1', ['a', 'foo']))
@@ -19,5 +19,9 @@ class WriterTest < Test::Unit::TestCase
         # cleanup
         File.unlink('test/writer.dat')
     end
+
+    def test_ampersand
+    end
+
 
 end

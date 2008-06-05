@@ -1,5 +1,6 @@
 require 'rexml/document'
 require 'rexml/text'
+require 'rexml/formatters/default'
 
 module MARC
   
@@ -18,6 +19,7 @@ module MARC
     # writer.write record
     
     def initialize(file, opts={})
+      @writer = REXML::Formatters::Default.new
       if file.class == String
         @fh = File.new(file,"w")
       elsif file.respond_to?('write')
@@ -41,8 +43,7 @@ module MARC
     # write a record to the file or handle
     
     def write(record)
-      MARC::XMLWriter.encode(record).write(@fh, 0)
-      @fh.write("\n");
+      @writer.write(MARC::XMLWriter.encode(record), @fh)
     end
     
     
