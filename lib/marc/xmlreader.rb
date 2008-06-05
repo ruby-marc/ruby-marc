@@ -8,11 +8,11 @@ module MARC
 
     # the constructor which you can pass either a filename:
     #
-    #   reader = MARC::XMLReader.new('/Users/edsu/marc.dat')
+    #   reader = MARC::XMLReader.new('/Users/edsu/marc.xml')
     #
     # or a File object, 
     #
-    #   reader = Marc::XMLReader.new(File.new('/Users/edsu/marc.dat'))
+    #   reader = Marc::XMLReader.new(File.new('/Users/edsu/marc.xml'))
     #
     # or really any object that responds to read(n)
     # 
