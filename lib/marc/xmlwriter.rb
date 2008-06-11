@@ -44,6 +44,7 @@ module MARC
     
     def write(record)
       @writer.write(MARC::XMLWriter.encode(record), @fh)
+      @fh.write("\n")
     end
     
     

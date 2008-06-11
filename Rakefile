@@ -1,4 +1,4 @@
-RUBY_MARC_VERSION = '0.1.9'
+RUBY_MARC_VERSION = '0.2.0'
 
 require 'rubygems'
 require 'rake'
@@ -29,6 +29,7 @@ spec = Gem::Specification.new do |s|
   s.require_path = 'lib'
   s.autorequire = 'marc'
   s.has_rdoc = true
+  s.required_ruby_version = '>= 1.8.6'
   
   s.test_file = 'test/ts_marc.rb'
   s.bindir = 'bin'
