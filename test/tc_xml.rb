@@ -30,6 +30,19 @@ class XMLTest < Test::Unit::TestCase
     reader = MARC::XMLReader.new(StringIO.new(xml))
     assert_equal 2, reader.entries.length
   end
+  
+  def test_non_numeric_fields
+    reader = MARC::XMLReader.new('test/non-numeric.xml')
+      count = 0
+      record = nil
+      reader.each do | rec |
+        count += 1 
+        record = rec
+      end
+      assert_equal(1, count)
+      assert_equal('9780061317842', record['ISB']['a'])
+      assert_equal('1', record['LOC']['9'])
+    end
 
   def test_leader_from_xml
     reader = MARC::XMLReader.new('test/one.xml')

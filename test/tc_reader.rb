@@ -16,6 +16,19 @@ class ReaderTest < Test::Unit::TestCase
     reader.each { count += 1 }
     assert_equal(10, count)
   end
+  
+  def test_non_numeric_tags
+    reader = MARC::Reader.new('test/non-numeric.dat')
+    count = 0
+    record = nil
+    reader.each do | rec |
+      count += 1 
+      record = rec
+    end
+    assert_equal(1, count)
+    assert_equal('9780061317842', record['ISB']['a'])
+    assert_equal('1', record['LOC']['9'])
+  end
 
   def test_bad_marc
     reader = MARC::Reader.new('test/tc_reader.rb')

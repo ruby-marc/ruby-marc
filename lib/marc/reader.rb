@@ -163,7 +163,7 @@ module MARC
     def initialize(file)
       if file.class == String
         @handle = File.new(file)
-      elsif file.class == File
+      elsif file.respond_to?("read", 5)
         @handle = file
       else
         throw "must pass in path or File object"        

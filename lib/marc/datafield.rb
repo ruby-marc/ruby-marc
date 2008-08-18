@@ -58,7 +58,7 @@ module MARC
       @subfields = []
 
       # must use MARC::ControlField for tags < 010
-      if @tag.to_i < 10
+      if @tag.to_i < 10 and not @tag =~ /[A-z]/
         raise MARC::Exception.new(),
           "MARC::DataField objects can't have tags < 010"
       end
