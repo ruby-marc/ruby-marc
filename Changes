@@ -1,3 +1,6 @@
+v0.2.2 Tue Dec 30 09:50:33 EST 2008
+- DataField tags that are all numeric are now padded with leading zeros
+
 v0.2.1 Mon Aug 18 14:14:16 EDT 2008
 - can now process records that have fields tags that are non-numeric (thanks
   Ross Singer)
