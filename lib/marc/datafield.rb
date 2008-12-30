@@ -50,7 +50,13 @@ module MARC
     #     ['c', 'by Edward O. Wilson.'] )
 
     def initialize(tag, i1=' ', i2=' ', *subfields)
-      @tag = tag 
+      # if the tag is less than 3 characters long and 
+      # the string is all numeric then we pad with zeros
+      if tag.length < 3 and /^[0-9]*$/ =~ tag
+        @tag = "%03d" % tag
+      else
+        @tag = tag 
+      end
       # can't allow nil to be passed in or else it'll 
       # screw us up later when we try to encode
       @indicator1 = i1 == nil ? ' ' : i1

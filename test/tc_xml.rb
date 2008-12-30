@@ -44,6 +44,12 @@ class XMLTest < Test::Unit::TestCase
       assert_equal('1', record['LOC']['9'])
     end
 
+  def test_read_no_leading_zero_write_leading_zero
+    reader = MARC::XMLReader.new('test/no-leading-zero.xml')
+    record = reader.to_a[0]
+    assert_equal("042 zz $a dc ", record['042'].to_s)
+  end
+
   def test_leader_from_xml
     reader = MARC::XMLReader.new('test/one.xml')
     record = reader.entries[0]
