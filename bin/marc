@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+
+require 'marc'
+
+# the filename
+filename = ARGV[0]
+
+reader = MARC::ForgivingReader.new(filename)
+
+for record in reader
+    puts record
+end
+
+
