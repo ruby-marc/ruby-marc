@@ -8,6 +8,13 @@ rescue LoadError
 end
 require 'rexml/document'
 require 'rexml/parsers/pullparser'
+if RUBY_PLATFORM =~ /java/
+  # If using JRuby, use JREXML if it's there
+  begin
+    require 'jrexml'
+  rescue LoadError
+  end
+end
 
 module MARC
   
@@ -34,7 +41,7 @@ module MARC
       else
         throw "must pass in path or File"
       end
-      if parser=='rexml' or !Module.constants.index('Nokogiri')
+      if parser=='rexml' or !(Kernel.const_defined?(:Nokogiri) || Module.constants.index('Nokogiri'))
         @parser = REXML::Parsers::PullParser.new(handle)
       else
         extend NokogiriParserMethods
