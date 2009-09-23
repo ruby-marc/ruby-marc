@@ -1,3 +1,4 @@
+require File.dirname(__FILE__) + '/xml_parsers'
 module MARC
   
   class XMLReader
@@ -34,7 +35,6 @@ module MARC
     #
     # Like the instance initialization override it will accept either the 
     # constant name or value.
-    #
  
     def initialize(file, options = {})
       if file.is_a?(String)
@@ -45,19 +45,14 @@ module MARC
         throw "must pass in path or File"
       end
       @handle = handle
+
       if options[:parser]
-        parser = self.class.choose_parser(options[:parser])
+        parser = self.class.choose_parser(options[:parser].to_s)
       else
         parser = @@parser
       end
-      #if parser=='rexml' or !(Kernel.const_defined?(:Nokogiri) || Module.constants.index('Nokogiri'))
-      #  @parser = REXML::Parsers::PullParser.new(handle)
-      #else
-      #  extend NokogiriParserMethods
-      #  self.init
-      #  @handle = handle     
-      #end
       case parser
+      when 'magic' then extend MagicReader
       when 'rexml' then extend REXMLReader
       when 'jrexml' then extend JREXMLReader
       when 'nokogiri' then extend NokogiriReader        
@@ -87,21 +82,15 @@ module MARC
     protected
     
     def self.choose_parser(p)
-      if p.match(/^[A-Z]/) && self.const_defined?(p)
-        parser = self.const_get(p)
-      else
-        match = false
-        self.constants.each do | const |
-          next unless const.match("^USE_")
-          if self.const_get(const) == p
-            match = true
-            parser == p
-            break
-          end
+      match = false
+      self.constants.each do | const |
+        next unless const.to_s.match("^USE_")
+        if self.const_get(const) == p
+          match = true
+          return p
         end
-        raise ArgumentError.new("Parser '#{p}' not defined") unless match
       end
-      parser    
+      raise ArgumentError.new("Parser '#{p}' not defined") unless match
     end
   end
 end

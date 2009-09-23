@@ -12,7 +12,12 @@ class TestRecord < Test::Unit::TestCase
       r = get_record()
       doc = r.to_xml
       assert_kind_of REXML::Element, doc
-      assert_equal "<record xmlns='http://www.loc.gov/MARC21/slim'><leader>      Z   22        4500</leader><datafield tag='100' ind1='2' ind2='0'><subfield code='a'>Thomas, Dave</subfield></datafield><datafield tag='245' ind1='0' ind2='4'><subfield code='The Pragmatic Programmer'></subfield></datafield></record>", doc.to_s
+      if RUBY_VERSION < '1.9.0'
+        assert_equal "<record xmlns='http://www.loc.gov/MARC21/slim'><leader>      Z   22        4500</leader><datafield tag='100' ind1='2' ind2='0'><subfield code='a'>Thomas, Dave</subfield></datafield><datafield tag='245' ind1='0' ind2='4'><subfield code='The Pragmatic Programmer'></subfield></datafield></record>", doc.to_s
+      else
+        # REXML inexplicably sorts the attributes alphabetically in Ruby 1.9
+        assert_equal "<record xmlns='http://www.loc.gov/MARC21/slim'><leader>      Z   22        4500</leader><datafield ind1='2' ind2='0' tag='100'><subfield code='a'>Thomas, Dave</subfield></datafield><datafield ind1='0' ind2='4' tag='245'><subfield code='The Pragmatic Programmer'></subfield></datafield></record>", doc.to_s        
+      end
     end
 
     def test_append_field
