@@ -35,7 +35,7 @@ class XMLTest < Test::Unit::TestCase
 
     reader = MARC::XMLReader.new(StringIO.new(xml), :parser=>parser)
     r2 = reader.entries[0]
-    assert_equal 'foo & bar & baz', r2['245']['a']    
+    assert_equal 'foo & bar & baz', r2['245']['a']
   end
   
   def test_batch
@@ -64,19 +64,12 @@ class XMLTest < Test::Unit::TestCase
 
   def read_string_test(parser)
     xml = File.new('test/batch.xml').read
-    reader = MARC::XMLReader.new(StringIO.new(xml), :parser=>parser)
+    reader = MARC::XMLReader.new(StringIO.new(xml))
     assert_equal 2, reader.entries.length
   end
   
   def test_non_numeric_fields
-    @parsers.each do | parser |
-      puts "\nRunning test_non_numeric_fields with: #{parser}.\n"
-      non_numeric_fields_test(parser)
-    end
-  end
-    
-  def non_numeric_fields_test(parser)
-    reader = MARC::XMLReader.new('test/non-numeric.xml', :parser=>parser)
+    reader = MARC::XMLReader.new('test/non-numeric.xml')
       count = 0
       record = nil
       reader.each do | rec |
@@ -89,34 +82,20 @@ class XMLTest < Test::Unit::TestCase
     end
 
   def test_read_no_leading_zero_write_leading_zero
-    @parsers.each do | parser |
-      puts "\nRunning test_read_no_leading_zero_write_leading_zero with: #{parser}.\n"
-      read_no_leading_zero_write_leading_zero_test(parser)
-    end    
-  end
-  
-  def read_no_leading_zero_write_leading_zero_test(parser)
-    reader = MARC::XMLReader.new('test/no-leading-zero.xml', :parser=>parser)
+    reader = MARC::XMLReader.new('test/no-leading-zero.xml')
     record = reader.to_a[0]
     assert_equal("042 zz $a dc ", record['042'].to_s)
   end
 
   def test_leader_from_xml
-    @parsers.each do | parser |
-      puts "\nRunning test_leader_from_xml with: #{parser}.\n"
-      leader_from_xml_test(parser)
-    end
-  end    
-
-  def leader_from_xml_test(parser)
-    reader = MARC::XMLReader.new('test/one.xml', :parser=>parser)
+    reader = MARC::XMLReader.new('test/one.xml')
     record = reader.entries[0]
     assert_equal '     njm a22     uu 4500', record.leader
     # serializing as MARC should populate the record length and directory offset
     record = MARC::Record.new_from_marc(record.to_marc)
     assert_equal '00734njm a2200217uu 4500', record.leader
   end
-  
+
   def test_read_write
     @parsers.each do | parser |
       puts "\nRunning test_read_write with: #{parser}.\n"

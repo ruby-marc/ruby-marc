@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>File: marc.rb</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <meta http-equiv="Content-Script-Type" content="text/javascript" />
+  <link rel="stylesheet" href="../.././rdoc-style.css" type="text/css" media="screen" />
+  <script type="text/javascript">
+  // <![CDATA[
+
+  function popupCode( url ) {
+    window.open(url, "Code", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=150,width=400")
+  }
+
+  function toggleCode( id ) {
+    if ( document.getElementById )
+      elem = document.getElementById( id );
+    else if ( document.all )
+      elem = eval( "document.all." + id );
+    else
+      return false;
+
+    elemStyle = elem.style;
+    
+    if ( elemStyle.display != "block" ) {
+      elemStyle.display = "block"
+    } else {
+      elemStyle.display = "none"
+    }
+
+    return true;
+  }
+  
+  // Make codeblocks hidden by default
+  document.writeln( "<style type=\"text/css\">div.method-source-code { display: none }</style>" )
+  
+  // ]]>
+  </script>
+
+</head>
+<body>
+
+
+
+  <div id="fileHeader">
+    <h1>marc.rb</h1>
+    <table class="header-table">
+    <tr class="top-aligned-row">
+      <td><strong>Path:</strong></td>
+      <td>lib/marc.rb
+      </td>
+    </tr>
+    <tr class="top-aligned-row">
+      <td><strong>Last Update:</strong></td>
+      <td>Wed Sep 23 13:28:30 -0400 2009</td>
+    </tr>
+    </table>
+  </div>
+  <!-- banner header -->
+
+  <div id="bodyContent">
+
+
+
+  <div id="contextContent">
+
+    <div id="description">
+      <p>
+marc is a ruby library for reading and writing MAchine Readable Cataloging
+(<a href="../../classes/MARC.html">MARC</a>). More information about <a
+href="../../classes/MARC.html">MARC</a> can be found at &lt;<a
+href="http://www.loc.gov/marc">www.loc.gov/marc</a>&gt;.
+</p>
+<p>
+USAGE
+</p>
+<pre>
+    require 'marc'
+
+    # reading records from a batch file
+    reader = MARC::Reader.new('marc.dat')
+    for record in reader
+      puts record['245']['a']
+    end
+
+    # creating a record
+    record = MARC::Record.new()
+    record.add_field(MARC::DataField.new('100', '0',  ' ', ['a', 'John Doe']))
+
+    # writing a record
+    writer = MARC::Writer.new('marc.dat')
+    writer.write(record)
+    writer.close()
+
+    # writing a record as XML
+    writer = MARC::XMLWriter.new('marc.xml')
+    writer.write(record)
+    writer.close()
+
+    # Deal with non-standard control field tags
+    MARC::Field.control_tags &lt;&lt; 'FMT'
+    record = MARC::Record.new()
+    record.add_field(MARC::ControlField.new('FMT', 'Book')) # doesn't throw an error
+</pre>
+
+    </div>
+
+    <div id="requires-list">
+      <h3 class="section-bar">Required files</h3>
+
+      <div class="name-list">
+      marc/constants&nbsp;&nbsp;
+      marc/record&nbsp;&nbsp;
+      marc/datafield&nbsp;&nbsp;
+      marc/controlfield&nbsp;&nbsp;
+      marc/subfield&nbsp;&nbsp;
+      marc/reader&nbsp;&nbsp;
+      marc/writer&nbsp;&nbsp;
+      marc/exception&nbsp;&nbsp;
+      marc/xmlwriter&nbsp;&nbsp;
+      marc/xmlreader&nbsp;&nbsp;
+      marc/dublincore&nbsp;&nbsp;
+      marc/xml_parsers&nbsp;&nbsp;
+      </div>
+    </div>
+
+   </div>
+
+
+  </div>
+
+
+    <!-- if includes -->
+
+    <div id="section">
+
+
+
+
+
+      
+
+
+    <!-- if method_list -->
+
+
+  </div>
+
+
+<div id="validator-badges">
+  <p><small><a href="http://validator.w3.org/check/referer">[Validate]</a></small></p>
+</div>
+
+</body>
+</html>

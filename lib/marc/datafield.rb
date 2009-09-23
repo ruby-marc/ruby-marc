@@ -66,10 +66,8 @@ module MARC
       @indicator2 = i2 == nil ? ' ' : i2
       @subfields = []
 
-      # must use MARC::ControlField for tags < 010 or
-      # those in MARC::ControlField#extra_control_fields
-      
-      if MARC::ControlField.control_tag?(@tag)
+      # must use MARC::ControlField for tags < 010
+      if @tag.to_i < 10 and not @tag =~ /[A-z]/
         raise MARC::Exception.new(),
           "MARC::DataField objects can't have ControlField tag '" + @tag + "')"
       end
