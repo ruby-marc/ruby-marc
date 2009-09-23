@@ -1,3 +1,6 @@
+require 'marc/controlfield'
+require 'marc/datafield'
+
 module MARC
 
   # A class that represents an individual MARC record. Every record
@@ -118,11 +121,40 @@ module MARC
       return MARC::DublinCore.map(self)
     end
 
+    # Return a marc-hash version of the record
+    def to_marchash
+      return {
+        'type' => 'marc-hash',
+        'version' => [MARCHASH_MAJOR_VERSION, MARCHASH_MINOR_VERSION],
+        'leader' => self.leader,
+        'fields' => self.map {|f| f.to_marchash}
+      }
+    end #to_hash
+    
+    # Factory method for creating a new MARC::Record from
+    # a marchash object
+    #
+    # record = MARC::Record->new_from_marchash(mh)
+    
+    def self.new_from_marchash(mh)
+      r = self.new()
+      r.leader = mh['leader']
+      mh['fields'].each do |f|
+        if (f.length == 2) 
+          r << MARC::ControlField.new(f[0], f[1])
+        elsif 
+          r << MARC::DataField.new(f[0], f[1], f[2], *f[3])
+        end
+      end
+      return r
+    end
+    
+
     # Returns a string version of the record, suitable for printing
 
     def to_s
       str = "LEADER #{leader}\n"
-      for field in fields:
+      for field in fields
         str += field.to_s() + "\n"
       end
       return str

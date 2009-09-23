@@ -24,6 +24,13 @@
 #    writer = MARC::XMLWriter.new('marc.xml')
 #    writer.write(record)
 #    writer.close()
+#
+#    # Deal with non-standard control field tags
+#    MARC::Field.control_tags << 'FMT'
+#    record = MARC::Record.new()
+#    record.add_field(MARC::ControlField.new('FMT', 'Book')) # doesn't throw an error
+
+
 
 require 'marc/constants'
 require 'marc/record'
@@ -36,3 +43,4 @@ require 'marc/exception'
 require 'marc/xmlwriter'
 require 'marc/xmlreader'
 require 'marc/dublincore'
+require 'marc/xml_parsers'

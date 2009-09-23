@@ -1,11 +1,14 @@
 require 'marc/subfield'
 require 'marc/record'
+require 'marc/controlfield'
 
 module MARC
 
   # MARC records contain data fields, each of which has a tag, 
-  # indicators and subfields. Tags for data fields must be in
-  # the range 010-999.
+  # indicators and subfields. Tags for data fields must are all
+  # three-character tags that are not control fields (generally,
+  # any numeric tag greater than 009).
+  #
   # Accessor attributes: tag, indicator1, indicator2
   # 
   # DataField mixes in Enumerable to enable access to it's constituent
@@ -66,7 +69,7 @@ module MARC
       # must use MARC::ControlField for tags < 010
       if @tag.to_i < 10 and not @tag =~ /[A-z]/
         raise MARC::Exception.new(),
-          "MARC::DataField objects can't have tags < 010"
+          "MARC::DataField objects can't have ControlField tag '" + @tag + "')"
       end
 
       # allows MARC::Subfield objects to be passed directly
@@ -78,7 +81,7 @@ module MARC
         when Array
           if subfield.length > 2
             raise MARC::Exception.new(),
-              "arrays must only have 2 elements" 
+              "arrays must only have 2 elements: " + subfield.to_s 
           end
           @subfields.push(
             MARC::Subfield.new(subfield[0],subfield[1]))
@@ -100,6 +103,11 @@ module MARC
       return str
     end
 
+    # Turn into a marc-hash structure
+    def to_marchash
+      return [@tag, @indicator1, @indicator2, @subfields.map {|sf| [sf.code, sf.value]} ]
+    end
+    
 
     # Add a subfield (MARC::Subfield) to the field
     #    field.append(MARC::Subfield.new('a','Dave Thomas'))

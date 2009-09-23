@@ -16,9 +16,15 @@ module MARC
     #
     #   # marc is a string with a bunch of records in it
     #   reader = MARC::Reader.new(StringIO.new(reader))
+    #
+    # If your data have non-standard control fields in them
+    # (e.g., Aleph's 'FMT') you need to add them specifically
+    # to the MARC::ControlField.control_tags Set object
+    # 
+    #   MARC::ControlField.control_tags << 'FMT'
     
     def initialize(file)
-      if file.class == String:
+      if file.is_a?(String)
         @handle = File.new(file)
       elsif file.respond_to?("read", 5)
         @handle = file
@@ -40,7 +46,7 @@ module MARC
       while rec_length_s = @handle.read(5)
         # make sure the record length looks like an integer
         rec_length_i = rec_length_s.to_i
-        if rec_length_i == 0:
+        if rec_length_i == 0
           raise MARC::Exception.new("invalid record length: #{rec_length_s}")
         end
 
@@ -113,7 +119,7 @@ module MARC
         field_data.delete!(END_OF_FIELD)
          
         # add a control field or data field
-        if tag < '010'
+        if MARC::ControlField.control_tag?(tag)
           record.append(MARC::ControlField.new(tag,field_data))
         else
           field = MARC::DataField.new(tag)

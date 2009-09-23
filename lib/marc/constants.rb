@@ -11,4 +11,8 @@ module MARC
   MARC_NS = "http://www.loc.gov/MARC21/slim"
   MARC_XSD = "http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd"
 
+  # marc-hash
+  MARCHASH_MAJOR_VERSION = 1
+  MARCHASH_MINOR_VERSION = 0
+  
 end

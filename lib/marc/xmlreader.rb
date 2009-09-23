@@ -1,11 +1,14 @@
-require 'rexml/document'
-require 'rexml/parsers/pullparser'
-
+require File.dirname(__FILE__) + '/xml_parsers'
 module MARC
   
   class XMLReader
     include Enumerable
-
+    USE_BEST_AVAILABLE = 'magic'
+    USE_REXML = 'rexml'
+    USE_NOKOGIRI = 'nokogiri'
+    USE_JREXML = 'jrexml'
+    @@parser = USE_REXML
+    attr_reader :parser
     # the constructor which you can pass either a filename:
     #
     #   reader = MARC::XMLReader.new('/Users/edsu/marc.xml')
@@ -17,33 +20,48 @@ module MARC
     # or really any object that responds to read(n)
     # 
     #   reader = MARC::XMLReader.new(StringIO.new(xml))
+    #
+    # By default, XMLReader uses REXML's pull parser, but you can swap
+    # that out with Nokogiri or jrexml (or let the system choose the
+    # 'best' one).  The :parser can either be one of the defined constants
+    # or the constant's value.
+    #
+    #   reader = MARC::XMLReader.new(fh, :parser=>'magic') 
+    #
+    # It is also possible to set the default parser at the class level so
+    # all subsequent instances will use it instead:
+    #
+    #   MARC::XMLReader.parser=MARC::XMLReader::USE_BEST_AVAILABLE
+    #
+    # Like the instance initialization override it will accept either the 
+    # constant name or value.
  
-    def initialize(file)
-      if file.class == String:
+    def initialize(file, options = {})
+      if file.is_a?(String)
         handle = File.new(file)
       elsif file.respond_to?("read", 5)
         handle = file
       else
         throw "must pass in path or File"
       end
+      @handle = handle
 
-      @parser = REXML::Parsers::PullParser.new(handle)
-    end
-
-    def each
-      while @parser.has_next?
-        event = @parser.pull
-        # if it's the start of a record element 
-        if event.start_element? and strip_ns(event[0]) == 'record'
-          yield build_record
-        end
+      if options[:parser]
+        parser = self.class.choose_parser(options[:parser].to_s)
+      else
+        parser = @@parser
+      end
+      case parser
+      when 'magic' then extend MagicReader
+      when 'rexml' then extend REXMLReader
+      when 'jrexml' then extend JREXMLReader
+      when 'nokogiri' then extend NokogiriReader        
       end
     end
 
-    private
-
-    def strip_ns(str)
-      return str.sub(/^.*:/, '')
+    # Returns the currently set parser type
+    def self.parser
+      return @@parser
     end
 
     # will accept parse events until a record has been built up
@@ -98,6 +116,7 @@ module MARC
           end
         end
       end
+      raise ArgumentError.new("Parser '#{p}' not defined") unless match
     end
   end
 end

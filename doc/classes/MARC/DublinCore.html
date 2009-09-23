@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>Class: MARC::DublinCore</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <meta http-equiv="Content-Script-Type" content="text/javascript" />
+  <link rel="stylesheet" href="../.././rdoc-style.css" type="text/css" media="screen" />
+  <script type="text/javascript">
+  // <![CDATA[
+
+  function popupCode( url ) {
+    window.open(url, "Code", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=150,width=400")
+  }
+
+  function toggleCode( id ) {
+    if ( document.getElementById )
+      elem = document.getElementById( id );
+    else if ( document.all )
+      elem = eval( "document.all." + id );
+    else
+      return false;
+
+    elemStyle = elem.style;
+    
+    if ( elemStyle.display != "block" ) {
+      elemStyle.display = "block"
+    } else {
+      elemStyle.display = "none"
+    }
+
+    return true;
+  }
+  
+  // Make codeblocks hidden by default
+  document.writeln( "<style type=\"text/css\">div.method-source-code { display: none }</style>" )
+  
+  // ]]>
+  </script>
+
+</head>
+<body>
+
+
+
+    <div id="classHeader">
+        <table class="header-table">
+        <tr class="top-aligned-row">
+          <td><strong>Class</strong></td>
+          <td class="class-name-in-header">MARC::DublinCore</td>
+        </tr>
+        <tr class="top-aligned-row">
+            <td><strong>In:</strong></td>
+            <td>
+                <a href="../../files/lib/marc/dublincore_rb.html">
+                lib/marc/dublincore.rb
+                </a>
+        <br />
+            </td>
+        </tr>
+
+        <tr class="top-aligned-row">
+            <td><strong>Parent:</strong></td>
+            <td>
+                Object
+            </td>
+        </tr>
+        </table>
+    </div>
+  <!-- banner header -->
+
+  <div id="bodyContent">
+
+
+
+  <div id="contextContent">
+
+    <div id="description">
+      <p>
+A class for mapping <a href="../MARC.html">MARC</a> records to Dublin Core
+</p>
+
+    </div>
+
+
+   </div>
+
+    <div id="method-list">
+      <h3 class="section-bar">Methods</h3>
+
+      <div class="name-list">
+      <a href="#M000057">get_field_value</a>&nbsp;&nbsp;
+      <a href="#M000056">map</a>&nbsp;&nbsp;
+      </div>
+    </div>
+
+  </div>
+
+
+    <!-- if includes -->
+
+    <div id="section">
+
+
+
+
+
+      
+
+
+    <!-- if method_list -->
+    <div id="methods">
+      <h3 class="section-bar">Public Class methods</h3>
+
+      <div id="method-M000057" class="method-detail">
+        <a name="M000057"></a>
+
+        <div class="method-heading">
+          <a href="#M000057" class="method-signature">
+          <span class="method-name">get_field_value</span><span class="method-args">(field)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p><a class="source-toggle" href="#"
+            onclick="toggleCode('M000057-source');return false;">[Source]</a></p>
+          <div class="method-source-code" id="M000057-source">
+<pre>
+<span class="ruby-comment cmt"># File lib/marc/dublincore.rb, line 62</span>
+    <span class="ruby-keyword kw">def</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">get_field_value</span>(<span class="ruby-identifier">field</span>)
+      <span class="ruby-keyword kw">return</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">field</span>.<span class="ruby-identifier">nil?</span>
+      
+      <span class="ruby-keyword kw">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">field</span>.<span class="ruby-identifier">kind_of?</span>(<span class="ruby-constant">String</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">field</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-identifier">:each</span>)
+        <span class="ruby-identifier">values</span> = []
+        <span class="ruby-identifier">field</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">element</span><span class="ruby-operator">|</span>
+          <span class="ruby-identifier">values</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">get_field_value</span>(<span class="ruby-identifier">element</span>)
+        <span class="ruby-keyword kw">end</span>
+        <span class="ruby-identifier">values</span>
+      <span class="ruby-keyword kw">else</span>
+        <span class="ruby-keyword kw">return</span> <span class="ruby-identifier">field</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">field</span>.<span class="ruby-identifier">kind_of?</span>(<span class="ruby-constant">String</span>)
+        <span class="ruby-keyword kw">return</span> <span class="ruby-identifier">field</span>.<span class="ruby-identifier">value</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">field</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-identifier">:value</span>)
+      <span class="ruby-keyword kw">end</span>
+    <span class="ruby-keyword kw">end</span>
+</pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="method-M000056" class="method-detail">
+        <a name="M000056"></a>
+
+        <div class="method-heading">
+          <a href="#M000056" class="method-signature">
+          <span class="method-name">map</span><span class="method-args">(record)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p><a class="source-toggle" href="#"
+            onclick="toggleCode('M000056-source');return false;">[Source]</a></p>
+          <div class="method-source-code" id="M000056-source">
+<pre>
+<span class="ruby-comment cmt"># File lib/marc/dublincore.rb, line 7</span>
+    <span class="ruby-keyword kw">def</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">map</span>(<span class="ruby-identifier">record</span>)
+      <span class="ruby-identifier">dc_hash</span> = <span class="ruby-constant">Hash</span>.<span class="ruby-identifier">new</span>
+      <span class="ruby-identifier">dc_hash</span>[<span class="ruby-value str">'title'</span>] = <span class="ruby-identifier">get_field_value</span>(<span class="ruby-identifier">record</span>[<span class="ruby-value str">'245'</span>][<span class="ruby-value str">'a'</span>])
+
+      <span class="ruby-comment cmt"># Creator</span>
+      [<span class="ruby-value">100</span>, <span class="ruby-value">110</span>, <span class="ruby-value">111</span>, <span class="ruby-value">700</span>, <span class="ruby-value">710</span>, <span class="ruby-value">711</span>, <span class="ruby-value">720</span>].<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">field</span><span class="ruby-operator">|</span>
+        <span class="ruby-identifier">dc_hash</span>[<span class="ruby-value str">'creator'</span>] <span class="ruby-operator">||=</span> []
+        <span class="ruby-identifier">dc_hash</span>[<span class="ruby-value str">'creator'</span>] <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">get_field_value</span>(<span class="ruby-identifier">record</span>[<span class="ruby-identifier">field</span>.<span class="ruby-identifier">to_s</span>])
+      <span class="ruby-keyword kw">end</span>
+
+      <span class="ruby-comment cmt"># Subject</span>
+      [<span class="ruby-value">600</span>, <span class="ruby-value">610</span>, <span class="ruby-value">611</span>, <span class="ruby-value">630</span>, <span class="ruby-value">650</span>, <span class="ruby-value">653</span>].<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">field</span><span class="ruby-operator">|</span>
+        <span class="ruby-identifier">dc_hash</span>[<span class="ruby-value str">'subject'</span>] <span class="ruby-operator">||=</span> []
+        <span class="ruby-identifier">dc_hash</span>[<span class="ruby-value str">'subject'</span>] <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">get_field_value</span>(<span class="ruby-identifier">record</span>[<span class="ruby-identifier">field</span>.<span class="ruby-identifier">to_s</span>])
+      <span class="ruby-keyword kw">end</span>
+
+      <span class="ruby-comment cmt"># Description</span>
+      [<span class="ruby-value">500</span><span class="ruby-operator">..</span><span class="ruby-value">599</span>].<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">field</span><span class="ruby-operator">|</span>
+        <span class="ruby-keyword kw">next</span> <span class="ruby-keyword kw">if</span> [<span class="ruby-value">506</span>, <span class="ruby-value">530</span>, <span class="ruby-value">540</span>, <span class="ruby-value">546</span>].<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">field</span>)
+        <span class="ruby-identifier">dc_hash</span>[<span class="ruby-value str">'description'</span>] <span class="ruby-operator">||=</span> []
+        <span class="ruby-identifier">dc_hash</span>[<span class="ruby-value str">'description'</span>] <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">get_field_value</span>(<span class="ruby-identifier">record</span>[<span class="ruby-identifier">field</span>.<span class="ruby-identifier">to_s</span>])
+      <span class="ruby-keyword kw">end</span>
+
+      <span class="ruby-identifier">dc_hash</span>[<span class="ruby-value str">'publisher'</span>] = <span class="ruby-identifier">get_field_value</span>(<span class="ruby-identifier">record</span>[<span class="ruby-value str">'260'</span>][<span class="ruby-value str">'a'</span>][<span class="ruby-value str">'b'</span>]) <span class="ruby-keyword kw">rescue</span> <span class="ruby-keyword kw">nil</span>
+      <span class="ruby-identifier">dc_hash</span>[<span class="ruby-value str">'date'</span>] = <span class="ruby-identifier">get_field_value</span>(<span class="ruby-identifier">record</span>[<span class="ruby-value str">'260'</span>][<span class="ruby-value str">'c'</span>]) <span class="ruby-keyword kw">rescue</span> <span class="ruby-keyword kw">nil</span>
+      <span class="ruby-identifier">dc_hash</span>[<span class="ruby-value str">'type'</span>] = <span class="ruby-identifier">get_field_value</span>(<span class="ruby-identifier">record</span>[<span class="ruby-value str">'655'</span>]) 
+      <span class="ruby-identifier">dc_hash</span>[<span class="ruby-value str">'format'</span>] = <span class="ruby-identifier">get_field_value</span>(<span class="ruby-identifier">record</span>[<span class="ruby-value str">'856'</span>][<span class="ruby-value str">'q'</span>]) <span class="ruby-keyword kw">rescue</span> <span class="ruby-keyword kw">nil</span>
+      <span class="ruby-identifier">dc_hash</span>[<span class="ruby-value str">'identifier'</span>] = <span class="ruby-identifier">get_field_value</span>(<span class="ruby-identifier">record</span>[<span class="ruby-value str">'856'</span>][<span class="ruby-value str">'u'</span>]) <span class="ruby-keyword kw">rescue</span> <span class="ruby-keyword kw">nil</span>
+      <span class="ruby-identifier">dc_hash</span>[<span class="ruby-value str">'source'</span>] = <span class="ruby-identifier">get_field_value</span>(<span class="ruby-identifier">record</span>[<span class="ruby-value str">'786'</span>][<span class="ruby-value str">'o'</span>][<span class="ruby-value str">'t'</span>]) <span class="ruby-keyword kw">rescue</span> <span class="ruby-keyword kw">nil</span>
+      <span class="ruby-identifier">dc_hash</span>[<span class="ruby-value str">'language'</span>] = <span class="ruby-identifier">get_field_value</span>(<span class="ruby-identifier">record</span>[<span class="ruby-value str">'546'</span>])
+
+      <span class="ruby-identifier">dc_hash</span>[<span class="ruby-value str">'relation'</span>] = []
+      <span class="ruby-identifier">dc_hash</span>[<span class="ruby-value str">'relation'</span>] <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">get_field_value</span>(<span class="ruby-identifier">record</span>[<span class="ruby-value str">'530'</span>])
+      [<span class="ruby-value">760</span><span class="ruby-operator">..</span><span class="ruby-value">787</span>].<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">field</span><span class="ruby-operator">|</span>
+        <span class="ruby-identifier">dc_hash</span>[<span class="ruby-value str">'relation'</span>] <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">get_field_value</span>(<span class="ruby-identifier">record</span>[<span class="ruby-identifier">field</span>.<span class="ruby-identifier">to_s</span>][<span class="ruby-value str">'o'</span>][<span class="ruby-value str">'t'</span>]) <span class="ruby-keyword kw">rescue</span> <span class="ruby-keyword kw">nil</span>
+      <span class="ruby-keyword kw">end</span>
+
+      [<span class="ruby-value">651</span>, <span class="ruby-value">752</span>].<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">field</span><span class="ruby-operator">|</span>
+        <span class="ruby-identifier">dc_hash</span>[<span class="ruby-value str">'coverage'</span>] <span class="ruby-operator">||=</span> []
+        <span class="ruby-identifier">dc_hash</span>[<span class="ruby-value str">'coverage'</span>] <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">get_field_value</span>(<span class="ruby-identifier">record</span>[<span class="ruby-identifier">field</span>.<span class="ruby-identifier">to_s</span>])
+      <span class="ruby-keyword kw">end</span>
+
+      [<span class="ruby-value">506</span>, <span class="ruby-value">540</span>].<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">field</span><span class="ruby-operator">|</span>
+        <span class="ruby-identifier">dc_hash</span>[<span class="ruby-value str">'rights'</span>] <span class="ruby-operator">||=</span> []
+        <span class="ruby-identifier">dc_hash</span>[<span class="ruby-value str">'rights'</span>] <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">get_field_value</span>(<span class="ruby-identifier">record</span>[<span class="ruby-identifier">field</span>.<span class="ruby-identifier">to_s</span>])
+      <span class="ruby-keyword kw">end</span>
+      
+      <span class="ruby-identifier">dc_hash</span>.<span class="ruby-identifier">keys</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">key</span><span class="ruby-operator">|</span> 
+        <span class="ruby-identifier">dc_hash</span>[<span class="ruby-identifier">key</span>].<span class="ruby-identifier">flatten!</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">dc_hash</span>[<span class="ruby-identifier">key</span>].<span class="ruby-identifier">respond_to?</span>(<span class="ruby-identifier">:flatten!</span>)
+        <span class="ruby-identifier">dc_hash</span>[<span class="ruby-identifier">key</span>].<span class="ruby-identifier">compact!</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">dc_hash</span>[<span class="ruby-identifier">key</span>].<span class="ruby-identifier">respond_to?</span>(<span class="ruby-identifier">:compact!</span>)
+      <span class="ruby-keyword kw">end</span>
+      
+      <span class="ruby-identifier">dc_hash</span>
+    <span class="ruby-keyword kw">end</span>
+</pre>
+          </div>
+        </div>
+      </div>
+
+
+    </div>
+
+
+  </div>
+
+
+<div id="validator-badges">
+  <p><small><a href="http://validator.w3.org/check/referer">[Validate]</a></small></p>
+</div>
+
+</body>
+</html>

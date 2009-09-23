@@ -137,7 +137,7 @@ module MARC
           control_element = REXML::Element.new("controlfield")
           
           # We need a marker for invalid tag values (we use 000)
-          unless field.tag.match(ctrlFieldTag)
+          unless field.tag.match(ctrlFieldTag) or MARC::Field.control_tag?(ctrlFieldTag)
             field.tag = "00z"
           end
           
