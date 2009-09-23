@@ -1,26 +1,13 @@
-begin
-  require 'rubygems'
-  require 'nokogiri'
-  require File.dirname(__FILE__) + '/nokogiri_methods'
-  PARENT_CLASS = Nokogiri::XML::SAX::Document
-rescue LoadError
-  PARENT_CLASS = Object
-end
-require 'rexml/document'
-require 'rexml/parsers/pullparser'
-if RUBY_PLATFORM =~ /java/
-  # If using JRuby, use JREXML if it's there
-  begin
-    require 'jrexml'
-  rescue LoadError
-  end
-end
-
 module MARC
   
-  class XMLReader < PARENT_CLASS
+  class XMLReader
     include Enumerable
-
+    USE_BEST_AVAILABLE = 'magic'
+    USE_REXML = 'rexml'
+    USE_NOKOGIRI = 'nokogiri'
+    USE_JREXML = 'jrexml'
+    @@parser = USE_REXML
+    attr_reader :parser
     # the constructor which you can pass either a filename:
     #
     #   reader = MARC::XMLReader.new('/Users/edsu/marc.xml')
@@ -32,8 +19,24 @@ module MARC
     # or really any object that responds to read(n)
     # 
     #   reader = MARC::XMLReader.new(StringIO.new(xml))
+    #
+    # By default, XMLReader uses REXML's pull parser, but you can swap
+    # that out with Nokogiri or jrexml (or let the system choose the
+    # 'best' one).  The :parser can either be one of the defined constants
+    # or the constant's value.
+    #
+    #   reader = MARC::XMLReader.new(fh, :parser=>'magic') 
+    #
+    # It is also possible to set the default parser at the class level so
+    # all subsequent instances will use it instead:
+    #
+    #   MARC::XMLReader.parser=MARC::XMLReader::USE_BEST_AVAILABLE
+    #
+    # Like the instance initialization override it will accept either the 
+    # constant name or value.
+    #
  
-    def initialize(file, parser=nil)
+    def initialize(file, options = {})
       if file.is_a?(String)
         handle = File.new(file)
       elsif file.respond_to?("read", 5)
@@ -41,136 +44,64 @@ module MARC
       else
         throw "must pass in path or File"
       end
-      if parser=='rexml' or !(Kernel.const_defined?(:Nokogiri) || Module.constants.index('Nokogiri'))
-        @parser = REXML::Parsers::PullParser.new(handle)
+      @handle = handle
+      if options[:parser]
+        parser = self.class.choose_parser(options[:parser])
       else
-        extend NokogiriParserMethods
-        self.init
-        @handle = handle     
+        parser = @@parser
+      end
+      #if parser=='rexml' or !(Kernel.const_defined?(:Nokogiri) || Module.constants.index('Nokogiri'))
+      #  @parser = REXML::Parsers::PullParser.new(handle)
+      #else
+      #  extend NokogiriParserMethods
+      #  self.init
+      #  @handle = handle     
+      #end
+      case parser
+      when 'rexml' then extend REXMLReader
+      when 'jrexml' then extend JREXMLReader
+      when 'nokogiri' then extend NokogiriReader        
       end
     end
 
-    def each(&block)
-      if self.respond_to?(:yield_record)
-        @block = block
-        @parser.parse(@handle)         
+    # Returns the currently set parser type
+    def self.parser
+      return @@parser
+    end
+    
+    # Returns an array of all the parsers available
+    def self.parsers
+      p = []
+      self.constants.each do | const |
+        next unless const.match("^USE_")
+        p << const
+      end      
+      return p
+    end
+    
+    # Sets the class parser
+    def self.parser=(p)
+      @@parser = choose_parser(p)
+    end
+    
+    protected
+    
+    def self.choose_parser(p)
+      if p.match(/^[A-Z]/) && self.const_defined?(p)
+        parser = self.const_get(p)
       else
-        while @parser.has_next?
-          event = @parser.pull
-          # if it's the start of a record element 
-          if event.start_element? and strip_ns(event[0]) == 'record'
-            yield build_record
+        match = false
+        self.constants.each do | const |
+          next unless const.match("^USE_")
+          if self.const_get(const) == p
+            match = true
+            parser == p
+            break
           end
         end
+        raise ArgumentError.new("Parser '#{p}' not defined") unless match
       end
+      parser    
     end
-
-    private
-
-    def strip_ns(str)
-      return str.sub(/^.*:/, '')
-    end
-
-    # will accept parse events until a record has been built up
-    #
-    def build_record
-      record = MARC::Record.new
-      data_field = nil
-      control_field = nil
-      subfield = nil
-      text = '' 
-      attrs = nil
-      if Module.constants.index('Nokogiri') and @parser.is_a?(Nokogiri::XML::Reader)
-        datafield = nil
-        cursor = nil
-        open_elements = []
-        @parser.each do | node |
-          if node.value? && cursor
-            if cursor.is_a?(Symbol) and cursor == :leader
-              record.leader = node.value
-            else
-              cursor.value = node.value
-            end
-            cursor = nil
-          end
-          next unless node.namespace_uri == @ns
-          if open_elements.index(node.local_name.downcase)
-            open_elements.delete(node.local_name.downcase)
-            next
-          else
-            open_elements << node.local_name.downcase
-          end
-          case node.local_name.downcase
-          when "leader"
-            cursor = :leader
-          when "controlfield"
-            record << datafield if datafield
-            datafield = nil
-            control_field = MARC::ControlField.new(node.attribute('tag'))
-            record << control_field
-            cursor = control_field
-          when "datafield"  
-            record << datafield if datafield
-            datafield = nil
-            data_field = MARC::DataField.new(node.attribute('tag'), node.attribute('ind1'), node.attribute('ind2'))
-            datafield = data_field
-          when "subfield"
-            raise "No datafield to add to" unless datafield
-            subfield = MARC::Subfield.new(node.attribute('code'))
-            datafield.append(subfield)
-            cursor = subfield
-          when "record"
-            record << datafield if datafield
-            return record
-          end          
-          #puts node.name
-        end
-        
-      else
-        while @parser.has_next?
-          event = @parser.pull
-
-          if event.text?
-            text += REXML::Text::unnormalize(event[0])
-            next
-          end
-
-          if event.start_element?
-            text = ''
-            attrs = event[1]
-            case strip_ns(event[0])
-            when 'controlfield'
-              text = ''
-              control_field = MARC::ControlField.new(attrs['tag'])
-            when 'datafield'
-              text = ''
-              data_field = MARC::DataField.new(attrs['tag'], attrs['ind1'], 
-                attrs['ind2'])
-            when 'subfield'
-              text = ''
-              subfield = MARC::Subfield.new(attrs['code'])
-            end
-          end
-
-          if event.end_element?
-            case strip_ns(event[0])
-            when 'leader'
-              record.leader = text
-            when 'record'
-              return record
-            when 'controlfield'
-              control_field.value = text
-              record.append(control_field)
-            when 'datafield'
-              record.append(data_field)
-            when 'subfield'
-              subfield.value = text
-              data_field.append(subfield)
-            end
-          end
-        end
-      end
-    end
-
   end
 end
