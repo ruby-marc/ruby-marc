@@ -78,7 +78,44 @@ module MARC
     def self.parser=(p)
       @@parser = choose_parser(p)
     end
+
     
+    def self.best_available
+      parser = nil
+      begin
+        require 'nokogiri'
+        parser = USE_NOKOGIRI
+      rescue LoadError
+        if RUBY_PLATFORM =~ /java/
+          begin
+            require 'jrexml'
+            parser = USE_JREXML
+          rescue LoadError
+            parser = USE_REXML
+          end
+        else
+          parser = USE_REXML
+        end
+        parser
+      end            
+    end
+    
+    def self.best_available!
+      @@parser = self.best_available
+    end
+    
+    def self.nokogiri!
+      @@parser = USE_NOKOGIRI
+    end
+    
+    def self.jrexml!
+      @@parser = USE_JREXML
+    end
+    
+    def self.rexml!
+      @@parser = USE_REXML
+    end
+        
     protected
     
     def self.choose_parser(p)
