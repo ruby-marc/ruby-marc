@@ -1,6 +1,37 @@
 require File.dirname(__FILE__) + '/xml_parsers'
 module MARC
-  
+
+  # the constructor which you can pass either a filename:
+  #
+  #   reader = MARC::XMLReader.new('/Users/edsu/marc.xml')
+  #
+  # or a File object, 
+  #
+  #   reader = Marc::XMLReader.new(File.new('/Users/edsu/marc.xml'))
+  #
+  # or really any object that responds to read(n)
+  # 
+  #   reader = MARC::XMLReader.new(StringIO.new(xml))
+  #
+  # By default, XMLReader uses REXML's pull parser, but you can swap
+  # that out with Nokogiri or jrexml (or let the system choose the
+  # 'best' one).  The :parser can either be one of the defined constants
+  # or the constant's value.
+  #
+  #   reader = MARC::XMLReader.new(fh, :parser=>'magic') 
+  #
+  # It is also possible to set the default parser at the class level so
+  # all subsequent instances will use it instead:
+  #
+  #   MARC::XMLReader.best_available
+  #   "nokogiri" # returns parser name, but doesn't set it.
+  #
+  # Use:
+  #   MARC::XMLReader.best_available!
+  # 
+  # or
+  #   MARC::XMLReader.nokogiri!
+  # 
   class XMLReader
     include Enumerable
     USE_BEST_AVAILABLE = 'magic'
@@ -9,32 +40,6 @@ module MARC
     USE_JREXML = 'jrexml'
     @@parser = USE_REXML
     attr_reader :parser
-    # the constructor which you can pass either a filename:
-    #
-    #   reader = MARC::XMLReader.new('/Users/edsu/marc.xml')
-    #
-    # or a File object, 
-    #
-    #   reader = Marc::XMLReader.new(File.new('/Users/edsu/marc.xml'))
-    #
-    # or really any object that responds to read(n)
-    # 
-    #   reader = MARC::XMLReader.new(StringIO.new(xml))
-    #
-    # By default, XMLReader uses REXML's pull parser, but you can swap
-    # that out with Nokogiri or jrexml (or let the system choose the
-    # 'best' one).  The :parser can either be one of the defined constants
-    # or the constant's value.
-    #
-    #   reader = MARC::XMLReader.new(fh, :parser=>'magic') 
-    #
-    # It is also possible to set the default parser at the class level so
-    # all subsequent instances will use it instead:
-    #
-    #   MARC::XMLReader.parser=MARC::XMLReader::USE_BEST_AVAILABLE
-    #
-    # Like the instance initialization override it will accept either the 
-    # constant name or value.
  
     def initialize(file, options = {})
       if file.is_a?(String)
@@ -79,7 +84,7 @@ module MARC
       @@parser = choose_parser(p)
     end
 
-    
+    # Returns the value of the best available parser
     def self.best_available
       parser = nil
       begin
@@ -100,18 +105,22 @@ module MARC
       end            
     end
     
+    # Sets the best available parser as the default
     def self.best_available!
       @@parser = self.best_available
     end
     
+    # Sets Nokogiri as the default parser
     def self.nokogiri!
       @@parser = USE_NOKOGIRI
     end
     
+    # Sets jrexml as the default parser
     def self.jrexml!
       @@parser = USE_JREXML
     end
     
+    # Sets REXML as the default parser
     def self.rexml!
       @@parser = USE_REXML
     end

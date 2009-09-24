@@ -1,4 +1,4 @@
-RUBY_MARC_VERSION = '0.2.2'
+RUBY_MARC_VERSION = '0.3.0'
 
 require 'rubygems'
 require 'rake'
@@ -21,7 +21,7 @@ spec = Gem::Specification.new do |s|
   s.version = RUBY_MARC_VERSION
   s.author = 'Ed Summers'
   s.email = 'ehs@pobox.com'
-  s.homepage = 'http://www.textualize.com/ruby_marc'
+  s.homepage = 'http://marc.rubyforge.org/'
   s.platform = Gem::Platform::RUBY
   s.summary = 'A ruby library for working with Machine Readable Cataloging'
   s.files = Dir.glob("{lib,test}/**/*") + ["Rakefile", "README", "Changes",
@@ -30,7 +30,7 @@ spec = Gem::Specification.new do |s|
   s.autorequire = 'marc'
   s.has_rdoc = true
   s.required_ruby_version = '>= 1.8.6'
-  
+  s.authors = ["Kevin Clarke", "William Groppe", "Ross Singer", "Ed Summers"]
   s.test_file = 'test/ts_marc.rb'
   s.bindir = 'bin'
 end
@@ -41,7 +41,7 @@ Rake::GemPackageTask.new(spec) do |pkg|
 end
 
 Rake::RDocTask.new('doc') do |rd|
-  rd.rdoc_files.include("lib/**/*.rb")
+  rd.rdoc_files.include("README", "Changes", "LICENSE", "lib/**/*.rb")
   rd.main = 'MARC::Record'
   rd.rdoc_dir = 'doc'
 end

@@ -1,3 +1,6 @@
+v0.3.0 Wed Sep 23 21:51:00 EDT 2009
+- Nokogiri and jrexml parser integration added as well as Ruby 1.9 support
+
 v0.2.2 Tue Dec 30 09:50:33 EST 2008
 - DataField tags that are all numeric are now padded with leading zeros
 
