@@ -38,6 +38,8 @@ module MARC
     USE_REXML = 'rexml'
     USE_NOKOGIRI = 'nokogiri'
     USE_JREXML = 'jrexml'
+    USE_JSTAX = 'jstax'
+    USE_LIBXML = 'libxml'    
     @@parser = USE_REXML
     attr_reader :parser
  
@@ -59,8 +61,14 @@ module MARC
       case parser
       when 'magic' then extend MagicReader
       when 'rexml' then extend REXMLReader
-      when 'jrexml' then extend JREXMLReader
-      when 'nokogiri' then extend NokogiriReader        
+      when 'jrexml' then 
+        raise ArgumentError, "jrexml only available under jruby" unless defined? JRUBY_VERSION
+        extend JREXMLReader
+      when 'nokogiri' then extend NokogiriReader    
+      when 'jstax' then 
+        raise ArgumentError, "jstax only available under jruby" unless defined? JRUBY_VERSION
+        extend JRubySTAXReader
+      when 'libxml' then extend LibXMLReader
       end
     end
 
@@ -87,22 +95,44 @@ module MARC
     # Returns the value of the best available parser
     def self.best_available
       parser = nil
-      begin
-        require 'nokogiri'
-        parser = USE_NOKOGIRI
-      rescue LoadError
-        if RUBY_PLATFORM =~ /java/
+      jruby = [USE_JSTAX, USE_NOKOGIRI, USE_JREXML]
+      ruby = [USE_NOKOGIRI, USE_LIBXML]
+      if defined? JRUBY_VERSION
+        begin
+          java.lang.Class.forName("javax.xml.stream.XMLInputFactory")
+          parser = USE_JSTAX
+        rescue java.lang.ClassNotFoundException
+        end
+        unless parser
+          begin
+            require 'nokogiri'
+            parser = USE_NOKOGIRI              
+          rescue LoadError
+          end
+        end
+        unless parser
           begin
             require 'jrexml'
-            parser = USE_JREXML
-          rescue LoadError
-            parser = USE_REXML
+            parser = USE_JREXML    
+          rescue LoadError                        
           end
-        else
-          parser = USE_REXML
+        end              
+      else
+        begin
+          require 'nokogiri'
+          parser = USE_NOKOGIRI        
+        rescue LoadError          
         end
-        parser
-      end            
+        unless parser
+          begin
+            require 'xml'
+            parser = USE_LIBXML
+          rescue LoadError
+          end
+        end        
+      end
+      parser = USE_REXML unless parser
+      parser
     end
     
     # Sets the best available parser as the default

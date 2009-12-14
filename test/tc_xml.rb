@@ -10,11 +10,21 @@ class XMLTest < Test::Unit::TestCase
       @parsers << :nokogiri
     rescue LoadError
     end
-    if RUBY_PLATFORM =~ /java/
+    begin
+      require 'xml'
+      @parsers << :libxml
+    rescue LoadError
+    end
+    if defined? JRUBY_VERSION
       begin
         require 'jrexml'
         @parsers << :jrexml
       rescue LoadError
+      end
+      begin
+        java.lang.Class.forName("javax.xml.stream.XMLInputFactory")
+        @parsers << :jstax
+      rescue java.lang.ClassNotFoundException
       end
     end
   end
