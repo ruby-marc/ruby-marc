@@ -101,13 +101,13 @@ module MARC
           
           # If marc is leniently parsed, we may have some dirty data; using
           # the 'z' ind1 value should help us locate these later to fix
-          if (field.indicator1.match(singleChar) == nil)
+          if field.indicator1.nil? || (field.indicator1.match(singleChar) == nil)
             field.indicator1 = 'z'
           end
           
           # If marc is leniently parsed, we may have some dirty data; using
           # the 'z' ind2 value should help us locate these later to fix
-          if (field.indicator2.match(singleChar) == nil)
+          if field.indicator2.nil? || (field.indicator2.match(singleChar) == nil)
             field.indicator2 = 'z'
           end
           
