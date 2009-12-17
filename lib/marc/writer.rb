@@ -45,7 +45,7 @@ module MARC
         field_data = ''
         if field.class == MARC::DataField 
           warn("Warn:  Missing indicator") unless field.indicator1 && field.indicator2
-          field_data = (field.indicator1 || "z") + (field.indicator2 || "z")
+          field_data = (field.indicator1 || " ") + (field.indicator2 || " ")
           for s in field.subfields
             field_data += SUBFIELD_INDICATOR + s.code + s.value
           end
