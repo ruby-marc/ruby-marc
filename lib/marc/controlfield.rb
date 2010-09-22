@@ -58,7 +58,11 @@ module MARC
       return [@tag, @value]
     end
     
-
+    # Turn the control field into a hash for MARC-in-JSON
+    def to_hash
+      return {@tag=>@value}
+    end
+    
     def to_s
       return "#{tag} #{value}" 
     end

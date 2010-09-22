@@ -1,4 +1,4 @@
-RUBY_MARC_VERSION = '0.3.3'
+RUBY_MARC_VERSION = '0.4.0'
 
 require 'rubygems'
 require 'rake'
@@ -30,7 +30,7 @@ spec = Gem::Specification.new do |s|
   s.autorequire = 'marc'
   s.has_rdoc = true
   s.required_ruby_version = '>= 1.8.6'
-  s.authors = ["Kevin Clarke", "William Groppe", "Ross Singer", "Ed Summers"]
+  s.authors = ["Kevin Clarke", "Bill Dueber", "William Groppe", "Ross Singer", "Ed Summers"]
   s.test_file = 'test/ts_marc.rb'
   s.bindir = 'bin'
 end

@@ -1,7 +1,55 @@
-require 'marc/controlfield'
-require 'marc/datafield'
-
-module MARC
+module MARC  
+  
+  # Simply what the class name says.
+  # The checksum is used to see if the FieldMap's array has changed.
+  class HashWithChecksumAttribute < Hash
+    attr_accessor :checksum
+  end
+  
+  # The FieldMap is an Array of DataFields and Controlfields.
+  # It also contains a HashWithChecksumAttribute with a Hash-based
+  # representation of the fields for faster lookups
+  class FieldMap < Array
+    attr_reader :tags
+    def initialize
+      @tags = HashWithChecksumAttribute.new
+    end
+    
+    # Checks to see if the HashWithChecksumAttribute is in sync
+    # with the Array of fields
+    def in_sync?
+      @tags.checksum == self.hash
+    end
+    
+    # Rebuild the HashWithChecksumAttribute with the current
+    # values of the fields Array
+    def reindex
+      @tags = HashWithChecksumAttribute.new
+      self.each_with_index do |field, i|
+        @tags[field.tag] ||= []
+        @tags[field.tag] << i
+      end
+      @tags.checksum = self.hash
+    end
+    
+    # Returns an array of all of the tags that appear in the record (not in the order they appear, however).
+    def tag_list
+      reindex if @tags.empty?
+      @tags.keys
+    end
+    
+    # Returns an array of fields, in the order they appear, according to their tag.
+    # The tags argument can be a string (e.g. '245'), an array (['100','700','800'])
+    # or a range (('600'..'699')).
+    def each_by_tag(tags)
+      reindex if @tags.empty?
+      indices = @tags.values_at(*(@tags.keys & [*tags])).flatten.sort
+      return [] if indices.empty?
+      self.values_at(*indices).each do |tag|
+        yield tag
+      end
+    end
+  end
 
   # A class that represents an individual MARC record. Every record
   # is made up of a collection of MARC::DataField objects. 
@@ -22,13 +70,13 @@ module MARC
     include Enumerable
 
     # the record fields
-    attr_accessor :fields
+    #attr_reader :fields
 
     # the record leader
     attr_accessor :leader
 
     def initialize
-      @fields = []
+      @fields = FieldMap.new
       # leader is 24 bytes
       @leader = ' ' * 24
       # leader defaults:
@@ -51,7 +99,7 @@ module MARC
     end
 
     # each() is here to support iterating and searching since MARC::Record
-    # mixes in Enumberable
+    # mixes in Enumerable
     #
     # iterating through the fields in a record:
     #   record.each { |f| print f }
@@ -67,12 +115,43 @@ module MARC
         yield field
       end
     end
+    
+    # A more convenient way to iterate over each field with a given tag.  
+    # The filter argument can be a string, array or range.
+    def each_by_tag(filter)
+      @fields.each_by_tag(filter) {|tag| yield tag }
+    end
 
     # You can lookup fields using this shorthand:
     #   title = record['245']
 
     def [](tag)
       return self.find {|f| f.tag == tag}
+    end
+    
+    # Provides a backwards compatible means to access the FieldMap.
+    # No argument returns the FieldMap array in entirety.  Providing
+    # a string, array or range of tags will return an array of fields
+    # in the order they appear in the record.
+    def fields(filter=nil)
+      return @fields.to_a unless filter
+      @fields.reindex if @fields.tags.empty?
+      flds = []
+      if filter.is_a?(String) && @fields.tags[filter]
+        @fields.tags[filter].each do |idx|
+          flds << @fields[idx]
+        end
+      elsif filter.is_a?(Array) || filter.is_a?(Range)
+        @fields.each_by_tag(filter) do |tag|
+          flds << tag
+        end
+      end
+      flds
+    end
+    
+    # Returns an array of all of the tags that appear in the record (not necessarily in the order they appear).
+    def tags
+      return @fields.tag_list
     end
 
     # Factory method for creating a MARC::Record from MARC21 in 
@@ -130,7 +209,7 @@ module MARC
         'fields' => self.map {|f| f.to_marchash}
       }
     end #to_hash
-    
+
     # Factory method for creating a new MARC::Record from
     # a marchash object
     #
@@ -150,6 +229,38 @@ module MARC
     end
     
 
+    
+    # Returns a (roundtrippable) hash representation for MARC-in-JSON
+    def to_hash
+      record_hash = {'leader'=>@leader, 'fields'=>[]}
+      @fields.each do |field|
+        record_hash['fields'] << field.to_hash
+      end
+      record_hash
+    end    
+
+    def self.new_from_hash(h)
+      r = self.new
+      r.leader = h['leader']
+      if h['fields']
+        h['fields'].each do |position|
+          position.each_pair do |tag, field|
+            if field.is_a?(Hash)
+              f = MARC::DataField.new(tag, field['ind1'], field['ind2'])
+              field['subfields'].each do | pos |
+                pos.each_pair do |code, value|
+                  f.append MARC::Subfield.new(code, value)
+                end
+              end
+              r << f
+            else
+              r << MARC::ControlField.new(tag, field)
+            end
+          end
+        end
+      end  
+      return r            
+    end
     # Returns a string version of the record, suitable for printing
 
     def to_s

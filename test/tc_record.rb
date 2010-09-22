@@ -72,6 +72,43 @@ class TestRecord < Test::Unit::TestCase
         r.append(MARC::DataField.new('245', '0', '4', ['The Pragmatic Programmer']))
         return r
     end
-
+    
+    def test_field_index
+      raw = IO.read('test/random_tag_order.dat')
+      r = MARC::Record.new_from_marc(raw)
+      assert_kind_of(Array, r.fields)
+      assert_kind_of(Array, r.tags)
+      assert_equal(['001','005','007','008','010','028','035','040','050','245','260','300','500','505','511','650','700','906','953','991'], r.tags.sort)
+      assert_kind_of(Array, r.fields('035'))
+      raw2 = IO.read('test/random_tag_order2.dat')
+      r2 = MARC::Record.new_from_marc(raw2)
+      assert_equal(6, r2.fields('500').length)     
+      # Test passing an array to Record#fields
+      assert_equal(3, r.fields(['500','505', '510', '511']).length) 
+      # Test passing a Range to Record#fields
+      assert_equal(9, r.fields(('001'..'099')).length)
+    end
+    
+    def test_field_index_order
+      raw = IO.read('test/random_tag_order.dat')
+      r = MARC::Record.new_from_marc(raw)      
+      notes = ['500','505','511']
+      r.fields(('500'..'599')).each do |f|
+        assert_equal(notes.pop, f.tag)
+      end
+      
+      
+      raw2 = IO.read('test/random_tag_order2.dat')
+      r2 = MARC::Record.new_from_marc(raw2)      
+      
+      fields = ['050','042','010','028','024','035','041','028','040','035','008','007','005','001']
+      r2.each_by_tag(('001'..'099')) do |f|
+        assert_equal(fields.pop, f.tag)
+      end      
+      
+      five_hundreds = r2.fields('500')
+      assert_equal(five_hundreds.first['a'], '"Contemporary blues" interpretations of previously released songs; written by Bob Dylan.')
+      assert_equal(five_hundreds.last['a'], 'Composer and program notes in container.')
+    end
 
 end
