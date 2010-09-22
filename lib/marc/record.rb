@@ -134,7 +134,7 @@ module MARC
     # a string, array or range of tags will return an array of fields
     # in the order they appear in the record.
     def fields(filter=nil)
-      return @fields.to_a unless filter
+      return @fields unless filter
       @fields.reindex if @fields.tags.empty?
       flds = []
       if filter.is_a?(String) && @fields.tags[filter]
