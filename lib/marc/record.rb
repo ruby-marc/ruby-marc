@@ -1,40 +1,30 @@
 module MARC  
-  
-  # Simply what the class name says.
-  # The checksum is used to see if the FieldMap's array has changed.
-  class HashWithChecksumAttribute < Hash
-    attr_accessor :checksum
-  end
-  
+    
   # The FieldMap is an Array of DataFields and Controlfields.
-  # It also contains a HashWithChecksumAttribute with a Hash-based
-  # representation of the fields for faster lookups
+  # It also contains a Hash representation 
+  # of the fields for faster lookups (under certain conditions)
   class FieldMap < Array
     attr_reader :tags
+    attr_accessor :clean
     def initialize
-      @tags = HashWithChecksumAttribute.new
-    end
-    
-    # Checks to see if the HashWithChecksumAttribute is in sync
-    # with the Array of fields
-    def in_sync?
-      @tags.checksum == self.hash
+      @tags = {}
+      @clean = true
     end
     
     # Rebuild the HashWithChecksumAttribute with the current
     # values of the fields Array
     def reindex
-      @tags = HashWithChecksumAttribute.new
+      @tags = {}
       self.each_with_index do |field, i|
         @tags[field.tag] ||= []
         @tags[field.tag] << i
       end
-      @tags.checksum = self.hash
+      @clean = true
     end
     
     # Returns an array of all of the tags that appear in the record (not in the order they appear, however).
     def tag_list
-      reindex if @tags.empty?
+      reindex unless @clean
       @tags.keys
     end
     
@@ -42,7 +32,7 @@ module MARC
     # The tags argument can be a string (e.g. '245'), an array (['100','700','800'])
     # or a range (('600'..'699')).
     def each_by_tag(tags)
-      reindex if @tags.empty?
+      reindex unless @clean
       indices = @tags.values_at(*(@tags.keys & [*tags])).flatten.sort
       return [] if indices.empty?
       self.values_at(*indices).each do |tag|
@@ -90,12 +80,13 @@ module MARC
 
     def append(field)
       @fields.push(field)
+      @fields.clean = false
     end
 
     # alias to append
     
     def <<(field)
-      append(field)
+      append(field)      
     end
 
     # each() is here to support iterating and searching since MARC::Record
@@ -134,8 +125,11 @@ module MARC
     # a string, array or range of tags will return an array of fields
     # in the order they appear in the record.
     def fields(filter=nil)
-      return @fields unless filter
-      @fields.reindex if @fields.tags.empty?
+      unless filter
+        @fields.clean = false
+        return @fields 
+      end
+      @fields.reindex unless @fields.clean
       flds = []
       if filter.is_a?(String) && @fields.tags[filter]
         @fields.tags[filter].each do |idx|

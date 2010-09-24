@@ -1,43 +1,4 @@
 module MARC
-  
-  class SubfieldMap < Array
-    attr_reader :codes
-    def initialize
-      @codes = HashWithChecksumAttribute.new    
-    end
-    
-    def in_sync?
-      @codes.checksum == self.hash
-    end
-    
-    def reindex
-      @codes.clear
-      self.each do |subfield|
-        @codes[subfield.code] ||= []
-        @codes[subfield.code] << self.index(subfield)
-      end
-      @codes.checksum = self.hash
-    end
-    def code_list
-      reindex unless in_sync?
-      @codes.keys
-    end
-    
-    def each_by_code(codes)
-      reindex unless in_sync?
-      matched_codes = []
-      [*codes].each do |code|
-        next unless code && @codes[code]
-        @codes[code].each do |idx|
-          matched_codes << self[idx]
-          yield self[idx]
-        end
-      end
-      matched_codes
-    end
- 
-  end  
-
   # MARC records contain data fields, each of which has a tag, 
   # indicators and subfields. Tags for data fields must are all
   # three-character tags that are not control fields (generally,
@@ -98,7 +59,7 @@ module MARC
       # screw us up later when we try to encode
       @indicator1 = i1 == nil ? ' ' : i1
       @indicator2 = i2 == nil ? ' ' : i2
-      #@subfields = SubfieldMap.new
+      
       @subfields = []
 
       # must use MARC::ControlField for tags < 010 or
@@ -186,29 +147,13 @@ module MARC
       return subfield.value if subfield
       return
     end
-    
-    #def subfields(filter=nil)
-    #  return @subfields unless filter
-    #  @subfields.reindex unless subfields.in_sync?
-    #  subflds = []
-    #  if filter.is_a?(String) && @subfields.codes[filter]
-    #    @subfields.codes[filter].each do |idx|
-    #      subflds << @subfields[idx]
-    #    end
-    #  elsif filter.is_a?(Array) || filter.is_a?(Range)
-    #    filter.each do |code|
-    #      next unless @subfields.codes[code]
-    #      @subfields.codes[code].each do |idx|
-    #        subflds << @subfields[idx]
-    #      end
-    #    end
-    #  end
-    #  subflds
-    #end    
+ 
 
-    #def codes
-    #  @subfields.code_list
-    #end
+    def codes(dedupe=true)
+      codes = []
+      @subfields.each {|s| codes << s.code }
+      dedup ? codes.uniq : codes
+    end
 
     # Two fields are equal if their tag, indicators and 
     # subfields are all equal.
