@@ -165,6 +165,7 @@ end
     parser_name = nil
     parser = nil
     if defined? JRUBY_VERSION
+      require 'java'
       begin
         java.lang.Class.forName("javax.xml.stream.XMLInputFactory")
         parser_name = "jstax"
