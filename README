@@ -25,6 +25,9 @@ USAGE
   writer = MARC::XMLWriter.new('marc.xml')
   writer.write(record)
   writer.close()
+  
+  # encoding a record
+  MARC::Writer.encode(record) # or record.to_marc
 
 INSTALLATION
 
