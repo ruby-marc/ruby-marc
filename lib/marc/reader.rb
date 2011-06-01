@@ -116,7 +116,7 @@ module MARC
           offset = entry[7..11].to_i
           field_start = base_address + offset
           field_end = field_start + length - 1
-          field_data = marc[field_start..field_end]
+          field_data = marc.bytes.to_a[field_start..field_end].pack("c*")
         end
 
         # remove end of field

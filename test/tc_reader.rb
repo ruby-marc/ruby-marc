@@ -30,6 +30,11 @@ class ReaderTest < Test::Unit::TestCase
     assert_equal('1', record['LOC']['9'])
   end
 
+  def test_unicode_load
+    reader =   MARC::Reader.new('test/000039829.marc')
+    assert_nothing_raised { reader.first }
+  end
+
   def test_bad_marc
     reader = MARC::Reader.new('test/tc_reader.rb')
     assert_raises(MARC::Exception) {reader.entries[0]}
