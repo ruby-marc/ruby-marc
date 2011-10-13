@@ -1,7 +1,7 @@
 #marc is a ruby library for reading and writing MAchine Readable Cataloging
 #(MARC). More information about MARC can be found at <http://www.loc.gov/marc>.
 #
-#USAGE 
+#USAGE
 #
 #    require 'marc'
 #
@@ -11,7 +11,7 @@
 #      puts record['245']['a']
 #    end
 #
-#    # creating a record 
+#    # creating a record
 #    record = MARC::Record.new()
 #    record.add_field(MARC::DataField.new('100', '0',  ' ', ['a', 'John Doe']))
 #
@@ -32,6 +32,7 @@
 
 
 
+require File.dirname(__FILE__) + '/marc/version'
 require File.dirname(__FILE__) + '/marc/constants'
 require File.dirname(__FILE__) + '/marc/record'
 require File.dirname(__FILE__) + '/marc/datafield'
