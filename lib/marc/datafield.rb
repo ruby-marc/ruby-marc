@@ -149,7 +149,7 @@ module MARC
     end
  
 
-    def codes(dedupe=true)
+    def codes(dedup=true)
       codes = []
       @subfields.each {|s| codes << s.code }
       dedup ? codes.uniq : codes
