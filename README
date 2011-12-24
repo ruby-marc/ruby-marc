@@ -44,6 +44,16 @@ and install the versioned gem:
 
   gem install pkg/marc-x.x.x.gem 
 
+INSTALLATION USING BUNDLER
+  
+add to your Gemfile:
+
+  gem 'marc', :git => 'https://github.com/ruby-marc/ruby-marc.git'
+
+and run
+ 
+  bundle
+
 AUTHORS
 
 Kevin Clarke <ksclarke@gmail.com>
