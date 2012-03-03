@@ -89,7 +89,11 @@ module MARC
       # when operating in forgiving mode we just split on end of
       # field instead of using calculated byte offsets from the 
       # directory
-      all_fields = marc[base_address..-1].split(END_OF_FIELD)
+      if params[:forgiving]
+        all_fields = marc[base_address..-1].split(END_OF_FIELD)
+      else
+        mba =  marc.bytes.to_a
+      end
 
       0.upto(num_fields-1) do |field_num|
 
@@ -116,7 +120,7 @@ module MARC
           offset = entry[7..11].to_i
           field_start = base_address + offset
           field_end = field_start + length - 1
-          field_data = marc.bytes.to_a[field_start..field_end].pack("c*")
+          field_data = mba[field_start..field_end].pack("c*")
         end
 
         # remove end of field
