@@ -35,7 +35,7 @@ module MARC
     def initialize(file, options = {})      
       @encoding_options = {}
       # all can be nil
-      [:internal_encoding, :external_encoding, :invalid].each do |key|
+      [:internal_encoding, :external_encoding, :invalid, :replace].each do |key|
         @encoding_options[key] = options[key] if options.has_key?(key)
       end
             
