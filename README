@@ -31,18 +31,23 @@ USAGE
 
 INSTALLATION
 
-If you are looking at this file you may want to be able to install the code. 
-First you'll need to test:
+  gem install marc
 
-  rake test
+Or if you're using bundler, add to your Gemfile
 
-then build the gem:
+  gem 'marc'
+  
+ERRATA
 
-  rake package
+Source code at: https://github.com/ruby-marc/ruby-marc/
 
-and install the versioned gem:
+Find generated API docs at: http://rubydoc.info/gems/marc/frames
 
-  gem install pkg/marc-x.x.x.gem 
+Run automated tests in source with `rake test`. 
+
+Developers, release new version of gem to rubygems with `rake release` 
+(bundler-supplied task). Note that one nice thing this will do is automatically
+tag the version in git, very important for later figuring out what's going on.
 
 AUTHORS
 
