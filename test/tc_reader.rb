@@ -63,7 +63,29 @@ class ReaderTest < Test::Unit::TestCase
     record = reader.first
     assert_equal("IBM866", record['001'].value.encoding.name )
     assert_equal(["d09d"], record['001'].value.encode('utf-8').unpack('H4')) # russian capital N
-  end    
+  end
+  
+  def test_from_string_with_utf8_encoding
+    marc_string = File.open('test/utf8.marc').read.force_encoding("UTF-8")
+    
+    reader = MARC::Reader.new(StringIO.new(marc_string))
+    record = reader.first
+    
+    assert_equal "UTF-8", record['245']['a'].encoding.name
+    assert record['245']['a'].start_with?("Photčhanānukrom")
+  end
+  
+  def test_from_string_with_cp866_encoding
+    marc_string = File.open('test/cp866.marc').read.force_encoding("cp866")
+    
+    reader = MARC::Reader.new(StringIO.new(marc_string))
+    record = reader.first
+    
+    assert_equal("IBM866", record['001'].value.encoding.name )
+    assert_equal(["d09d"], record['001'].value.encode('utf-8').unpack('H4')) # russian capital N
+  end
+
+    
 
   def test_bad_marc
     reader = MARC::Reader.new('test/tc_reader.rb')
