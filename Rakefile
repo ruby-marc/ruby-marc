@@ -3,7 +3,7 @@ RUBY_MARC_VERSION = '0.4.4'
 require 'rubygems'
 require 'rake'
 require 'rake/testtask'
-require 'rake/rdoctask'
+require 'rdoc/task'
 require 'bundler/gem_tasks'
 
 task :default => [:test]
