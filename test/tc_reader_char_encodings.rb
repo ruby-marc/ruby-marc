@@ -63,7 +63,9 @@ class ReaderTest < Test::Unit::TestCase
   end
   
   def test_with_transcode
-    reader = MARC::Reader.new('test/cp866.marc', :external_encoding => 'cp866', :internal_encoding => "UTF-8")
+    reader = MARC::Reader.new('test/cp866.marc', 
+      :external_encoding => 'cp866', 
+      :internal_encoding => 'UTF-8')
     
     record = reader.first 
   
