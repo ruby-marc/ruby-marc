@@ -44,7 +44,7 @@ class ReaderTest < Test::Unit::TestCase
   end
 
   def test_explicit_encoding
-    reader = MARC::Reader.new('test/cp866.marc', 'cp866')
+    reader = MARC::Reader.new('test/cp866.marc', :external_encoding => 'cp866')
     assert_equal(["d09d"], reader.first['001'].value.encode('utf-8').unpack('H4')) # russian capital N
   end
 
@@ -58,7 +58,7 @@ class ReaderTest < Test::Unit::TestCase
   end
   
   def test_explicit_encoding_beats_file_encoding
-    reader = MARC::Reader.new(File.open('test/cp866.marc', 'r:utf-8'), "cp866")
+    reader = MARC::Reader.new(File.open('test/cp866.marc', 'r:utf-8'), :external_encoding => "cp866")
     
     record = reader.first
     assert_equal("IBM866", record['001'].value.encoding.name )

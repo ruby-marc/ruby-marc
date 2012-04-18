@@ -32,8 +32,8 @@ module MARC
     # or, you can pass IO, opened in the corresponding encoding
     #
     #   reader = MARC::Reader.new(File.new('marc.dat', 'r:cp866'))
-    def initialize(file, encoding=nil)
-      @encoding = encoding
+    def initialize(file, options = {})           
+      @encoding = options[:external_encoding] # can be nil, it's okay!
       if file.is_a?(String)
         @handle = File.new(file)
       elsif file.respond_to?("read", 5)
