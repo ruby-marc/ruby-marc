@@ -43,6 +43,7 @@ module MARC
       else
         throw "must pass in path or file"
       end
+
     end
 
     # to support iteration:
@@ -136,7 +137,6 @@ module MARC
 
         if field_data.respond_to?(:force_encoding) && params[:encoding]
           field_data = field_data.force_encoding(params[:encoding])
-          field_data = field_data.encode(Encoding.default_external)
         end
         # add a control field or data field
         if MARC::ControlField.control_tag?(tag)

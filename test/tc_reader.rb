@@ -35,15 +35,22 @@ class ReaderTest < Test::Unit::TestCase
     assert_nothing_raised { reader.first }
   end
 
-  def test_pre_unicode_encodings
+  def test_explicit_encoding
     reader = MARC::Reader.new('test/cp866.marc', 'cp866')
     assert_equal(["d09d"], reader.first['001'].value.encode('utf-8').unpack('H4')) # russian capital N
   end
 
-  def test_load_file_opened_with_encoding
+  def test_load_file_opened_with_external_encoding
     reader = MARC::Reader.new(File.open('test/cp866.marc', 'r:cp866'))
-    assert_equal(["d09d"], reader.first['001'].value.encode('utf-8').unpack('H4')) # russian capital N
+    
+    record = reader.first  
+    # Make sure it's got the encoding it's supposed to. 
+    assert_equal("IBM866", record['001'].value.encoding.name )
+    assert_equal(["d09d"], record['001'].value.encode('utf-8').unpack('H4')) # russian capital N
   end
+  
+  
+    
 
   def test_bad_marc
     reader = MARC::Reader.new('test/tc_reader.rb')
