@@ -165,10 +165,19 @@ module MARC
         if field_data.respond_to?(:force_encoding)
           if params[:external_encoding]
             field_data = field_data.force_encoding(params[:external_encoding])
-          end
+          end     
+          
+          # If we don't check this now to raise a InvalidByteSequenceError,
+          # bad bytes will trigger ArgumentErrors from arbitrary part
+          # of the ruby_marc stack _anyway_, we got to check now for
+          # a predictable erorr message. 
+          field_data = MARC::Reader.validate_encoding(field_data)
+          
           if params[:internal_encoding]
             field_data = field_data.encode(params[:internal_encoding])
           end
+          
+          
         end
         # add a control field or data field
         if MARC::ControlField.control_tag?(tag)
@@ -200,8 +209,53 @@ module MARC
       end
 
       return record
+    end    
+            
+    # Pass in a string, will raise an Encoding::InvalidByteSequenceError
+    # if it contains an invalid byte for it's encoding; otherwise
+    # returns an equivalent string. Surprisingly not built into 
+    # ruby 1.9.3 (yet?). https://bugs.ruby-lang.org/issues/6321
+    #
+    # The InvalidByteSequenceError will NOT be filled out
+    # with the usual error metadata, sorry. 
+    #
+    # OR, like String#encode, pass in option `:invalid => :replace`
+    # to replace invalid bytes with a replacement string in the
+    # returned string.  Pass in the
+    # char you'd like with option `:replace`, or will, like String#encode
+    # use the unicode replacement char if it thinks it's a unicode encoding,
+    # else ascii '?'.
+    #
+    # in any case, method will raise, or return a new string
+    # that is #valid_encoding?
+    def self.validate_encoding(str, options = {})
+      return str unless str.respond_to?(:encoding)
+      
+      str.chars.collect do |c|
+        if c.valid_encoding?
+          c
+        else
+          unless options[:invalid] == :replace
+            # it ought to be filled out with all the metadata
+            # this exception usually has, but what a pain!
+            # Why isn't ruby doing this for us?
+            raise  Encoding::InvalidByteSequenceError.new("#{c.inspect} in #{c.encoding.name}")
+          else
+            options[:replace] || (
+             # surely there's a better way to tell if
+             # an encoding is a 'Unicode encoding form'
+             # than this? What's wrong with you ruby 1.9?
+             str.encoding.name.start_with?('UTF') ?
+                "\uFFFD" :
+                "?" )
+          end
+        end
+      end.join
     end
+    
   end
+
+
 
 
   # Like Reader ForgivingReader lets you read in a batch of MARC21 records

@@ -84,4 +84,15 @@ class ReaderTest < Test::Unit::TestCase
     assert_equal(["d09d"], record['001'].value.unpack('H4')) # russian capital N
   end
   
+  def test_with_bad_source_bytes
+    reader = MARC::Reader.new('test/utf8_with_bad_bytes.marc', 
+      :external_encoding => "UTF-8")
+    
+    assert_raise Encoding::InvalidByteSequenceError do
+      record = reader.first
+    end
+  end
+  
+
+  
 end
