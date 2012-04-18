@@ -28,8 +28,20 @@ class WriterTest < Test::Unit::TestCase
       end
     end
 
-    def test_ampersand
-    end
+    def test_unicode_roundtrip
+      record = MARC::Reader.new('test/utf8.marc').first
+      
+      writer = MARC::Writer.new('test/writer.dat')      
+      writer.write(record)      
+      writer.close      
+      
+      read_back_record = MARC::Reader.new('test/writer.dat').first
 
+      # Make sure the one we wrote out then read in again
+      # is the same as the one we read the first time
+      # Looks like "==" is over-ridden to do that. Don't ever change, #==
+      assert (record == read_back_record), "Round-tripped record must equal original record"
+    end
+    
 
 end

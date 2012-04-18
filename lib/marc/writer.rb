@@ -55,7 +55,9 @@ module MARC
         field_data += END_OF_FIELD
 
         # calculate directory entry for the field
-        field_length = field_data.length()
+        field_length = (field_data.respond_to?(:bytesize) ?
+          field_data.bytesize() :
+          field_data.length())
         directory += sprintf("%03s%04i%05i", field.tag, field_length, 
           offset)
 
@@ -73,10 +75,16 @@ module MARC
       marc = base + fields + END_OF_RECORD
 
       # update leader with the byte offest to the end of the directory
-      marc[12..16] = sprintf("%05i", base.length())
+      marc[12..16] = sprintf("%05i", (base.respond_to?(:bytesize) ?
+        base.bytesize() :
+        base.length() )
+      )
 
       # update the record length
-      marc[0..4] = sprintf("%05i", marc.length())
+      marc[0..4] = sprintf("%05i", (marc.respond_to?(:bytesize) ?
+        marc.bytesize() :
+        marc.length())
+      )
       
       # store updated leader in the record that was passed in
       record.leader = marc[0..LEADER_LENGTH-1]
