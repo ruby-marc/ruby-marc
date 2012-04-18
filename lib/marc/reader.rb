@@ -77,7 +77,7 @@ module MARC
 
         # create a record from the data and return it
         #record = MARC::Record.new_from_marc(raw)
-        record = MARC::Reader.decode(raw, :encoding => @encoding)
+        record = MARC::Reader.decode(raw, :external_encoding => @encoding)
         yield record
       end
     end
@@ -87,6 +87,11 @@ module MARC
     # format into a MARC::Record object.
 
     def self.decode(marc, params={})
+      if params.has_key?(:encoding)
+        $stderr.puts "DEPRECATION WARNING: MARC::Reader.decode :encoding option deprecated, please use :external_encoding"
+        params[:external_encoding] = params.delete(:encoding)
+      end
+      
       record = Record.new()
       record.leader = marc[0..LEADER_LENGTH-1]
 
@@ -142,8 +147,8 @@ module MARC
         # remove end of field
         field_data.delete!(END_OF_FIELD)
 
-        if field_data.respond_to?(:force_encoding) && params[:encoding]
-          field_data = field_data.force_encoding(params[:encoding])
+        if field_data.respond_to?(:force_encoding) && params[:external_encoding]
+          field_data = field_data.force_encoding(params[:external_encoding])
         end
         # add a control field or data field
         if MARC::ControlField.control_tag?(tag)
