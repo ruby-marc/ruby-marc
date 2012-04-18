@@ -31,7 +31,7 @@ class ReaderTest < Test::Unit::TestCase
   end
 
   def test_unicode_load
-    reader = MARC::Reader.new('test/000039829.marc')
+    reader = MARC::Reader.new('test/utf8.marc')
     assert_nothing_raised { reader.first }
   end
 
