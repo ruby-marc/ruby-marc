@@ -22,6 +22,21 @@ if "".respond_to?(:encoding)
       assert_equal "UTF-8", record['245']['a'].encoding.name
       assert record['245']['a'].start_with?("Photčhanānukrom")
     end
+    
+    def test_unicode_decode_forgiving
+      # two kinds of forgiving invocation, they shouldn't be different,
+      # but just in case they have slightly different code paths, test em
+      # too. 
+      marc_string = File.open('test/utf8.marc').read.force_encoding("utf-8")      
+      record = MARC::Reader.decode(marc_string, :forgiving => true)
+      assert_equal "UTF-8", record['245']['a'].encoding.name
+      assert record['245']['a'].start_with?("Photčhanānukrom")
+      
+      reader = MARC::ForgivingReader.new('test/utf8.marc')
+      record = reader.first
+      assert_equal "UTF-8", record['245']['a'].encoding.name
+      assert record['245']['a'].start_with?("Photčhanānukrom")
+    end
   
     def test_explicit_encoding
       reader = MARC::Reader.new('test/cp866.marc', :external_encoding => 'cp866')
