@@ -38,13 +38,19 @@ module MARC
         @handle = File.new(file)
       elsif file.respond_to?("read", 5)
         @handle = file
-        # use file encoding only if we didn't already have an explicit one,
-        # explicit one takes precedence. 
-        @encoding ||= file.external_encoding if file.respond_to?(:external_encoding)
       else
         throw "must pass in path or file"
       end
-
+      
+      if (! @encoding ) && @handle.respond_to?(:external_encoding)
+        # use file encoding only if we didn't already have an explicit one,
+        # explicit one takes precedence. 
+        #
+        # Note, please don't use ruby's own internal_encoding transcode
+        # with binary marc data, the transcode can mess up the byte count
+        # and make it unreadable. 
+        @encoding ||= @handle.external_encoding
+      end      
     end
 
     # to support iteration:

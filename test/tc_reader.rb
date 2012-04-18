@@ -1,3 +1,5 @@
+# -*- encoding: utf-8 -*-
+
 require 'test/unit'
 require 'marc'
 
@@ -32,7 +34,13 @@ class ReaderTest < Test::Unit::TestCase
 
   def test_unicode_load
     reader = MARC::Reader.new('test/utf8.marc')
-    assert_nothing_raised { reader.first }
+    
+    record = nil
+    
+    assert_nothing_raised { record = reader.first }
+    
+    assert_equal "UTF-8", record['245']['a'].encoding.name
+    assert record['245']['a'].start_with?("Photčhanānukrom")
   end
 
   def test_explicit_encoding
