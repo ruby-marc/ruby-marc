@@ -54,11 +54,20 @@ class ReaderTest < Test::Unit::TestCase
     assert record['245']['a'].start_with?("Photčhanānukrom")
   end
   
-  def test_from_string_with_cp866_encoding
+  def test_from_string_with_cp866
     marc_string = File.open('test/cp866.marc').read.force_encoding("cp866")
     
     reader = MARC::Reader.new(StringIO.new(marc_string))
     record = reader.first
+    
+    assert_equal("IBM866", record['001'].value.encoding.name )
+    assert_equal(["d09d"], record['001'].value.encode('utf-8').unpack('H4')) # russian capital N
+  end
+  
+  def test_decode_from_string_with_cp866
+    marc_string = File.open('test/cp866.marc').read.force_encoding("cp866")
+    
+    record = MARC::Reader.decode(marc_string)
     
     assert_equal("IBM866", record['001'].value.encoding.name )
     assert_equal(["d09d"], record['001'].value.encode('utf-8').unpack('H4')) # russian capital N

@@ -101,6 +101,12 @@ module MARC
         params[:external_encoding] = params.delete(:encoding)
       end
       
+      if (! params.has_key? :external_encoding ) && marc.respond_to?(:encoding)
+        # If no forced external_encoding giving, respect the encoding
+        # declared on the string passed in. 
+        params[:external_encoding] = marc.encoding
+      end
+      
       record = Record.new()
       record.leader = marc[0..LEADER_LENGTH-1]
 
