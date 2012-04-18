@@ -62,4 +62,13 @@ class ReaderTest < Test::Unit::TestCase
     assert_equal(["d09d"], record['001'].value.encode('utf-8').unpack('H4')) # russian capital N
   end
   
+  def test_with_transcode
+    reader = MARC::Reader.new('test/cp866.marc', :external_encoding => 'cp866', :internal_encoding => "UTF-8")
+    
+    record = reader.first 
+  
+    assert_equal('UTF-8', record['001'].value.encoding.name)
+    assert_equal(["d09d"], record['001'].value.unpack('H4')) # russian capital N
+  end
+  
 end

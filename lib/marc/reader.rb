@@ -33,7 +33,9 @@ module MARC
     #
     #   reader = MARC::Reader.new(File.new('marc.dat', 'r:cp866'))
     def initialize(file, options = {})           
-      @encoding = options[:external_encoding] # can be nil, it's okay!
+      @external_encoding = options[:external_encoding] # can be nil, it's okay!
+      @internal_encoding = options[:internal_encoding] # usually nil
+      
       if file.is_a?(String)
         @handle = File.new(file)
       elsif file.respond_to?("read", 5)
@@ -42,14 +44,14 @@ module MARC
         throw "must pass in path or file"
       end
       
-      if (! @encoding ) && @handle.respond_to?(:external_encoding)
+      if (! @external_encoding ) && @handle.respond_to?(:external_encoding)
         # use file encoding only if we didn't already have an explicit one,
         # explicit one takes precedence. 
         #
         # Note, please don't use ruby's own internal_encoding transcode
         # with binary marc data, the transcode can mess up the byte count
         # and make it unreadable. 
-        @encoding ||= @handle.external_encoding
+        @external_encoding ||= @handle.external_encoding
       end      
     end
 
@@ -77,7 +79,9 @@ module MARC
 
         # create a record from the data and return it
         #record = MARC::Record.new_from_marc(raw)
-        record = MARC::Reader.decode(raw, :external_encoding => @encoding)
+        record = MARC::Reader.decode(raw, 
+          :external_encoding => @external_encoding,
+          :internal_encoding => @internal_encoding)
         yield record
       end
     end
@@ -151,8 +155,13 @@ module MARC
         # remove end of field
         field_data.delete!(END_OF_FIELD)
 
-        if field_data.respond_to?(:force_encoding) && params[:external_encoding]
-          field_data = field_data.force_encoding(params[:external_encoding])
+        if field_data.respond_to?(:force_encoding)
+          if params[:external_encoding]
+            field_data = field_data.force_encoding(params[:external_encoding])
+          end
+          if params[:internal_encoding]
+            field_data = field_data.encode(params[:internal_encoding])
+          end
         end
         # add a control field or data field
         if MARC::ControlField.control_tag?(tag)
