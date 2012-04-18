@@ -32,10 +32,13 @@ module MARC
     # or, you can pass IO, opened in the corresponding encoding
     #
     #   reader = MARC::Reader.new(File.new('marc.dat', 'r:cp866'))
-    def initialize(file, options = {})           
-      @external_encoding = options[:external_encoding] # can be nil, it's okay!
-      @internal_encoding = options[:internal_encoding] # usually nil
-      
+    def initialize(file, options = {})      
+      @encoding_options = {}
+      # all can be nil
+      [:internal_encoding, :external_encoding].each do |key|
+        @encoding_options[key] = options[key]
+      end
+            
       if file.is_a?(String)
         @handle = File.new(file)
       elsif file.respond_to?("read", 5)
@@ -44,14 +47,14 @@ module MARC
         throw "must pass in path or file"
       end
       
-      if (! @external_encoding ) && @handle.respond_to?(:external_encoding)
+      if (! @encoding_options[:external_encoding] ) && @handle.respond_to?(:external_encoding)
         # use file encoding only if we didn't already have an explicit one,
         # explicit one takes precedence. 
         #
         # Note, please don't use ruby's own internal_encoding transcode
         # with binary marc data, the transcode can mess up the byte count
         # and make it unreadable. 
-        @external_encoding ||= @handle.external_encoding
+        @encoding_options[:external_encoding] ||= @handle.external_encoding
       end      
     end
 
@@ -79,9 +82,7 @@ module MARC
 
         # create a record from the data and return it
         #record = MARC::Record.new_from_marc(raw)
-        record = MARC::Reader.decode(raw, 
-          :external_encoding => @external_encoding,
-          :internal_encoding => @internal_encoding)
+        record = MARC::Reader.decode(raw, @encoding_options)
         yield record
       end
     end
