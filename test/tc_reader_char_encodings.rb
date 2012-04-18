@@ -7,7 +7,7 @@ require 'marc'
 # these tests except under 1.9, will either fail (because
 # 1.9 func the test itself uses isn't there), or trivially pass
 # (becuase the func they are testing is no-op on 1.9).
-class ReaderTest < Test::Unit::TestCase
+class ReaderCharEncodingsTest < Test::Unit::TestCase
 
   def test_unicode_load
     reader = MARC::Reader.new('test/utf8.marc')
