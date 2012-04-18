@@ -66,10 +66,6 @@ module MARC
         # using the record length
         raw = rec_length_s + @handle.read(rec_length_i-5)
 
-        # Ruby 1.9 will try to set the encoding to ASCII-8BIT, which we don't want.
-        # Not entirely sure what happens for MARC-8 encoded records, but, technically,
-        # ruby-marc doesn't support MARC-8, anyway.
-        raw.force_encoding(@encoding) if raw.respond_to?(:force_encoding)
 
         # create a record from the data and return it
         #record = MARC::Record.new_from_marc(raw)
