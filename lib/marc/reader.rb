@@ -62,10 +62,6 @@ module MARC
     #   for record in reader
     #     print record
     #   end
-    #
-    # and even searching:
-    #   record.find { |f| f['245'] =~ /Huckleberry/ }
-
     def each
       # while there is data left in the file
       while rec_length_s = @handle.read(5)
@@ -93,7 +89,7 @@ module MARC
     # First argument is a String
     # options include:
     #   [:external_encoding]  encoding of MARC record data values
-    #   [:forgiving]          needs more docs, some kind of forgiving 
+    #   [:forgiving]          needs more docs, true is some kind of forgiving 
     #                         of certain kinds of bad MARC. 
     def self.decode(marc, params={})
       if params.has_key?(:encoding)
