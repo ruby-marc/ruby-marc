@@ -93,6 +93,17 @@ class ReaderTest < Test::Unit::TestCase
     end
   end
   
-
-  
+  def test_bad_source_bytes_with_replace
+    reader = MARC::Reader.new('test/utf8_with_bad_bytes.marc', 
+      :external_encoding => "UTF-8", :invalid => :replace)
+    
+    record = nil
+    assert_nothing_raised do
+      record = reader.first
+    end
+    
+    # it should have the unicode replacement char where the bad
+    # byte was. 
+    assert_match '=> ' +  "\uFFFD" + '( <=', record['245']['a']      
+  end
 end

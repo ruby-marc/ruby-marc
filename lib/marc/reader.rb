@@ -35,8 +35,8 @@ module MARC
     def initialize(file, options = {})      
       @encoding_options = {}
       # all can be nil
-      [:internal_encoding, :external_encoding].each do |key|
-        @encoding_options[key] = options[key]
+      [:internal_encoding, :external_encoding, :invalid].each do |key|
+        @encoding_options[key] = options[key] if options.has_key?(key)
       end
             
       if file.is_a?(String)
@@ -171,7 +171,8 @@ module MARC
           # bad bytes will trigger ArgumentErrors from arbitrary part
           # of the ruby_marc stack _anyway_, we got to check now for
           # a predictable erorr message. 
-          field_data = MARC::Reader.validate_encoding(field_data)
+          # pass on params for :replace and :invalid options. 
+          field_data = MARC::Reader.validate_encoding(field_data,  params)
           
           if params[:internal_encoding]
             field_data = field_data.encode(params[:internal_encoding])
