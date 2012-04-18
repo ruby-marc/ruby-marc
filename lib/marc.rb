@@ -31,7 +31,7 @@
 #    record.add_field(MARC::ControlField.new('FMT', 'Book')) # doesn't throw an error
 
 
-
+require File.dirname(__FILE__) + '/marc/version'
 require File.dirname(__FILE__) + '/marc/constants'
 require File.dirname(__FILE__) + '/marc/record'
 require File.dirname(__FILE__) + '/marc/datafield'
