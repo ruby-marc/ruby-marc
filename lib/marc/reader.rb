@@ -15,7 +15,7 @@ module MARC
     # or really any object that responds to read(n)
     #
     #   # marc is a string with a bunch of records in it
-    #   reader = MARC::Reader.new(StringIO.new(reader))
+    #   reader = MARC::Reader.new(StringIO.new(marc))
     #
     # If your data have non-standard control fields in them
     # (e.g., Aleph's 'FMT') you need to add them specifically
@@ -25,9 +25,9 @@ module MARC
     #
     # Also, if your data encoded with non ascii/utf-8 encoding
     # (for ex. when reading RUSMARC data) and you use ruby 1.9
-    # you can specify source data encoding with  second argument
+    # you can specify source data encoding with an option. 
     #
-    #   reader = MARC::Reader.new('marc.dat', 'cp866')
+    #   reader = MARC::Reader.new('marc.dat', :external_encoding => 'cp866')
     #
     # or, you can pass IO, opened in the corresponding encoding
     #
@@ -85,7 +85,11 @@ module MARC
 
     # A static method for turning raw MARC data in transission
     # format into a MARC::Record object.
-
+    # First argument is a String
+    # options include:
+    #   [:external_encoding]  encoding of MARC record data values
+    #   [:forgiving]          needs more docs, some kind of forgiving 
+    #                         of certain kinds of bad MARC. 
     def self.decode(marc, params={})
       if params.has_key?(:encoding)
         $stderr.puts "DEPRECATION WARNING: MARC::Reader.decode :encoding option deprecated, please use :external_encoding"
