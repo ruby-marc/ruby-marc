@@ -49,6 +49,8 @@ class ReaderTest < Test::Unit::TestCase
     record = reader.first
     
     assert_equal "UTF-8", record['245']['a'].encoding.name
+    assert_equal "UTF-8", record['245'].subfields.first.value.encoding.name
+    
     assert record['245']['a'].start_with?("Photčhanānukrom")
   end
   
