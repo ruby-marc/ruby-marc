@@ -378,6 +378,10 @@ module MARC
   # in the field data. Hopefully this will be the case, but it is not
   # 100% guranteed which is why the normal behavior of Reader is encouraged.
   #
+  # **NOTE**: ForgivingReader _may_ have unpredictable results when used
+  # with marc records with char encoding other than system default (usually
+  # UTF8), _especially_ if you have Encoding.default_internal set. 
+  #
   # Implemented a sub-class of Reader over-riding #each, so we still
   # get DRY Reader's #initialize with proper char encoding options
   # and handling. 
