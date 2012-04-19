@@ -16,14 +16,15 @@ module MARC
   # and :replace options below. 
   #
   # In ruby 1.9, it's important strings are tagged with their proper encoding.
-  # MARC::Reader does _not_ at present look inside the MARC file to see what
-  # encoding it claims for itself -- real world MARC records are so unreliable
+  # **MARC::Reader does _not_ at present look inside the MARC file to see what
+  # encoding it claims for itself** -- real world MARC records are so unreliable
   # here as to limit utility; and we have international users and international
   # MARC uses several conventions for this. Instead, MARC::Reader uses ordinary
-  # ruby conventions. 
+  # ruby conventions.  If your data is in UTF-8, it'll probably Just Work, 
+  # otherwise you simply have to tell MARC::Reader what the source encoding is:
   #
   #     Encoding.default_external # => usually "UTF-8" for most people
-  #     # marc data will be tagged UTF-8:
+  #     # marc data will be considered UTF-8, as per Encoding.default_external
   #     MARC::Reader.new("path/to/file.marc")
   #
   #     # marc data will have same encoding as string.encoding:
@@ -32,7 +33,8 @@ module MARC
   #     # Same, values will have encoding of string.encoding:
   #     MARC::Reader.new(StringIO.new(string)) 
   #
-  #     # data values will have cp866 encoding, per File object passed in
+  #     # data values will have cp866 encoding, per external_encoding of
+  #     # File object passed in
   #     MARC::Reader.new(File.new("myfile.marc", "r:cp866"))
   #
   #     # explicitly tell MARC::Reader the encoding
@@ -43,7 +45,7 @@ module MARC
   # It won't guess from internal MARC leader etc. 
   #
   # == Additional Options
-  # These options can be used on MARC::Reader.new _or_ MARC::Reader.decode
+  # These options can all be used on MARC::Reader.new _or_ MARC::Reader.decode
   # to specify external encoding, ask for a transcode to a different
   # encoding on read, or validate or replace bad bytes in source. 
   #
@@ -57,16 +59,19 @@ module MARC
   #    If you pass in `true`, MARC::Reader will promise to raise an Encoding::InvalidByteSequenceError
   #    if there are illegal bytes in the source for the :external_encoding. There is
   #    a performance penalty for this check. Without this option, an exception
-  #    _may_ or _may not_ be raised, this may change in future ruby-marc versions,
-  #    as may the class of any raised exception. 
+  #    _may_ or _may not_ be raised, and whether an exception or raised (or 
+  #    what class the exception has) may change in future ruby-marc versions
+  #    without warning. 
   # [:invalid]
   #    Just like String#encode, set to :replace and any bytes in source data
-  #    illegal for the :external_encoding will be replaced with the unicode 
-  #    replacement character in unicode encodings, or else '?'. Overrides
-  #    :validate_encoding. 
+  #    illegal for the source encoding will be replaced with the unicode 
+  #    replacement character (when in unicode encodings), or else '?'. Overrides
+  #    :validate_encoding. This can help you sanitize your input and
+  #    avoid ruby "invalid UTF-8 byte" exceptions later. 
   # [:replace]
   #    Just like String#encode, combine with `:invalid=>:replace`, set
-  #    your own replacement string for invalid bytes. Can use
+  #    your own replacement string for invalid bytes. You may use the
+  #    empty string to simply eliminate invalid bytes. 
   #
   # == Warning on ruby File's own :internal_encoding, and unsafe transcoding from ruby
   #
