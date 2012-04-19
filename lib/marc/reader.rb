@@ -7,13 +7,17 @@ module MARC
   # garbage bytes. MARC::Reader takes no special action to determine or
   # correct character encodings in ruby 1.8. 
   #
-  # In ruby 1.9, you will likely get an exception raised at some
-  # point, either from inside MARC::Reader or in your own code. Note that
-  # if your source data includes invalid illegal characters for it's encoding,
-  # while it should not cause MARC::Reader to raise an exception, it
-  # will likely result in an exception at a later point in your own code. 
-  # You can ask MARC::Reader to remove invalid bytes from data, see :invalid
-  # and :replace options below. 
+  # In ruby 1.9, if character encodings get confused, you will likely get an 
+  # exception raised at some point, either from inside MARC::Reader or in your 
+  # own code. If your marc records are not in UTF-8, you will have to make sure
+  # MARC::Reader knows what character encoding to expect. For UTF-8, normally
+  # it will just work. 
+  #
+  # Note that if your source data includes invalid illegal characters
+  # for it's encoding, while it _may_ not cause MARC::Reader to raise an
+  # exception, it will likely result in an exception at a later point in
+  # your own code. You can ask MARC::Reader to remove invalid bytes from data, 
+  # see :invalid and :replace options below. 
   #
   # In ruby 1.9, it's important strings are tagged with their proper encoding.
   # **MARC::Reader does _not_ at present look inside the MARC file to see what
