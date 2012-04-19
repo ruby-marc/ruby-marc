@@ -31,7 +31,7 @@ class ReaderTest < Test::Unit::TestCase
   
   def test_loose_unimarc
     # Unimarc might use a different record seperator? Let's make sure it works. 
-    reader = MARC::Reader.new(File.open('test/cp866.marc', 'r:cp866'))
+    reader = MARC::Reader.new(File.open('test/cp866_unimarc.marc', 'r:cp866'))
     count = 0
     reader.each {|a| count += 1 }
     assert_equal(1, count)
