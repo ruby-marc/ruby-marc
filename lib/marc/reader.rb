@@ -169,19 +169,21 @@ module MARC
             field_data = field_data.force_encoding(params[:external_encoding])
           end     
           
-          # If we don't check this now to raise a InvalidByteSequenceError,
-          # bad bytes will trigger ArgumentErrors from arbitrary part
-          # of the ruby_marc stack _anyway_, we got to check now for
-          # a predictable erorr message. 
-          # pass on params for :replace and :invalid options. 
-          if (params[:invalid] || params[:replace] || (params[:validate_encoding] == true))
+          # If we're transcoding anyway, pass our invalid/replace options
+          # on to String#encode, which will take care of them -- or raise
+          # with illegal bytes without :replace=>:invalid. 
+          #
+          # If we're NOT transcoding, we need to use our own pure-ruby
+          # implementation to do invalid byte replacements. OR to raise
+          # a predicatable exception iff :validate_encoding, otherwise
+          # for performance we won't check, and you may or may not
+          # get an exception from inside ruby-marc, and it may change
+          # in future implementations. 
+          if params[:internal_encoding]
+            field_data = field_data.encode(params[:internal_encoding], params)
+          elsif (params[:invalid] || params[:replace] || (params[:validate_encoding] == true))
             field_data = MARC::Reader.validate_encoding(field_data,  params)
           end
-          
-          if params[:internal_encoding]
-            field_data = field_data.encode(params[:internal_encoding])
-          end
-          
           
         end
         # add a control field or data field
