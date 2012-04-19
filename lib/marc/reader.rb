@@ -46,7 +46,7 @@ module MARC
       else
         throw "must pass in path or file"
       end
-                  
+      
       if (! @encoding_options[:external_encoding] ) && @handle.respond_to?(:external_encoding)
         # use file encoding only if we didn't already have an explicit one,
         # explicit one takes precedence. 
@@ -55,15 +55,7 @@ module MARC
         # with binary marc data, the transcode can mess up the byte count
         # and make it unreadable. 
         @encoding_options[:external_encoding] ||= @handle.external_encoding
-      end   
-      # If the File handle has an internal_encoding (becuase it was explicitly
-      # set, or because of Encoding.default_internal), mark it so we
-      # can transcode and make it look right in the end. 
-      if (! @encoding_options[:internal_encoding]) && @handle.respond_to?(:internal_encoding)
-        @encoding_options[:internal_encoding] = @handle.internal_encoding unless @handle.internal_encoding.nil?
-      end
-      
-      
+      end      
     end
 
     # to support iteration:
