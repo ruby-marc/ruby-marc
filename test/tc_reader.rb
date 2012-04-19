@@ -18,6 +18,24 @@ class ReaderTest < Test::Unit::TestCase
     reader.each { count += 1 }
     assert_equal(10, count)
   end
+  
+  def test_loose_utf8
+    # This isn't actually a corrupt file, but it is utf8, 
+    # and I have some reason to believe forgiving reader isn't
+    # working properly with UTF8 in ruby 1.9, so testing it. 
+    reader = MARC::ForgivingReader.new('test/utf8.marc')
+    count = 0
+    reader.each { count += 1 }
+    assert_equal(1, count)
+  end
+  
+  def test_loose_unimarc
+    # Unimarc might use a different record seperator? Let's make sure it works. 
+    reader = MARC::Reader.new(File.open('test/cp866.marc', 'r:cp866'))
+    count = 0
+    reader.each {|a| count += 1 }
+    assert_equal(1, count)
+  end
 
   def test_non_numeric_tags
     reader = MARC::Reader.new('test/non-numeric.dat')

@@ -37,6 +37,18 @@ if "".respond_to?(:encoding)
       assert_equal "UTF-8", record['245']['a'].encoding.name
       assert record['245']['a'].start_with?("Photčhanānukrom")
     end
+    
+    def test_unicode_forgiving_reader_passes_options
+      # Make sure ForgivingReader accepts same options as MARC::Reader
+      # We don't test them ALL though, just a sample.
+      # Tell it we're reading cp866, but trancode to utf8 for us. 
+      reader = MARC::ForgivingReader.new('test/cp866.marc', :external_encoding => "cp866", :internal_encoding => "utf-8")
+
+      record = reader.first 
+
+      assert_equal('UTF-8', record['001'].value.encoding.name)
+      assert_equal(["d09d"], record['001'].value.unpack('H4')) # russian capital N         
+    end
   
     def test_explicit_encoding
       reader = MARC::Reader.new('test/cp866.marc', :external_encoding => 'cp866')
@@ -135,6 +147,29 @@ if "".respond_to?(:encoding)
       assert_match '=> ( <=', record['245']['a']
       
     end
+    
+    #def test_default_internal_encoding
+      # Some people WILL be changing their Encoding.default_internal
+      # It's even recommended by wycats 
+      # http://yehudakatz.com/2010/05/05/ruby-1-9-encodings-a-primer-and-the-solution-for-rails/
+      # This will in some cases make ruby File object trans-code
+      # by default. Trans-coding a serial marc binary can change the
+      # byte count and mess it up. We may need to try and make ruby-marc
+      # take special measures to prevent this. This test is important.
+      # begin
+        # original = Encoding.default_internal
+        # Encoding.default_internal = "UTF-8"
+        # 
+        # reader = MARC::Reader.new(File.open('test/cp866.marc', 'r:cp866'))
+      # 
+        # record = reader.first
+        # assert_equal("IBM866", record['001'].value.encoding.name )
+        # assert_equal(["d09d"], record['001'].value.encode('utf-8').unpack('H4')) # russian capital N      
+      # ensure
+        # Encoding.default_internal = original
+      # end      
+    # end
+    # 
   end
 else
   require 'pathname'

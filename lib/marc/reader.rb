@@ -122,7 +122,10 @@ module MARC
       # field instead of using calculated byte offsets from the
       # directory
       if params[:forgiving]
-        all_fields = marc[base_address..-1].split(END_OF_FIELD)
+        # It won't let us do the split on bad utf8 data, but
+        # we haven't yet set the 'proper' encoding or used
+        # our correction/replace options. So call it binary for now. 
+        all_fields = marc[base_address..-1].force_encoding("binary").split(END_OF_FIELD)
       else
         mba =  marc.bytes.to_a
       end
@@ -260,30 +263,21 @@ module MARC
   # leader and directory. It is not unusual to run across MARC records
   # which have had their offsets calcualted wrong. In situations like this
   # the vanilla Reader may fail, and you can try to use ForgivingReader.
-
+  #
   # The one downside to this is that ForgivingReader will assume that the
   # order of the fields in the directory is the same as the order of fields
   # in the field data. Hopefully this will be the case, but it is not
   # 100% guranteed which is why the normal behavior of Reader is encouraged.
-
-  class ForgivingReader
-    include Enumerable
-
-    def initialize(file)
-      if file.class == String
-        @handle = File.new(file)
-      elsif file.respond_to?("read", 5)
-        @handle = file
-      else
-        throw "must pass in path or File object"
-      end
-    end
-
+  #
+  # Implemented a sub-class of Reader over-riding #each, so we still
+  # get DRY Reader's #initialize with proper char encoding options
+  # and handling. 
+  class ForgivingReader < Reader
 
     def each
       @handle.each_line(END_OF_RECORD) do |raw|
         begin
-          record = MARC::Reader.decode(raw, :forgiving => true)
+          record = MARC::Reader.decode(raw, @encoding_options.merge(:forgiving => true))
           yield record
         rescue StandardError => e
           # caught exception just keep barrelling along
