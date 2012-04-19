@@ -54,6 +54,13 @@ if "".respond_to?(:encoding)
       reader = MARC::Reader.new('test/cp866_unimarc.marc', :external_encoding => 'cp866')
       assert_equal(["d09d"], reader.first['001'].value.encode('utf-8').unpack('H4')) # russian capital N
     end
+    
+    def test_bad_encoding_name_input
+      reader = MARC::Reader.new('test/cp866_unimarc.marc', :external_encoding => 'adadfadf')
+      assert_raises ArgumentError do
+        reader.first
+      end
+    end
   
     def test_load_file_opened_with_external_encoding
       reader = MARC::Reader.new(File.open('test/cp866_unimarc.marc', 'r:cp866'))
