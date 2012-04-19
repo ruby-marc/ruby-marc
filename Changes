@@ -1,3 +1,14 @@
+v0.5.0 April 2012
+- Extensive rewrite of MARC::Reader (binary) char encoding issues in ruby
+  1.9. 
+  - This code is well covered by automated tests, but ends up complex, there
+    may be bugs, please report them. 
+  - May not have entirely backwards compatible behavior with regard to char
+    encodings under ruby 1.9.x as previous 0.4.x versions. Test your code. 
+    In particular, previous versions may have automatically _transcoded_
+    non-unicode encodings to UTF-8 for you. This version will not do
+    so unless you ask it to with correct arguments. 
+
 v0.4.4 Sat Mar 03 14:55:00 EDT 2012
 - Fixed performance regression: strict reader will parse about 5x faster now
 - Updated CHANGES file for first time in a long time :-)
