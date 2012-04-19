@@ -121,11 +121,14 @@ module MARC
       # when operating in forgiving mode we just split on end of
       # field instead of using calculated byte offsets from the
       # directory
-      if params[:forgiving]
+      if params[:forgiving]        
+        marc_field_data = marc[base_address..-1]
         # It won't let us do the split on bad utf8 data, but
         # we haven't yet set the 'proper' encoding or used
-        # our correction/replace options. So call it binary for now. 
-        all_fields = marc[base_address..-1].force_encoding("binary").split(END_OF_FIELD)
+        # our correction/replace options. So call it binary for now.
+        marc_field_data.force_encoding("binary") if marc_field_data.respond_to?(:force_encoding)
+        
+        all_fields = marc_field_data.split(END_OF_FIELD)
       else
         mba =  marc.bytes.to_a
       end
