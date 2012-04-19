@@ -205,7 +205,7 @@ if "".respond_to?(:encoding)
       
     end
     
-    def test_default_internal_encoding
+    def test_default_internal_encoding      
       # Some people WILL be changing their Encoding.default_internal
       # It's even recommended by wycats 
       # http://yehudakatz.com/2010/05/05/ruby-1-9-encodings-a-primer-and-the-solution-for-rails/
@@ -229,8 +229,27 @@ if "".respond_to?(:encoding)
        ensure
          Encoding.default_internal = original
        end      
-     end     
+    end
+    
+    def test_default_internal_encoding_with_string_arg
+      begin
+         original = Encoding.default_internal
+         Encoding.default_internal = "UTF-8"
+         
+         reader = MARC::Reader.new(@@cp866_marc_path, :external_encoding => "cp866")
+       
+         record = reader.first
+         
+         assert_cp866_right(record, "IBM866")                        
+       ensure
+         Encoding.default_internal = original
+       end    
+    end
+      
   end
+  
+  
+  
 else
   require 'pathname'
   $stderr.puts "\nTests not being run in ruby 1.9.x, skipping #{Pathname.new(__FILE__).basename}\n\n"  
