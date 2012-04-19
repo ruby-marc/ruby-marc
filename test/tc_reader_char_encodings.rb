@@ -23,6 +23,15 @@ if "".respond_to?(:encoding)
       assert record['245']['a'].start_with?("Photčhanānukrom")
     end
     
+    def test_encoding_to_s_methods
+      reader = MARC::Reader.new('test/utf8.marc')
+      
+      record = reader.first
+      
+      assert_equal "UTF-8", record['245'].to_s.encoding.name
+      assert_equal "UTF-8", record['245'].subfields.first.to_s.encoding.name
+    end
+    
     def test_unicode_decode_forgiving
       # two kinds of forgiving invocation, they shouldn't be different,
       # but just in case they have slightly different code paths, test em
@@ -60,6 +69,14 @@ if "".respond_to?(:encoding)
       assert_raises ArgumentError do
         reader.first
       end
+    end
+    
+    def test_marc8_with_binary
+      # Marc8, best we can do is read it in binary. 
+      reader = MARC::Reader.new('test/marc8_accented_chars.marc', :external_encoding => 'binary')
+      record = reader.first
+   
+      assert_equal "ASCII-8BIT", record['100'].subfields.first.value.encoding.name
     end
   
     def test_load_file_opened_with_external_encoding
