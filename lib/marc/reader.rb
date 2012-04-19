@@ -42,7 +42,13 @@ module MARC
   #     MARC::Reader.new(File.new("myfile.marc", "r:cp866"))
   #
   #     # explicitly tell MARC::Reader the encoding
-  #     MARC::Reader.new("myfile.marc", :external_encoding => "cp866")  
+  #     MARC::Reader.new("myfile.marc", :external_encoding => "cp866") 
+  #
+  #     # If you have Marc8 data, you _really_ want to convert it
+  #     # to UTF8 outside of ruby, but if you can't:
+  #     MARC::Reader.new("marc8.marc" :external_encoding => "binary")
+  #     # But you probably _will_ have problems subsequently in your own
+  #     # own code using the MARC::Record. 
   #
   # One way or another, you have to tell MARC::Reader what the external
   # encoding is, if it's not the default for your system (usually UTF-8).
