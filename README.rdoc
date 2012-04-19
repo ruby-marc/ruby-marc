@@ -42,7 +42,7 @@ Or if you're using bundler, add to your Gemfile
 
   gem 'marc'
   
-ERRATA
+MISCELLANY
 
 Source code at: https://github.com/ruby-marc/ruby-marc/
 
