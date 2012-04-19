@@ -31,7 +31,10 @@ if "".respond_to?(:encoding)
       assert record['245']['a'].start_with?("Photčhanānukrom")
     end
     
-    @@cp866_marc_path = "test/cp866_unimarc.marc"
+    # Test against multirecord just to be sure that works. 
+    # the multirecord file is just two concatenated copies
+    # of the single one. 
+    @@cp866_marc_path = "test/cp866_multirecord.marc"
     # assumes record in test/cp866_unimarc.marc
     # Pass in an encoding name, using ruby's canonical name!
     # "IBM866" not "cp866". "UTF-8". 
