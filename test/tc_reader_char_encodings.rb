@@ -86,6 +86,7 @@ if "".respond_to?(:encoding)
       # Make sure it's got the encoding it's supposed to. 
       assert_equal("IBM866", record['001'].value.encoding.name )
       assert_equal(["d09d"], record['001'].value.encode('utf-8').unpack('H4')) # russian capital N
+      assert_equal("2005", record['007'].value)
     end
     
     def test_explicit_encoding_beats_file_encoding
@@ -172,28 +173,28 @@ if "".respond_to?(:encoding)
       
     end
     
-    #def test_default_internal_encoding
-      # Some people WILL be changing their Encoding.default_internal
-      # It's even recommended by wycats 
-      # http://yehudakatz.com/2010/05/05/ruby-1-9-encodings-a-primer-and-the-solution-for-rails/
-      # This will in some cases make ruby File object trans-code
-      # by default. Trans-coding a serial marc binary can change the
-      # byte count and mess it up. We may need to try and make ruby-marc
-      # take special measures to prevent this. This test is important.
-      # begin
-        # original = Encoding.default_internal
-        # Encoding.default_internal = "UTF-8"
-        # 
-        # reader = MARC::Reader.new(File.open('test/cp866_unimarc.marc', 'r:cp866'))
-      # 
-        # record = reader.first
-        # assert_equal("IBM866", record['001'].value.encoding.name )
-        # assert_equal(["d09d"], record['001'].value.encode('utf-8').unpack('H4')) # russian capital N      
-      # ensure
-        # Encoding.default_internal = original
-      # end      
-    # end
-    # 
+    def test_default_internal_encoding
+      #Some people WILL be changing their Encoding.default_internal
+      #It's even recommended by wycats 
+      #http://yehudakatz.com/2010/05/05/ruby-1-9-encodings-a-primer-and-the-solution-for-rails/
+      # We want this to:
+      # 1) NOT trans-code under the hood, possibly corrupting byte offset/length counts
+      # 2) Give you a record that properly respected that and converted for you, correctly. 
+      begin
+        original = Encoding.default_internal
+        Encoding.default_internal = "UTF-8"
+        
+        reader = MARC::Reader.new(File.open('test/cp866_unimarc.marc', "r:cp866"))
+      
+        record = reader.first
+        assert_equal("UTF-8", record['001'].value.encoding.name )
+        assert_equal(["d09d"], record['001'].value.unpack('H4')) # russian capital N      
+      ensure
+        Encoding.default_internal = original
+      end      
+    end
+    
+    
   end
 else
   require 'pathname'
