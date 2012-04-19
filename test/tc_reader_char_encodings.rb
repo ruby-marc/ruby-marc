@@ -172,7 +172,8 @@ if "".respond_to?(:encoding)
     
     def test_with_bad_source_bytes
       reader = MARC::Reader.new('test/utf8_with_bad_bytes.marc', 
-        :external_encoding => "UTF-8")
+        :external_encoding => "UTF-8",
+        :validate_encoding => true)
       
       assert_raise Encoding::InvalidByteSequenceError do
         record = reader.first
