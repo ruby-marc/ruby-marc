@@ -1,5 +1,99 @@
 module MARC
-
+  # A class for reading MARC binary (ISO 2709) files. 
+  #
+  # == Character Encoding
+  #
+  # In ruby 1.8, if you mess up your character encodings, you may get
+  # garbage bytes. MARC::Reader takes no special action to determine or
+  # correct character encodings in ruby 1.8. 
+  #
+  # In ruby 1.9, you will likely get an exception raised at some
+  # point, either from inside MARC::Reader or in your own code. Note that
+  # if your source data includes invalid illegal characters for it's encoding,
+  # while it should not cause MARC::Reader to raise an exception, it
+  # will likely result in an exception at a later point in your own code. 
+  # You can ask MARC::Reader to remove invalid bytes from data, see :invalid
+  # and :replace options below. 
+  #
+  # In ruby 1.9, it's important strings are tagged with their proper encoding.
+  # MARC::Reader does _not_ at present look inside the MARC file to see what
+  # encoding it claims for itself -- real world MARC records are so unreliable
+  # here as to limit utility; and we have international users and international
+  # MARC uses several conventions for this. Instead, MARC::Reader uses ordinary
+  # ruby conventions. 
+  #
+  #     Encoding.default_external # => usually "UTF-8" for most people
+  #     # marc data will be tagged UTF-8:
+  #     MARC::Reader.new("path/to/file.marc")
+  #
+  #     # marc data will have same encoding as string.encoding:
+  #     MARC::Reader.decode( string )
+  #
+  #     # Same, values will have encoding of string.encoding:
+  #     MARC::Reader.new(StringIO.new(string)) 
+  #
+  #     # data values will have cp866 encoding, per File object passed in
+  #     MARC::Reader.new(File.new("myfile.marc", "r:cp866"))
+  #
+  #     # explicitly tell MARC::Reader the encoding
+  #     MARC::Reader.new("myfile.marc", :external_encoding => "cp866")  
+  #
+  # One way or another, you have to tell MARC::Reader what the external
+  # encoding is, if it's not the default for your system (usually UTF-8).
+  # It won't guess from internal MARC leader etc. 
+  #
+  # == Additional Options
+  # These options can be used on MARC::Reader.new _or_ MARC::Reader.decode
+  # to specify external encoding, ask for a transcode to a different
+  # encoding on read, or validate or replace bad bytes in source. 
+  #
+  # [:external_encoding]
+  #    What encoding to consider the MARC record's values to be in. This option
+  #    takes precedence over the File handle or String argument's encodings. 
+  # [:internal_encoding]
+  #    Ask MARC::Reader to transcode to this encoding in memory after reading
+  #    the file in. 
+  # [:validate_encoding]
+  #    If you pass in `true`, MARC::Reader will promise to raise an Encoding::InvalidByteSequenceError
+  #    if there are illegal bytes in the source for the :external_encoding. There is
+  #    a performance penalty for this check. Without this option, an exception
+  #    _may_ or _may not_ be raised, this may change in future ruby-marc versions,
+  #    as may the class of any raised exception. 
+  # [:invalid]
+  #    Just like String#encode, set to :replace and any bytes in source data
+  #    illegal for the :external_encoding will be replaced with the unicode 
+  #    replacement character in unicode encodings, or else '?'. Overrides
+  #    :validate_encoding. 
+  # [:replace]
+  #    Just like String#encode, combine with `:invalid=>:replace`, set
+  #    your own replacement string for invalid bytes. Can use
+  #
+  # == Warning on ruby File's own :internal_encoding, and unsafe transcoding from ruby
+  #
+  # Be careful with using an explicit File object with the File's own 
+  # :internal_encoding set -- it can cause ruby to transcode your data 
+  # _before_ MARC::Reader gets it, changing the bytecount and making the 
+  # marc record unreadable in some cases. This
+  # applies to Encoding.default_encoding too!
+  #
+  #    # May in some cases result in unreadable marc and an exception 
+  #    MARC::Reader.new(  File.new("marc_in_cp866.mrc", "r:cp866:utf-8") )
+  #
+  #    # May in some cases result in unreadable marc and an exception
+  #    Encoding.default_internal = "utf-8"
+  #    MARC::Reader.new(  File.new("marc_in_cp866.mrc", "r:cp866") )
+  #
+  #    # However this shoudl be safe:
+  #    MARC::Reader.new(  "marc_in_cp866.mrc", :external_encoding => "cp866")
+  #
+  #    # And this shoudl be safe, if you do want to transcode:
+  #    MARC::Reader.new(  "marc_in_cp866.mrc", :external_encoding => "cp866",
+  #       :internal_encoding => "utf-8")
+  #
+  #    # And this should ALWAYS be safe, with or without an internal_encoding
+  #    MARC::Reader.new( File.new("marc_in_cp866.mrc", "r:binary:binary"),
+  #       :external_encoding => "cp866",
+  #       :internal_encoding => "utf-8")
   class Reader
     include Enumerable
 
@@ -39,7 +133,7 @@ module MARC
         @encoding_options[key] = options[key] if options.has_key?(key)
       end
             
-      if file.is_a?(String)
+      if file.is_a?(String)        
         @handle = File.new(file)
       elsif file.respond_to?("read", 5)
         @handle = file
@@ -74,7 +168,6 @@ module MARC
         # get the raw MARC21 for a record back from the file
         # using the record length
         raw = rec_length_s + @handle.read(rec_length_i-5)
-
 
         # create a record from the data and return it
         #record = MARC::Record.new_from_marc(raw)
