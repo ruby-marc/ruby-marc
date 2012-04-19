@@ -16,8 +16,9 @@ if "".respond_to?(:encoding)
     #
     ####
     
-    # Assumes the record in test/utf8.marc, are it's values in UTF-8
-    # and proper?
+    
+    @@utf_marc_path = 'test/utf8.marc'
+    # tests against record at test/utf8.marc
     def assert_utf8_right_in_utf8(record)
       assert_equal "UTF-8", record['245'].subfields.first.value.encoding.name
             
@@ -30,6 +31,7 @@ if "".respond_to?(:encoding)
       assert record['245']['a'].start_with?("Photčhanānukrom")
     end
     
+    @@cp866_marc_path = "test/cp866_unimarc.marc"
     # assumes record in test/cp866_unimarc.marc
     # Pass in an encoding name, using ruby's canonical name!
     # "IBM866" not "cp866". "UTF-8". 
@@ -44,7 +46,7 @@ if "".respond_to?(:encoding)
     
     
     def test_unicode_load
-      reader = MARC::Reader.new('test/utf8.marc')
+      reader = MARC::Reader.new(@@utf_marc_path)
       
       record = nil
       
@@ -58,12 +60,12 @@ if "".respond_to?(:encoding)
       # two kinds of forgiving invocation, they shouldn't be different,
       # but just in case they have slightly different code paths, test em
       # too. 
-      marc_string = File.open('test/utf8.marc').read.force_encoding("utf-8")      
+      marc_string = File.open(@@utf_marc_path).read.force_encoding("utf-8")      
       record = MARC::Reader.decode(marc_string, :forgiving => true)
       assert_utf8_right_in_utf8(record)
 
       
-      reader = MARC::ForgivingReader.new('test/utf8.marc')
+      reader = MARC::ForgivingReader.new(@@utf_marc_path)
       record = reader.first
       assert_utf8_right_in_utf8(record)
     end
@@ -72,7 +74,7 @@ if "".respond_to?(:encoding)
       # Make sure ForgivingReader accepts same options as MARC::Reader
       # We don't test them ALL though, just a sample.
       # Tell it we're reading cp866, but trancode to utf8 for us. 
-      reader = MARC::ForgivingReader.new('test/cp866_unimarc.marc', :external_encoding => "cp866", :internal_encoding => "utf-8")
+      reader = MARC::ForgivingReader.new(@@cp866_marc_path, :external_encoding => "cp866", :internal_encoding => "utf-8")
 
       record = reader.first 
 
@@ -80,13 +82,13 @@ if "".respond_to?(:encoding)
     end
   
     def test_explicit_encoding
-      reader = MARC::Reader.new('test/cp866_unimarc.marc', :external_encoding => 'cp866')
+      reader = MARC::Reader.new(@@cp866_marc_path, :external_encoding => 'cp866')
       
       assert_cp866_right(reader.first, "IBM866")
     end
     
     def test_bad_encoding_name_input
-      reader = MARC::Reader.new('test/cp866_unimarc.marc', :external_encoding => 'adadfadf')
+      reader = MARC::Reader.new(@@cp866_marc_path, :external_encoding => 'adadfadf')
       assert_raises ArgumentError do
         reader.first
       end
@@ -101,7 +103,7 @@ if "".respond_to?(:encoding)
     end
   
     def test_load_file_opened_with_external_encoding
-      reader = MARC::Reader.new(File.open('test/cp866_unimarc.marc', 'r:cp866'))
+      reader = MARC::Reader.new(File.open(@@cp866_marc_path, 'r:cp866'))
       
       record = reader.first  
       # Make sure it's got the encoding it's supposed to.
@@ -110,7 +112,7 @@ if "".respond_to?(:encoding)
     end
     
     def test_explicit_encoding_beats_file_encoding
-      reader = MARC::Reader.new(File.open('test/cp866_unimarc.marc', 'r:utf-8'), :external_encoding => "cp866")
+      reader = MARC::Reader.new(File.open(@@cp866_marc_path, 'r:utf-8'), :external_encoding => "cp866")
       
       record = reader.first
       
@@ -118,7 +120,7 @@ if "".respond_to?(:encoding)
     end
     
     def test_from_string_with_utf8_encoding
-      marc_string = File.open('test/utf8.marc').read.force_encoding("UTF-8")
+      marc_string = File.open(@@utf_marc_path).read.force_encoding("UTF-8")
       
       reader = MARC::Reader.new(StringIO.new(marc_string))
       record = reader.first
@@ -127,7 +129,7 @@ if "".respond_to?(:encoding)
     end
     
     def test_from_string_with_cp866
-      marc_string = File.open('test/cp866_unimarc.marc').read.force_encoding("cp866")
+      marc_string = File.open(@@cp866_marc_path).read.force_encoding("cp866")
       
       reader = MARC::Reader.new(StringIO.new(marc_string))
       record = reader.first
@@ -136,7 +138,7 @@ if "".respond_to?(:encoding)
     end
     
     def test_decode_from_string_with_cp866
-      marc_string = File.open('test/cp866_unimarc.marc').read.force_encoding("cp866")
+      marc_string = File.open(@@cp866_marc_path).read.force_encoding("cp866")
       
       record = MARC::Reader.decode(marc_string)
       
@@ -144,7 +146,7 @@ if "".respond_to?(:encoding)
     end
     
     def test_with_transcode
-      reader = MARC::Reader.new('test/cp866_unimarc.marc', 
+      reader = MARC::Reader.new(@@cp866_marc_path, 
         :external_encoding => 'cp866', 
         :internal_encoding => 'UTF-8')
       
@@ -200,7 +202,7 @@ if "".respond_to?(:encoding)
         # original = Encoding.default_internal
         # Encoding.default_internal = "UTF-8"
         # 
-        # reader = MARC::Reader.new(File.open('test/cp866_unimarc.marc', 'r:cp866'))
+        # reader = MARC::Reader.new(File.open(@@cp866_marc_path, 'r:cp866'))
       # 
         # record = reader.first
         # assert_equal("IBM866", record['001'].value.encoding.name )
