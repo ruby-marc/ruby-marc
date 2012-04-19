@@ -11,7 +11,38 @@ require 'marc'
 if "".respond_to?(:encoding)
   
   class ReaderCharEncodingsTest < Test::Unit::TestCase
-  
+    ####
+    # Helper methods for our tests
+    #
+    ####
+    
+    # Assumes the record in test/utf8.marc, are it's values in UTF-8
+    # and proper?
+    def assert_utf8_right_in_utf8(record)
+      assert_equal "UTF-8", record['245'].subfields.first.value.encoding.name
+            
+      assert_equal "UTF-8", record['245'].to_s.encoding.name
+      
+      assert_equal "UTF-8", record['245'].subfields.first.to_s.encoding.name
+      assert_equal "UTF-8", record['245'].subfields.first.value.encoding.name
+      
+      assert_equal "UTF-8", record['245']['a'].encoding.name
+      assert record['245']['a'].start_with?("Photčhanānukrom")
+    end
+    
+    # assumes record in test/cp866_unimarc.marc
+    # Pass in an encoding name, using ruby's canonical name!
+    # "IBM866" not "cp866". "UTF-8". 
+    def assert_cp866_right(record, encoding = "IBM866")
+      assert_equal(encoding, record['001'].value.encoding.name)
+      assert_equal(["d09d"], record['001'].value.encode("UTF-8").unpack('H4')) # russian capital N    
+    end
+    
+    ####
+    # end helper methods
+    ####
+    
+    
     def test_unicode_load
       reader = MARC::Reader.new('test/utf8.marc')
       
@@ -19,18 +50,9 @@ if "".respond_to?(:encoding)
       
       assert_nothing_raised { record = reader.first }
       
-      assert_equal "UTF-8", record['245']['a'].encoding.name
-      assert record['245']['a'].start_with?("Photčhanānukrom")
+      assert_utf8_right_in_utf8(record)
     end
     
-    def test_encoding_to_s_methods
-      reader = MARC::Reader.new('test/utf8.marc')
-      
-      record = reader.first
-      
-      assert_equal "UTF-8", record['245'].to_s.encoding.name
-      assert_equal "UTF-8", record['245'].subfields.first.to_s.encoding.name
-    end
     
     def test_unicode_decode_forgiving
       # two kinds of forgiving invocation, they shouldn't be different,
@@ -38,13 +60,12 @@ if "".respond_to?(:encoding)
       # too. 
       marc_string = File.open('test/utf8.marc').read.force_encoding("utf-8")      
       record = MARC::Reader.decode(marc_string, :forgiving => true)
-      assert_equal "UTF-8", record['245']['a'].encoding.name
-      assert record['245']['a'].start_with?("Photčhanānukrom")
+      assert_utf8_right_in_utf8(record)
+
       
       reader = MARC::ForgivingReader.new('test/utf8.marc')
       record = reader.first
-      assert_equal "UTF-8", record['245']['a'].encoding.name
-      assert record['245']['a'].start_with?("Photčhanānukrom")
+      assert_utf8_right_in_utf8(record)
     end
     
     def test_unicode_forgiving_reader_passes_options
@@ -55,13 +76,13 @@ if "".respond_to?(:encoding)
 
       record = reader.first 
 
-      assert_equal('UTF-8', record['001'].value.encoding.name)
-      assert_equal(["d09d"], record['001'].value.unpack('H4')) # russian capital N         
+      assert_cp866_right(record, "UTF-8")
     end
   
     def test_explicit_encoding
       reader = MARC::Reader.new('test/cp866_unimarc.marc', :external_encoding => 'cp866')
-      assert_equal(["d09d"], reader.first['001'].value.encode('utf-8').unpack('H4')) # russian capital N
+      
+      assert_cp866_right(reader.first, "IBM866")
     end
     
     def test_bad_encoding_name_input
@@ -83,17 +104,17 @@ if "".respond_to?(:encoding)
       reader = MARC::Reader.new(File.open('test/cp866_unimarc.marc', 'r:cp866'))
       
       record = reader.first  
-      # Make sure it's got the encoding it's supposed to. 
-      assert_equal("IBM866", record['001'].value.encoding.name )
-      assert_equal(["d09d"], record['001'].value.encode('utf-8').unpack('H4')) # russian capital N
+      # Make sure it's got the encoding it's supposed to.
+      
+      assert_cp866_right(record, "IBM866")      
     end
     
     def test_explicit_encoding_beats_file_encoding
       reader = MARC::Reader.new(File.open('test/cp866_unimarc.marc', 'r:utf-8'), :external_encoding => "cp866")
       
       record = reader.first
-      assert_equal("IBM866", record['001'].value.encoding.name )
-      assert_equal(["d09d"], record['001'].value.encode('utf-8').unpack('H4')) # russian capital N
+      
+      assert_cp866_right(record, "IBM866")            
     end
     
     def test_from_string_with_utf8_encoding
@@ -102,10 +123,7 @@ if "".respond_to?(:encoding)
       reader = MARC::Reader.new(StringIO.new(marc_string))
       record = reader.first
       
-      assert_equal "UTF-8", record['245']['a'].encoding.name
-      assert_equal "UTF-8", record['245'].subfields.first.value.encoding.name
-      
-      assert record['245']['a'].start_with?("Photčhanānukrom")
+      assert_utf8_right_in_utf8(record)
     end
     
     def test_from_string_with_cp866
@@ -114,8 +132,7 @@ if "".respond_to?(:encoding)
       reader = MARC::Reader.new(StringIO.new(marc_string))
       record = reader.first
       
-      assert_equal("IBM866", record['001'].value.encoding.name )
-      assert_equal(["d09d"], record['001'].value.encode('utf-8').unpack('H4')) # russian capital N
+      assert_cp866_right(record, "IBM866")      
     end
     
     def test_decode_from_string_with_cp866
@@ -123,8 +140,7 @@ if "".respond_to?(:encoding)
       
       record = MARC::Reader.decode(marc_string)
       
-      assert_equal("IBM866", record['001'].value.encoding.name )
-      assert_equal(["d09d"], record['001'].value.encode('utf-8').unpack('H4')) # russian capital N
+      assert_cp866_right(record, "IBM866")      
     end
     
     def test_with_transcode
@@ -134,8 +150,8 @@ if "".respond_to?(:encoding)
       
       record = reader.first 
     
-      assert_equal('UTF-8', record['001'].value.encoding.name)
-      assert_equal(["d09d"], record['001'].value.unpack('H4')) # russian capital N
+      assert_cp866_right(record, "UTF-8")      
+      
     end
     
     def test_with_bad_source_bytes
