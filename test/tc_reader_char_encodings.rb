@@ -159,6 +159,17 @@ if "".respond_to?(:encoding)
       
     end
     
+    def test_with_binary_filehandle
+      # about to recommend this as a foolproof way to avoid
+      # ruby transcoding behind your back in docs, let's make
+      # sure it really works. 
+      reader = MARC::Reader.new(File.open(@@cp866_marc_path, :external_encoding => "binary", :internal_encoding => "binary"),
+        :external_encoding => "IBM866")
+        
+      record = reader.first
+      assert_cp866_right(record, "IBM866")
+    end
+    
     def test_with_bad_source_bytes
       reader = MARC::Reader.new('test/utf8_with_bad_bytes.marc', 
         :external_encoding => "UTF-8")
@@ -217,8 +228,7 @@ if "".respond_to?(:encoding)
        ensure
          Encoding.default_internal = original
        end      
-     end
-     
+     end     
   end
 else
   require 'pathname'
