@@ -16,13 +16,13 @@ class ReaderTest < Test::Unit::TestCase
     reader.each { count += 1 }
     assert_equal(10, count)
   end
-  
+
   def test_non_numeric_tags
     reader = MARC::Reader.new('test/non-numeric.dat')
     count = 0
     record = nil
     reader.each do | rec |
-      count += 1 
+      count += 1
       record = rec
     end
     assert_equal(1, count)
@@ -31,8 +31,18 @@ class ReaderTest < Test::Unit::TestCase
   end
 
   def test_unicode_load
-    reader =   MARC::Reader.new('test/000039829.marc')
+    reader = MARC::Reader.new('test/000039829.marc')
     assert_nothing_raised { reader.first }
+  end
+
+  def test_pre_unicode_encodings
+    reader = MARC::Reader.new('test/cp866.marc', 'cp866')
+    assert_equal(["d09d"], reader.first['001'].value.encode('utf-8').unpack('H4')) # russian capital N
+  end
+
+  def test_load_file_opened_with_encoding
+    reader = MARC::Reader.new(File.open('test/cp866.marc', 'r:cp866'))
+    assert_equal(["d09d"], reader.first['001'].value.encode('utf-8').unpack('H4')) # russian capital N
   end
 
   def test_bad_marc
