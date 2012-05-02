@@ -346,15 +346,22 @@ module MARC
     def self.validate_encoding(str, options = {})
       return str unless str.respond_to?(:encoding)
       
-      str.chars.collect do |c|
-        if c.valid_encoding?
-          c
-        else
-          unless options[:invalid] == :replace
-            # it ought to be filled out with all the metadata
-            # this exception usually has, but what a pain!
-            # Why isn't ruby doing this for us?
-            raise  Encoding::InvalidByteSequenceError.new("#{c.inspect} in #{c.encoding.name}")
+      if str.valid_encoding?
+        return str       
+      elsif options[:invalid] != :replace
+        # If we're not replacing, just raise right away without going through
+        # chars for performance. 
+        #
+        # That does mean we're not able to say exactly what byte was bad though.
+        # And the exception isn't filled out with all it's usual attributes,
+        # which would be hard even we were going through all the chars/bytes. 
+        raise  Encoding::InvalidByteSequenceError.new("invalid byte in string for source encoding #{str.encoding.name}")
+      else   
+        # :replace => :invalid, 
+        # actually need to go through chars to replace bad ones
+        return str.chars.collect do |c|
+          if c.valid_encoding?
+            c
           else
             options[:replace] || (
              # surely there's a better way to tell if
@@ -364,8 +371,8 @@ module MARC
                 "\uFFFD" :
                 "?" )
           end
-        end
-      end.join
+        end.join
+      end
     end
     
   end
