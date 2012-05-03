@@ -48,7 +48,7 @@ Dealing with character encoding issues is one of the most confusing programming 
 
 In ruby 1.8, if you get your character encodings wrong, you may find what look like garbage characters in your output. In ruby 1.9, you may also cause exceptions to be raised in your code.  ruby-marc as of 0.5.0 has a fairly complete and consistent featureset for helping you deal with character encodings in 'binary' MARC.  
 
-In the Marc21 world (including the US), a common legacy encoding "Marc8" is frequently used. There are no tools in ruby for dealing with Marc8-encoded data, or transcoding it to a Unicode encoding.  If you have to deal with such MARC, your best bet is using an external tool to convert between MARC8 and UTF8 before the ruby app even sees it. [MarcEdit](http://people.oregonstate.edu/~reeset/marcedit/html/index.php), [yaz-marcdump command line tool](http://www.indexdata.com/yaz), [Marc4J java library](http://marc4j.tigris.org/)
+There are no tools in ruby for transcoding or dealing with the 'marc8' encoding, used in Marc21 in the US and other countries.  If you have to deal with MARC with marc8 encoding, your best bet is using an external tool to convert between MARC8 and UTF8 before the ruby app even sees it. [MarcEdit](http://people.oregonstate.edu/~reeset/marcedit/html/index.php), [yaz-marcdump command line tool](http://www.indexdata.com/yaz), [Marc4J java library](http://marc4j.tigris.org/)
 
 ### 'binary' ISO 2709 MARC
 
