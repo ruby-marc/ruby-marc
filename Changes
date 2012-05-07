@@ -1,8 +1,10 @@
 v0.5.0 April 2012
-- Extensive rewrite of MARC::Reader (binary) char encoding issues in ruby
-  1.9. 
+- Extensive rewrite of MARC::Reader (ISO 2709 binary reader) to provide a 
+  fairly complete and consistent handing of char encoding issues in ruby 1.9. 
   - This code is well covered by automated tests, but ends up complex, there
     may be bugs, please report them. 
+  - May not work properly under jruby with non-unicode source encodings. 
+  - Still can't handle Marc8 encoding. 
   - May not have entirely backwards compatible behavior with regard to char
     encodings under ruby 1.9.x as previous 0.4.x versions. Test your code. 
     In particular, previous versions may have automatically _transcoded_
