@@ -109,6 +109,11 @@ module MARC
   #    MARC::Reader.new( File.new("marc_in_cp866.mrc", "r:binary:binary"),
   #       :external_encoding => "cp866",
   #       :internal_encoding => "utf-8")
+  # == jruby note
+  # Note all of our char encoding tests currently pass on jruby in ruby 1.9 
+  # mode; if you are using binary MARC records in a non-UTF8 encoding, you may
+  # have trouble in jruby. We believe it's a jruby bug. 
+  # https://jira.codehaus.org/browse/JRUBY-6637
   class Reader
     include Enumerable
 

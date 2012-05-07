@@ -58,7 +58,7 @@ The MARC binary Writer (MARC::Writer) does not have any such features -- it's up
 
 #### jruby note
 
-Note all of our char encoding tests currently pass on jruby in ruby 1.9 mode; if you are using binary MARC records in a non-UTF8 encoding, you may have trouble in jruby. We believe it's a jruby bug. 
+Note all of our char encoding tests currently pass on jruby in ruby 1.9 mode; if you are using binary MARC records in a non-UTF8 encoding, you may have trouble in jruby. We believe it's a jruby bug. https://jira.codehaus.org/browse/JRUBY-6637
 
 
 ### xml or json
