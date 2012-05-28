@@ -1,7 +1,7 @@
-require 'test/unit'
+require 'helper'
 require 'marc'
 
-class TestRecord < Test::Unit::TestCase
+class TestRecord < MiniTest::Unit::TestCase
 
     def test_constructor
         r = MARC::Record.new()
@@ -33,7 +33,7 @@ class TestRecord < Test::Unit::TestCase
     end
 
     def test_decode
-        raw = IO.read('test/one.dat')
+        raw = IO.read('test/data/one.dat')
         r = MARC::Record::new_from_marc(raw)
         assert_equal(r.class, MARC::Record)
         assert_equal(r.leader, '00755cam  22002414a 4500')
@@ -43,7 +43,7 @@ class TestRecord < Test::Unit::TestCase
     end
 
     def test_decode_forgiving
-        raw = IO.read('test/one.dat')
+        raw = IO.read('test/data/one.dat')
         r = MARC::Record::new_from_marc(raw, :forgiving => true)
         assert_equal(r.class, MARC::Record)
         assert_equal(r.leader, '00755cam  22002414a 4500')
@@ -74,13 +74,13 @@ class TestRecord < Test::Unit::TestCase
     end
     
     def test_field_index
-      raw = IO.read('test/random_tag_order.dat')
+      raw = IO.read('test/data/random_tag_order.dat')
       r = MARC::Record.new_from_marc(raw)
       assert_kind_of(Array, r.fields)
       assert_kind_of(Array, r.tags)
       assert_equal(['001','005','007','008','010','028','035','040','050','245','260','300','500','505','511','650','700','906','953','991'], r.tags.sort)
       assert_kind_of(Array, r.fields('035'))
-      raw2 = IO.read('test/random_tag_order2.dat')
+      raw2 = IO.read('test/data/random_tag_order2.dat')
       r2 = MARC::Record.new_from_marc(raw2)
       assert_equal(6, r2.fields('500').length)     
       # Test passing an array to Record#fields
@@ -90,7 +90,7 @@ class TestRecord < Test::Unit::TestCase
     end
     
     def test_field_index_order
-      raw = IO.read('test/random_tag_order.dat')
+      raw = IO.read('test/data/random_tag_order.dat')
       r = MARC::Record.new_from_marc(raw)      
       notes = ['500','505','511']
       r.fields(('500'..'599')).each do |f|
@@ -98,7 +98,7 @@ class TestRecord < Test::Unit::TestCase
       end
       
       
-      raw2 = IO.read('test/random_tag_order2.dat')
+      raw2 = IO.read('test/data/random_tag_order2.dat')
       r2 = MARC::Record.new_from_marc(raw2)      
       
       fields = ['050','042','010','028','024','035','041','028','040','035','008','007','005','001']

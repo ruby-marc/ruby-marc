@@ -1,8 +1,8 @@
-require 'test/unit'
+require 'helper'
 require 'marc'
 require 'rubygems'
 
-class TestMARCHASH < Test::Unit::TestCase
+class TestMARCHASH < MiniTest::Unit::TestCase
 
   def test_simple
     simple = {
@@ -26,7 +26,7 @@ class TestMARCHASH < Test::Unit::TestCase
   end
 
   def test_real
-    reader = MARC::Reader.new('test/batch.dat')
+    reader = MARC::Reader.new('test/data/batch.dat')
     reader.each do |r|
       x = MARC::Record.new_from_marchash(r.to_marchash)
       assert_equal(r,x)

@@ -1,7 +1,7 @@
-require 'test/unit'
+require 'helper'
 require 'marc'
 
-class TestField < Test::Unit::TestCase
+class TestField < MiniTest::Unit::TestCase
 
     def test_tag
         f1 = MARC::DataField.new('100')
@@ -10,7 +10,7 @@ class TestField < Test::Unit::TestCase
         assert_equal('100', f2.tag)
         assert_equal(f1, f2)
         f3 = MARC::DataField.new('245')
-        assert_not_equal(f1, f3)
+        refute_equal(f1, f3)
     end
 
     def test_indicators
@@ -22,7 +22,7 @@ class TestField < Test::Unit::TestCase
         assert_equal('1', f2.indicator2)
         assert_equal(f1, f2)
         f3 = MARC::DataField.new(tag='100', i1='1', i2='1')
-        assert_not_equal(f1, f3)
+        refute_equal(f1, f3)
     end
 
     def test_subfields
@@ -38,7 +38,7 @@ class TestField < Test::Unit::TestCase
         f3 = MARC::DataField.new('100', '0', '1', 
             MARC::Subfield.new('a', 'Foo'),
             MARC::Subfield.new('b', 'Bez') )
-        assert_not_equal(f1,f3)
+        refute_equal(f1,f3)
     end
 
     def test_subfield_shorthand

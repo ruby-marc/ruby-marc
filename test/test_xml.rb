@@ -1,8 +1,8 @@
-require 'test/unit'
+require 'helper'
 require 'marc'
 require 'stringio'
 
-class XMLTest < Test::Unit::TestCase
+class XMLTest < MiniTest::Unit::TestCase
   def setup
     @parsers = [:rexml]
     begin
@@ -56,7 +56,7 @@ class XMLTest < Test::Unit::TestCase
   end
   
   def batch_test(parser)
-    reader = MARC::XMLReader.new('test/batch.xml', :parser=>parser)
+    reader = MARC::XMLReader.new('test/data/batch.xml', :parser=>parser)
     count = 0
     for record in reader
       count += 1
@@ -73,7 +73,7 @@ class XMLTest < Test::Unit::TestCase
   end
 
   def read_string_test(parser)
-    xml = File.new('test/batch.xml').read
+    xml = File.new('test/data/batch.xml').read
     reader = MARC::XMLReader.new(StringIO.new(xml), :parser=>parser)
     assert_equal 2, reader.entries.length
   end
@@ -86,7 +86,7 @@ class XMLTest < Test::Unit::TestCase
   end
     
   def non_numeric_fields_test(parser)
-    reader = MARC::XMLReader.new('test/non-numeric.xml', :parser=>parser)
+    reader = MARC::XMLReader.new('test/data/non-numeric.xml', :parser=>parser)
       count = 0
       record = nil
       reader.each do | rec |
@@ -106,7 +106,7 @@ class XMLTest < Test::Unit::TestCase
   end
   
   def read_no_leading_zero_write_leading_zero_test(parser)
-    reader = MARC::XMLReader.new('test/no-leading-zero.xml', :parser=>parser)
+    reader = MARC::XMLReader.new('test/data/no-leading-zero.xml', :parser=>parser)
     record = reader.to_a[0]
     assert_equal("042 zz $a dc ", record['042'].to_s)
   end
@@ -119,7 +119,7 @@ class XMLTest < Test::Unit::TestCase
   end    
 
   def leader_from_xml_test(parser)
-    reader = MARC::XMLReader.new('test/one.xml', :parser=>parser)
+    reader = MARC::XMLReader.new('test/data/one.xml', :parser=>parser)
     record = reader.entries[0]
     assert_equal '     njm a22     uu 4500', record.leader
     # serializing as MARC should populate the record length and directory offset
@@ -141,19 +141,19 @@ class XMLTest < Test::Unit::TestCase
     record1.append MARC::DataField.new('245', '0', '4', 
       ['a', 'The Great Ray Charles'], ['h', '[sound recording].'])
 
-    writer = MARC::XMLWriter.new('test/test.xml', :stylesheet => 'style.xsl')
+    writer = MARC::XMLWriter.new('test/data/test.xml', :stylesheet => 'style.xsl')
     writer.write(record1)
     writer.close
 
-    xml = File.read('test/test.xml')
+    xml = File.read('test/data/test.xml')
     assert_match /<controlfield tag='007'>sdubumennmplu<\/controlfield>/, xml
     assert_match /<\?xml-stylesheet type="text\/xsl" href="style.xsl"\?>/, xml
 
-    reader = MARC::XMLReader.new('test/test.xml', :parser=>parser)
+    reader = MARC::XMLReader.new('test/data/test.xml', :parser=>parser)
     record2 = reader.entries[0]
     assert_equal(record1, record2)
 
-    File.unlink('test/test.xml')
+    File.unlink('test/data/test.xml')
   end
 
 end

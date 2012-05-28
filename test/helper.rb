@@ -19,6 +19,14 @@ end
 require 'minitest/unit'
 
 class MiniTest::Unit::TestCase
+  def assert_nothing_raised &blk
+    begin
+      blk.call
+      true
+    rescue
+      false
+    end
+  end
 end
 
 MiniTest::Unit.autorun

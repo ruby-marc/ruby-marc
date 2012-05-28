@@ -1,4 +1,11 @@
-source 'https://rubygems.org'
+source :rubygems
 
-# Specify your gem's dependencies in ..gemspec
 gemspec
+
+group :development do
+  gem 'kramdown'
+
+  gem 'bundler',  '~> 1.0'
+  gem 'rake',  '~> 0.8'
+  gem 'yard',  '~> 0.7'
+end

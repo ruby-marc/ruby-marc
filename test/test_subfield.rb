@@ -1,7 +1,7 @@
-require 'test/unit'
+require 'helper'
 require 'marc/subfield'
 
-class SubfieldTest < Test::Unit::TestCase
+class SubfieldTest < MiniTest::Unit::TestCase
 
     def test_ok
         s = MARC::Subfield.new('a', 'foo')

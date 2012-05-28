@@ -1,23 +1,34 @@
-RUBY_MARC_VERSION = '0.4.4'
+# encoding: utf-8
 
 require 'rubygems'
-require 'rake'
-require 'rake/testtask'
-require 'rdoc/task'
-require 'bundler/gem_tasks'
 
-task :default => [:test]
-
-Rake::TestTask.new('test') do |t|
-  t.libs << 'lib'
-  t.pattern = 'test/tc_*.rb'
-  t.verbose = true
-  t.ruby_opts = ['-r marc', '-r test/unit']
+begin
+  require 'bundler'
+rescue LoadError => e
+  warn e.message
+  warn "Run `gem install bundler` to install Bundler."
+  exit e.status_code
 end
 
+begin
+  Bundler.setup(:development)
+rescue Bundler::BundlerError => e
+  warn e.message
+  warn "Run `bundle install` to install missing gems."
+  exit e.status_code
+end
 
-Rake::RDocTask.new('doc') do |rd|
-  rd.rdoc_files.include("README", "Changes", "LICENSE", "lib/**/*.rb")
-  rd.main = 'MARC::Record'
-  rd.rdoc_dir = 'doc'
+require 'rake'
+
+require "bundler/gem_tasks"
+
+require 'yard'
+YARD::Rake::YardocTask.new  
+task :doc => :yard
+
+require 'rake/testtask'
+Rake::TestTask.new do |test|
+  test.libs << 'test'
+  test.pattern = 'test/**/test_*.rb'
+  test.verbose = true
 end

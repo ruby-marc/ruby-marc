@@ -1,11 +1,11 @@
-require 'test/unit'
+require 'helper'
 require 'marc'
 require 'rubygems'
 
-class TestHash < Test::Unit::TestCase
+class TestHash < MiniTest::Unit::TestCase
 
   def test_to_hash
-    raw = IO.read('test/one.dat')
+    raw = IO.read('test/data/one.dat')
     r = MARC::Record.new_from_marc(raw)
     h = r.to_hash
     assert_kind_of(Hash, h)
@@ -15,7 +15,7 @@ class TestHash < Test::Unit::TestCase
   end
 
   def test_roundtrip
-    reader = MARC::Reader.new('test/batch.dat')
+    reader = MARC::Reader.new('test/data/batch.dat')
     reader.each do |r|
       x = MARC::Record.new_from_hash(r.to_hash)
       assert_equal(r,x)

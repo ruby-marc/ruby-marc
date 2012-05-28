@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 
-require 'test/unit'
+require 'helper'
 require 'marc'
 
 # Testing char encodings under 1.9, don't bother running
@@ -10,15 +10,15 @@ require 'marc'
 
 if "".respond_to?(:encoding)
   
-  class ReaderCharEncodingsTest < Test::Unit::TestCase
+  class ReaderCharEncodingsTest < MiniTest::Unit::TestCase
     ####
     # Helper methods for our tests
     #
     ####
     
     
-    @@utf_marc_path = 'test/utf8.marc'
-    # tests against record at test/utf8.marc
+    @@utf_marc_path = 'test/data/utf8.marc'
+    # tests against record at test/data/utf8.marc
     def assert_utf8_right_in_utf8(record)
       assert_equal "UTF-8", record['245'].subfields.first.value.encoding.name
             
@@ -34,8 +34,8 @@ if "".respond_to?(:encoding)
     # Test against multirecord just to be sure that works. 
     # the multirecord file is just two concatenated copies
     # of the single one. 
-    @@cp866_marc_path = "test/cp866_multirecord.marc"
-    # assumes record in test/cp866_unimarc.marc
+    @@cp866_marc_path = "test/data/cp866_multirecord.marc"
+    # assumes record in test/data/cp866_unimarc.marc
     # Pass in an encoding name, using ruby's canonical name!
     # "IBM866" not "cp866". "UTF-8". 
     def assert_cp866_right(record, encoding = "IBM866")
@@ -99,7 +99,7 @@ if "".respond_to?(:encoding)
     
     def test_marc8_with_binary
       # Marc8, best we can do is read it in binary. 
-      reader = MARC::Reader.new('test/marc8_accented_chars.marc', :external_encoding => 'binary')
+      reader = MARC::Reader.new('test/data/marc8_accented_chars.marc', :external_encoding => 'binary')
       record = reader.first
    
       assert_equal "ASCII-8BIT", record['100'].subfields.first.value.encoding.name
@@ -171,17 +171,17 @@ if "".respond_to?(:encoding)
     end
     
     def test_with_bad_source_bytes
-      reader = MARC::Reader.new('test/utf8_with_bad_bytes.marc', 
+      reader = MARC::Reader.new('test/data/utf8_with_bad_bytes.marc', 
         :external_encoding => "UTF-8",
         :validate_encoding => true)
       
-      assert_raise Encoding::InvalidByteSequenceError do
+      assert_raises Encoding::InvalidByteSequenceError do
         record = reader.first
       end
     end
     
     def test_bad_source_bytes_with_replace
-      reader = MARC::Reader.new('test/utf8_with_bad_bytes.marc', 
+      reader = MARC::Reader.new('test/data/utf8_with_bad_bytes.marc', 
         :external_encoding => "UTF-8", :invalid => :replace)
       
       record = nil
@@ -195,7 +195,7 @@ if "".respond_to?(:encoding)
     end
     
     def test_bad_source_bytes_with_custom_replace
-      reader = MARC::Reader.new('test/utf8_with_bad_bytes.marc', 
+      reader = MARC::Reader.new('test/data/utf8_with_bad_bytes.marc', 
         :external_encoding => "UTF-8", :invalid => :replace, :replace => '')
       
       record = reader.first
