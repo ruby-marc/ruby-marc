@@ -8,6 +8,8 @@ v0.5.1 May 2012
   - default to using yard for documentation
   - add jruby dependency on jrexml
   - add development dependency for nokogiri
+  - change jruby's "best parser" to be nokogiri, which is faster than
+    jstax now that it's native
   
   
 v0.5.0 April 2012
