@@ -2,6 +2,10 @@ require 'helper'
 require 'marc'
 require 'rexml/parsers/pullparser'
 
+if defined? JRUBY_VERSION
+  require 'java'
+end
+
 class ParsersTest < MiniTest::Unit::TestCase
   def test_parser_default
     assert_equal("rexml", MARC::XMLReader.parser)
@@ -29,8 +33,8 @@ class ParsersTest < MiniTest::Unit::TestCase
       assert_equal("nokogiri", MARC::XMLReader.parser)
       reader = MARC::XMLReader.new('test/data/one.xml')
       assert_kind_of(Nokogiri::XML::SAX::Parser, reader.parser)      
-    rescue LoadError
-      puts "\nNokogiri not available, skipping 'test_set_nokogiri'.\n"
+    rescue LoadError => e
+      puts "\nNokogiri not available, skipping 'test_set_nokogiri'. (#{e.inspect})\n"
     end
   end
   
@@ -165,21 +169,13 @@ end
   def choose_best_available_parser
     parser_name = nil
     parser = nil
-    if defined? JRUBY_VERSION
-      require 'java'
-      begin
-        java.lang.Class.forName("javax.xml.stream.XMLInputFactory")
-        parser_name = "jstax"
-        parser = Java::ComSunOrgApacheXercesInternalImpl::XMLStreamReaderImpl
-      rescue java.lang.ClassNotFoundException
-      end
-    end
     unless parser    
       begin
         require 'nokogiri'
         parser_name = 'nokogiri'
         parser = Nokogiri::XML::SAX::Parser
       rescue LoadError
+        puts "Failed to load nokogiri"
       end
     end
     unless parser
@@ -191,7 +187,13 @@ end
         rescue LoadError
         end
       else
-        if defined? JRUBY_VERSION
+        begin
+          java.lang.Class.forName("javax.xml.stream.XMLInputFactory")
+          parser_name = "jstax"
+          parser = Java::ComSunOrgApacheXercesInternalImpl::XMLStreamReaderImpl
+        rescue java.lang.ClassNotFoundException
+        end
+        unless parser
           begin
             require 'jrexml'
             parser_name = 'jrexml'

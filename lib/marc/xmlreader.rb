@@ -95,19 +95,21 @@ module MARC
     # Returns the value of the best available parser
     def self.best_available
       parser = nil
-      jruby = [USE_JSTAX, USE_NOKOGIRI, USE_JREXML]
+      jruby = [USE_NOKOGIRI, USE_JSTAX, USE_JREXML]
       ruby = [USE_NOKOGIRI, USE_LIBXML]
       if defined? JRUBY_VERSION
-        begin
-          java.lang.Class.forName("javax.xml.stream.XMLInputFactory")
-          parser = USE_JSTAX
-        rescue java.lang.ClassNotFoundException
-        end
         unless parser
           begin
             require 'nokogiri'
             parser = USE_NOKOGIRI              
           rescue LoadError
+          end
+        end
+        unless parser
+          begin
+            java.lang.Class.forName("javax.xml.stream.XMLInputFactory")
+            parser = USE_JSTAX
+          rescue java.lang.ClassNotFoundException
           end
         end
         unless parser
