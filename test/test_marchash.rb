@@ -26,7 +26,7 @@ class TestMARCHASH < MiniTest::Unit::TestCase
   end
 
   def test_real
-    reader = MARC::Reader.new('test/data/batch.dat')
+    reader = MARC::Reader.new('test/data/batch.marc')
     reader.each do |r|
       x = MARC::Record.new_from_marchash(r.to_marchash)
       assert_equal(r,x)

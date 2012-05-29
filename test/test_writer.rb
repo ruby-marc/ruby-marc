@@ -4,20 +4,20 @@ require 'marc'
 class WriterTest < MiniTest::Unit::TestCase
 
     def test_writer
-        writer = MARC::Writer.new('test/data/writer.dat')
+        writer = MARC::Writer.new('test/data/writer.marc')
         record = MARC::Record.new()
         record.append(MARC::DataField.new('245', '0', '1', ['a', 'foo']))
         writer.write(record)
         writer.close()
 
         # read it back to make sure
-        reader = MARC::Reader.new('test/data/writer.dat')
+        reader = MARC::Reader.new('test/data/writer.marc')
         records = reader.entries()
         assert_equal(records.length(), 1)
         assert_equal(records[0], record)
 
         # cleanup
-        File.unlink('test/data/writer.dat')
+        File.unlink('test/data/writer.marc')
     end
     
     def test_forgiving_writer
@@ -31,11 +31,11 @@ class WriterTest < MiniTest::Unit::TestCase
     def test_unicode_roundtrip
       record = MARC::Reader.new('test/data/utf8.marc').first
       
-      writer = MARC::Writer.new('test/data/writer.dat')      
+      writer = MARC::Writer.new('test/data/writer.marc')      
       writer.write(record)      
       writer.close      
       
-      read_back_record = MARC::Reader.new('test/data/writer.dat').first
+      read_back_record = MARC::Reader.new('test/data/writer.marc').first
 
       # Make sure the one we wrote out then read in again
       # is the same as the one we read the first time

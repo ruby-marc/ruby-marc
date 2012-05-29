@@ -1,3 +1,15 @@
+v0.5.1 May 2012
+- Purely administrative changes:
+  - move to using minitest
+  - reorganize test directory
+  - mv test data files to their own directory
+  - rename test data files in marc21 to *.marc for consistency
+  - rebuild Rakefile with more modern inclusions
+  - default to using yard for documentation
+  - add jruby dependency on jrexml
+  - add development dependency for nokogiri
+  
+  
 v0.5.0 April 2012
 - Extensive rewrite of MARC::Reader (ISO 2709 binary reader) to provide a 
   fairly complete and consistent handing of char encoding issues in ruby 1.9. 

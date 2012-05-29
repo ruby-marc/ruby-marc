@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-# usage: xml2marc.rb marc.xml > marc.dat
+# usage: xml2marc.rb marc.xml > marc.marc
 
 require 'rubygems'
 require 'marc'

@@ -6,7 +6,6 @@ Gem::Specification.new do |gem|
   gem.name          = "marc"
   gem.version       = MARC::VERSION
   
-  
   gem.author        = 'Ed Summers'
   gem.email         = 'ehs@pobox.com'
   gem.homepage      = 'https://github.com/ruby-marc/ruby-marc/'
@@ -22,7 +21,4 @@ Gem::Specification.new do |gem|
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.require_paths = ["lib"]
-
-  gem.add_development_dependency "bundler", "~> 1.0"
-  gem.add_development_dependency "yard", "~> 0.7"
 end

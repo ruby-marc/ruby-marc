@@ -6,7 +6,7 @@ marc is a ruby library for reading and writing MAchine Readable Cataloging
     require 'marc'
   
     # reading records from a batch file
-    reader = MARC::Reader.new('marc.dat')
+    reader = MARC::Reader.new('marc.marc')
     for record in reader
       # print out field 245 subfield a
       puts record['245']['a']
@@ -17,7 +17,7 @@ marc is a ruby library for reading and writing MAchine Readable Cataloging
     record.append(MARC::DataField.new('100', '0',  ' ', ['a', 'John Doe']))
   
     # writing a record
-    writer = MARC::Writer.new('marc.dat')
+    writer = MARC::Writer.new('marc.marc')
     writer.write(record)
     writer.close()
   

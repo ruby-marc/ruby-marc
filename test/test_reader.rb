@@ -6,14 +6,14 @@ require 'marc'
 class ReaderTest < MiniTest::Unit::TestCase
 
   def test_batch
-    reader = MARC::Reader.new('test/data/batch.dat')
+    reader = MARC::Reader.new('test/data/batch.marc')
     count = 0
     reader.each { count += 1 }
     assert_equal(count, 10)
   end
 
   def test_loose
-    reader = MARC::ForgivingReader.new('test/data/batch.dat')
+    reader = MARC::ForgivingReader.new('test/data/batch.marc')
     count = 0
     reader.each { count += 1 }
     assert_equal(10, count)
@@ -38,7 +38,7 @@ class ReaderTest < MiniTest::Unit::TestCase
   end
 
   def test_non_numeric_tags
-    reader = MARC::Reader.new('test/data/non-numeric.dat')
+    reader = MARC::Reader.new('test/data/non-numeric.marc')
     count = 0
     record = nil
     reader.each do | rec |
@@ -56,19 +56,19 @@ class ReaderTest < MiniTest::Unit::TestCase
   end
 
   def test_search
-    reader = MARC::Reader.new('test/data/batch.dat')
+    reader = MARC::Reader.new('test/data/batch.marc')
     records = reader.find_all { |r| r =~ /Perl/ }
     assert_equal(10, records.length)
 
-    reader = MARC::Reader.new('test/data/batch.dat')
+    reader = MARC::Reader.new('test/data/batch.marc')
     records = reader.find_all { |r| r['245'] =~ /Perl/ }
     assert_equal(10, records.length)
 
-    reader = MARC::Reader.new('test/data/batch.dat')
+    reader = MARC::Reader.new('test/data/batch.marc')
     records = reader.find_all { |r| r['245']['a'] =~ /Perl/ }
     assert_equal(10, records.length)
 
-    reader = MARC::Reader.new('test/data/batch.dat')
+    reader = MARC::Reader.new('test/data/batch.marc')
     records = reader.find_all { |r| r =~ /Foo/ }
     assert_equal(0, records.length)
   end

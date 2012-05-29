@@ -6,7 +6,7 @@
 #    require 'marc'
 #
 #    # reading records from a batch file
-#    reader = MARC::Reader.new('marc.dat')
+#    reader = MARC::Reader.new('marc.marc')
 #    for record in reader
 #      puts record['245']['a']
 #    end
@@ -16,7 +16,7 @@
 #    record.add_field(MARC::DataField.new('100', '0',  ' ', ['a', 'John Doe']))
 #
 #    # writing a record
-#    writer = MARC::Writer.new('marc.dat')
+#    writer = MARC::Writer.new('marc.marc')
 #    writer.write(record)
 #    writer.close()
 #

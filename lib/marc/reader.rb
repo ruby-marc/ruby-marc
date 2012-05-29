@@ -119,11 +119,11 @@ module MARC
 
     # The constructor which you may pass either a path
     #
-    #   reader = MARC::Reader.new('marc.dat')
+    #   reader = MARC::Reader.new('marc.marc')
     #
     # or, if it's more convenient a File object:
     #
-    #   fh = File.new('marc.dat')
+    #   fh = File.new('marc.marc')
     #   reader = MARC::Reader.new(fh)
     #
     # or really any object that responds to read(n)
@@ -141,11 +141,11 @@ module MARC
     # (for ex. when reading RUSMARC data) and you use ruby 1.9
     # you can specify source data encoding with an option. 
     #
-    #   reader = MARC::Reader.new('marc.dat', :external_encoding => 'cp866')
+    #   reader = MARC::Reader.new('marc.marc', :external_encoding => 'cp866')
     #
     # or, you can pass IO, opened in the corresponding encoding
     #
-    #   reader = MARC::Reader.new(File.new('marc.dat', 'r:cp866'))
+    #   reader = MARC::Reader.new(File.new('marc.marc', 'r:cp866'))
     def initialize(file, options = {})      
       @encoding_options = {}
       # all can be nil
