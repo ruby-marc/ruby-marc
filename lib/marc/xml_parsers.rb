@@ -288,7 +288,6 @@ module MARC
     def self.extended(receiver)
       require 'rexml/document'
       require 'rexml/parsers/pullparser'
-      require 'jrexml'
       receiver.extend(REXMLReader)
     end
   end
@@ -352,9 +351,9 @@ module MARC
     module JRubySTAXReader
       include GenericPullParser
       def self.extended(receiver)
-        include Java
+        require 'java'
         java.lang.Class.forName("javax.xml.stream.XMLInputFactory")
-        include javax.xml.stream       
+        java_import javax.xml.stream.XMLStreamConstants
         receiver.init
       end
 
