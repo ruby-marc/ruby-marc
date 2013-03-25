@@ -1,0 +1,5 @@
+<?xml version='1.0'?>
+<?xml-stylesheet type="text/xsl" href="style.xsl"?>
+<collection xmlns='http://www.loc.gov/MARC21/slim' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='http://www.loc.gov/MARC21/slim http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd'>
+<record><leader>00925njm  22002777a 4500</leader><controlfield tag='007'>sdubumennmplu</controlfield><datafield ind1='0' ind2='4' tag='245'><subfield code='a'>The Great Ray Charles</subfield><subfield code='h'>[sound recording].</subfield></datafield></record>
+</collection>

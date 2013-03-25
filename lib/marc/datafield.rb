@@ -92,7 +92,7 @@ module MARC
 
 
     # Returns a string representation of the field such as:
-    #  245 00 $aConsilience :$bthe unity of knowledge $cby Edward O. Wilson.
+    #  245 00 $a Consilience : $b the unity of knowledge $c by Edward O. Wilson. 
 
     def to_s
       str = "#{tag} "
@@ -100,6 +100,28 @@ module MARC
       @subfields.each { |subfield| str += subfield.to_s }
       return str
     end
+
+    # construct a datafield object from string representation (following field.to_s format)
+    # field = MARC::DataField.new_from_s(field_string)
+    def self.new_from_s(s)
+      str  = String.new s # copy to protect s
+      tag  = str[0..2]
+      df   = self.new(tag)
+      ind1 = str[4]
+      ind2 = str[5]
+      str.slice!(0..6) # remove tag, inds and space
+
+      df.indicator1 = ind1
+      df.indicator2 = ind2
+      
+      subs = str.split(/\B\$([a-z0-9]) /).map(&:rstrip)
+      subs.shift
+      subs.each_slice(2) do |subfield|
+        df.append(MARC::Subfield.new(subfield[0], subfield[1]))
+      end
+
+      return df      
+    end    
 
     # Turn into a marc-hash structure
     def to_marchash

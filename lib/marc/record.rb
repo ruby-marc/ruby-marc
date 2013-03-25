@@ -265,6 +265,30 @@ module MARC
       return str
     end
 
+    # construct a record object from a string representation (following record.to_s format)
+    # record = MARC::Record.new_from_s(record_string)
+    def self.new_from_s(s)
+      r = self.new
+      fields = s.split "\n"
+      leader = fields.shift
+      leader.slice!(0..6) # remove "LEADER " prefix
+      r.leader = leader
+
+      fields.each do |field|
+        tag = field[0..2]
+
+        if tag.to_i < 10
+          cf = MARC::ControlField.new(tag)
+          field.slice!(0..3) # remove tag and space
+          cf.value = field
+          r.append cf
+        else
+          r.append MARC::DataField.new_from_s(field)
+        end
+      end
+
+      return r
+    end
 
     # For testing if two records can be considered equal.
 
