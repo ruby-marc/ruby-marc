@@ -112,7 +112,7 @@ module MARC
 
     def method_missing(methName, *args)
       sax_methods = [:xmldecl, :start_document, :end_document, :start_element,
-        :end_element, :comment, :warning, :error, :cdata_block]
+        :end_element, :comment, :warning, :error, :cdata_block, :processing_instruction]
       unless sax_methods.index(methName)
         raise NoMethodError.new("undefined method '#{methName} for #{self}", 'no_meth')
       end
