@@ -164,21 +164,23 @@ end
   def choose_best_available_parser
     parser_name = nil
     parser = nil
-    if defined? JRUBY_VERSION
-      require 'java'
-      begin
-        java.lang.Class.forName("javax.xml.stream.XMLInputFactory")
-        parser_name = "jstax"
-        parser = Java::ComSunOrgApacheXercesInternalImpl::XMLStreamReaderImpl
-      rescue java.lang.ClassNotFoundException
-      end
-    end
     unless parser    
       begin
         require 'nokogiri'
         parser_name = 'nokogiri'
         parser = Nokogiri::XML::SAX::Parser
       rescue LoadError
+      end
+    end
+    unless parser
+      if defined? JRUBY_VERSION
+        require 'java'
+        begin
+          java.lang.Class.forName("javax.xml.stream.XMLInputFactory")
+          parser_name = "jstax"
+          parser = Java::ComSunOrgApacheXercesInternalImpl::XMLStreamReaderImpl
+        rescue java.lang.ClassNotFoundException
+        end
       end
     end
     unless parser
