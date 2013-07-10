@@ -37,10 +37,6 @@ module MARC
       @block.call(@record[:record])       
       @record[:record] = nil
     end    
-    
-    # ignore processing instructions
-    def processing_instruction(name, val)
-    end
 
     def start_element_namespace name, attributes = [], prefix = nil, uri = nil, ns = {}
        attributes = attributes_to_hash(attributes)
