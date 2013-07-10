@@ -69,6 +69,7 @@ module MARC
         raise ArgumentError, "jstax only available under jruby" unless defined? JRUBY_VERSION
         extend JRubySTAXReader
       when 'libxml' then extend LibXMLReader
+        raise ArgumentError, "libxml not available under jruby" if defined? JRUBY_VERSION
       end
     end
 
@@ -95,19 +96,22 @@ module MARC
     # Returns the value of the best available parser
     def self.best_available
       parser = nil
-      jruby = [USE_JSTAX, USE_NOKOGIRI, USE_JREXML]
+      jruby = [USE_NOKOGIRI, USE_JSTAX, USE_JREXML]
       ruby = [USE_NOKOGIRI, USE_LIBXML]
       if defined? JRUBY_VERSION
-        begin
-          java.lang.Class.forName("javax.xml.stream.XMLInputFactory")
-          parser = USE_JSTAX
-        rescue java.lang.ClassNotFoundException
-        end
         unless parser
           begin
             require 'nokogiri'
             parser = USE_NOKOGIRI              
           rescue LoadError
+          end
+        end
+        unless parser
+          begin
+            # try to find the class, so we throw an error if not found
+            java.lang.Class.forName("javax.xml.stream.XMLInputFactory") 
+            parser = USE_JSTAX
+          rescue java.lang.ClassNotFoundException
           end
         end
         unless parser
@@ -123,13 +127,15 @@ module MARC
           parser = USE_NOKOGIRI        
         rescue LoadError          
         end
-        unless parser
-          begin
-            require 'xml'
-            parser = USE_LIBXML
-          rescue LoadError
-          end
-        end        
+        unless defined? JRUBY_VERSION
+          unless parser
+            begin
+              require 'xml'
+              parser = USE_LIBXML
+            rescue LoadError
+            end
+          end        
+        end
       end
       parser = USE_REXML unless parser
       parser

@@ -10,10 +10,12 @@ class XMLTest < Test::Unit::TestCase
       @parsers << :nokogiri
     rescue LoadError
     end
-    begin
-      require 'xml'
-      @parsers << :libxml
-    rescue LoadError
+    unless defined? JRUBY_VERSION
+      begin
+        require 'xml'
+        @parsers << :libxml
+      rescue LoadError
+      end
     end
     if defined? JRUBY_VERSION
       begin

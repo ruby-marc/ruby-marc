@@ -37,6 +37,10 @@ module MARC
       @block.call(@record[:record])       
       @record[:record] = nil
     end    
+    
+    # ignore processing instructions
+    def processing_instruction(name, val)
+    end
 
     def start_element_namespace name, attributes = [], prefix = nil, uri = nil, ns = {}
        attributes = attributes_to_hash(attributes)
@@ -293,7 +297,11 @@ module MARC
     end
   end
   
-  module LibXMLReader
+  
+  
+  
+  unless defined? JRUBY_VERSION
+    module LibXMLReader
 
     def self.extended(receiver)
       require 'xml'
@@ -344,6 +352,7 @@ module MARC
       return r
     end
   end
+end
 
   # The JrubySTAXReader uses native java calls to parse the incoming stream
   # of marc-xml. It includes most of the work from GenericPullParser
@@ -352,9 +361,7 @@ module MARC
     module JRubySTAXReader
       include GenericPullParser
       def self.extended(receiver)
-        include Java
-        java.lang.Class.forName("javax.xml.stream.XMLInputFactory")
-        include javax.xml.stream       
+        require 'java' # may only be neccesary in jruby 1.6
         receiver.init
       end
 
@@ -373,13 +380,13 @@ module MARC
       end
 
       def parser_dispatch
-        while event = @parser.next and event != XMLStreamConstants.END_DOCUMENT do
+        while event = @parser.next and event != javax.xml.stream.XMLStreamConstants.END_DOCUMENT do
           case event
-            when XMLStreamConstants.START_ELEMENT
+            when javax.xml.stream.XMLStreamConstants.START_ELEMENT
               start_element_namespace(@parser.getLocalName, [], nil,  @parser.getNamespaceURI, nil)
-            when XMLStreamConstants.END_ELEMENT
+            when javax.xml.stream.XMLStreamConstants.END_ELEMENT
               end_element_namespace(@parser.getLocalName, @parser.getPrefix, @parser.getNamespaceURI)
-            when XMLStreamConstants.CHARACTERS
+            when javax.xml.stream.XMLStreamConstants.CHARACTERS
               characters(@parser.getText)
           end
         end
