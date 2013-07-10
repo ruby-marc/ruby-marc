@@ -215,6 +215,10 @@ module MARC
         # declared on the string passed in. 
         params[:external_encoding] = marc.encoding
       end
+      # And now that we've recorded the current encoding, we force
+      # to binary encoding, because we're going to be doing byte arithmetic,
+      # and want to avoid byte-vs-char confusion. 
+      marc.force_encoding("binary") if marc.respond_to?(:force_encoding)
       
       record = Record.new()
       record.leader = marc[0..LEADER_LENGTH-1]
