@@ -361,6 +361,7 @@ end
     module JRubySTAXReader
       include GenericPullParser
       def self.extended(receiver)
+        require 'java' # may only be neccesary in jruby 1.6
         receiver.init
       end
 
