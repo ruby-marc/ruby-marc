@@ -60,4 +60,9 @@ class TestField < Test::Unit::TestCase
         assert_equal(f['b'], 'Bar')
     end
 
+    def test_new_from_s
+        field_str = '245 10 $a ActivePerl with ASP and ADO / $c Tobias Martinsson. '
+        assert_equal(field_str, MARC::DataField.new_from_s(field_str).to_s)
+    end    
+
 end
