@@ -177,22 +177,26 @@ module MARC
     #     print record
     #   end
     def each
-      # while there is data left in the file
-      while rec_length_s = @handle.read(5)
-        # make sure the record length looks like an integer
-        rec_length_i = rec_length_s.to_i
-        if rec_length_i == 0
-          raise MARC::Exception.new("invalid record length: #{rec_length_s}")
+      unless block_given?
+        return self.enum_for(:each)
+      else
+        # while there is data left in the file
+        while rec_length_s = @handle.read(5)
+          # make sure the record length looks like an integer
+          rec_length_i = rec_length_s.to_i
+          if rec_length_i == 0
+            raise MARC::Exception.new("invalid record length: #{rec_length_s}")
+          end
+
+          # get the raw MARC21 for a record back from the file
+          # using the record length
+          raw = rec_length_s + @handle.read(rec_length_i-5)
+
+          # create a record from the data and return it
+          #record = MARC::Record.new_from_marc(raw)
+          record = MARC::Reader.decode(raw, @encoding_options)
+          yield record
         end
-
-        # get the raw MARC21 for a record back from the file
-        # using the record length
-        raw = rec_length_s + @handle.read(rec_length_i-5)
-
-        # create a record from the data and return it
-        #record = MARC::Record.new_from_marc(raw)
-        record = MARC::Reader.decode(raw, @encoding_options)
-        yield record
       end
     end
 

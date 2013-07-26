@@ -157,6 +157,25 @@ class XMLTest < Test::Unit::TestCase
 
     File.unlink('test/test.xml')
   end
+  
+  def test_xml_enumerator
+    @parsers.each do | parser |
+      puts "\nRunning test_xml_enumerator with: #{parser}.\n"
+      xml_enumerator_test(parser)
+    end
+  end
+  
+  
+  def xml_enumerator_test(parser)
+    # confusingly, test/batch.xml only has two records, not 10 like batch.dat
+    reader = MARC::XMLReader.new('test/batch.xml', :parser=>parser)
+    iter = reader.each
+    r = iter.next
+    assert_instance_of(MARC::Record, r)
+    iter.next # total of two records
+    assert_raises(StopIteration) { iter.next }  
+  end
+  
 
 end
 
