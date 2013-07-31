@@ -18,4 +18,5 @@ spec = Gem::Specification.new do |s|
   s.authors       = ["Kevin Clarke", "Bill Dueber", "William Groppe", "Ross Singer", "Ed Summers"]
   s.test_file     = 'test/ts_marc.rb'
   s.bindir        = 'bin'
+  s.add_development_dependency('rake')
 end
