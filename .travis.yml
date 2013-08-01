@@ -8,5 +8,5 @@ rvm:
   - jruby-19mode
 branches:
   only:
-    master
-    /^ci-.*$/ 
+    - master
+    - /^ci-.*$/ 
