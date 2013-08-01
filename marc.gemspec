@@ -19,4 +19,5 @@ spec = Gem::Specification.new do |s|
   s.test_file     = 'test/ts_marc.rb'
   s.bindir        = 'bin'
   s.add_development_dependency('rake')
+  s.add_development_dependency('rdoc')
 end
