@@ -105,8 +105,12 @@ module MARC
     
     # Loop through the MARC records in the XML document
     def each(&block)    
-      @block = block
-      @parser.parse(@handle)
+      unless block_given?
+        return self.enum_for(:each)
+      else
+        @block = block
+        @parser.parse(@handle)
+      end
     end
         
 
@@ -165,13 +169,17 @@ module MARC
     
     # Loop through the MARC records in the XML document
     def each
-      while @parser.has_next?
-        event = @parser.pull
-        # if it's the start of a record element 
-        if event.start_element? and strip_ns(event[0]) == 'record'
-          yield build_record
-        end
-      end    
+      unless block_given?
+        return self.enum_for(:each)
+      else
+        while @parser.has_next?
+          event = @parser.pull
+          # if it's the start of a record element 
+          if event.start_element? and strip_ns(event[0]) == 'record'
+            yield build_record
+          end
+        end    
+      end
     end
     
     private
@@ -310,11 +318,15 @@ module MARC
     end
 
     def each
-      while (@parser.read) do
-       if @parser.local_name == 'record' && @parser.namespace_uri == @ns
-         yield build_record
-       end
-      end # while
+      unless block_given?
+        return self.enum_for(:each)
+      else
+        while (@parser.read) do
+         if @parser.local_name == 'record' && @parser.namespace_uri == @ns
+           yield build_record
+         end
+        end # while
+      end
     end # each
 
     def build_record
@@ -370,9 +382,13 @@ end
       end
 
       # Loop through the MARC records in the XML document
-      def each(&block)    
-        @block = block
-        parser_dispatch
+      def each(&block)  
+        unless block_given?
+          return self.enum_for(:each)
+        else
+          @block = block
+          parser_dispatch
+        end
       end
 
       def parser_dispatch

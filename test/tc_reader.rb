@@ -72,5 +72,16 @@ class ReaderTest < Test::Unit::TestCase
     records = reader.find_all { |r| r =~ /Foo/ }
     assert_equal(0, records.length)
   end
+  
+  def test_binary_enumerator
+    reader = MARC::Reader.new('test/batch.dat')
+    iter = reader.each
+    r = iter.next
+    assert_instance_of(MARC::Record, r)
+    9.times {iter.next} # total of ten records
+    assert_raises(StopIteration) { iter.next }  
+  end
+
+    
 
 end
