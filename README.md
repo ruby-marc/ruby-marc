@@ -1,4 +1,4 @@
-[![Build Status](https://secure.travis-ci.org/billdueber/ruby-marc.png)](http://travis-ci.org/billdueber/ruby-marc)
+[![Build Status](https://secure.travis-ci.org/ruby-marc/ruby-marc.png)](http://travis-ci.org/ruby-marc/ruby-marc)
 
 marc is a ruby library for reading and writing MAchine Readable Cataloging
 (MARC). More information about MARC can be found at <http://www.loc.gov/marc>.
