@@ -1,5 +1,18 @@
 require 'test/unit'
 require 'marc'
+require 'xmlsimple'
+
+ def xml_cmp a, b
+   eq_all_but_zero = Object.new.instance_eval do
+     def ==(other)
+       Integer(other) == 0 ? false : true
+     end
+     self
+   end
+   a = XmlSimple.xml_in(a.to_s, 'normalisespace' => eq_all_but_zero) 
+   b = XmlSimple.xml_in(b.to_s, 'normalisespace' => eq_all_but_zero) 
+   a == b
+ end
 
 class TestRecord < Test::Unit::TestCase
 
@@ -12,12 +25,7 @@ class TestRecord < Test::Unit::TestCase
       r = get_record()
       doc = r.to_xml
       assert_kind_of REXML::Element, doc
-      if RUBY_VERSION < '1.9.0'
-        assert_equal "<record xmlns='http://www.loc.gov/MARC21/slim'><leader>      Z   22        4500</leader><datafield tag='100' ind1='2' ind2='0'><subfield code='a'>Thomas, Dave</subfield></datafield><datafield tag='245' ind1='0' ind2='4'><subfield code='The Pragmatic Programmer'></subfield></datafield></record>", doc.to_s
-      else
-        # REXML inexplicably sorts the attributes alphabetically in Ruby 1.9
-        assert_equal "<record xmlns='http://www.loc.gov/MARC21/slim'><leader>      Z   22        4500</leader><datafield ind1='2' ind2='0' tag='100'><subfield code='a'>Thomas, Dave</subfield></datafield><datafield ind1='0' ind2='4' tag='245'><subfield code='The Pragmatic Programmer'></subfield></datafield></record>", doc.to_s        
-      end
+      assert xml_cmp("<record xmlns='http://www.loc.gov/MARC21/slim'><leader>      Z   22        4500</leader><datafield tag='100' ind1='2' ind2='0'><subfield code='a'>Thomas, Dave</subfield></datafield><datafield tag='245' ind1='0' ind2='4'><subfield code='The Pragmatic Programmer'></subfield></datafield></record>", doc.to_s)
     end
 
     def test_append_field
