@@ -3,6 +3,8 @@
 require 'test/unit'
 require 'marc'
 
+require 'stringio'
+
 # Testing char encodings under 1.9, don't bother running
 # these tests except under 1.9, will either fail (because
 # 1.9 func the test itself uses isn't there), or trivially pass
