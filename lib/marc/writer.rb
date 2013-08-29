@@ -58,8 +58,8 @@ module MARC
         field_length = (field_data.respond_to?(:bytesize) ?
           field_data.bytesize() :
           field_data.length())
-        directory += sprintf("%03s%04i%05i", field.tag, field_length, 
-          offset)
+        directory += sprintf("%03s", field.tag) + format_byte_count(field_length, 4) + format_byte_count(offset)
+
 
         # add field to data for other fields
         fields += field_data 
@@ -75,22 +75,34 @@ module MARC
       marc = base + fields + END_OF_RECORD
 
       # update leader with the byte offest to the end of the directory
-      marc[12..16] = sprintf("%05i", (base.respond_to?(:bytesize) ?
+      marc[12..16] = format_byte_count(base.respond_to?(:bytesize) ?
         base.bytesize() :
-        base.length() )
+        base.length()
       )
 
       # update the record length
-      marc[0..4] = sprintf("%05i", (marc.respond_to?(:bytesize) ?
+      marc[0..4] = format_byte_count(marc.respond_to?(:bytesize) ?
         marc.bytesize() :
-        marc.length())
+        marc.length()
       )
       
       # store updated leader in the record that was passed in
       record.leader = marc[0..LEADER_LENGTH-1]
 
       # return encoded marc
-      return marc 
+      return marc
     end
+
+    def self.format_byte_count(number, num_digits=5)
+      formatted = sprintf("%0#{num_digits}i", number)
+      if formatted.length > num_digits
+        # uh, oh, we've exceeded our max. Either zero out
+        # or raise, depending on settings.
+        formatted = sprintf("%0#{num_digits}i", 0)
+        #formatted = "9" * num_digits
+      end
+      return formatted
+    end
+
   end
 end
