@@ -396,7 +396,7 @@ module MARC
   # Like Reader ForgivingReader lets you read in a batch of MARC21 records
   # but it does not use record lengths and field byte offets found in the
   # leader and directory. It is not unusual to run across MARC records
-  # which have had their offsets calcualted wrong. In situations like this
+  # which have had their offsets calculated wrong. In situations like this
   # the vanilla Reader may fail, and you can try to use ForgivingReader.
   #
   # The one downside to this is that ForgivingReader will assume that the
