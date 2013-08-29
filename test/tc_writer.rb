@@ -22,30 +22,33 @@ class WriterTest < Test::Unit::TestCase
         File.unlink('test/writer.dat')
     end
 
-    def test_writer_bad_encoding
-      writer = MARC::Writer.new('test/writer.dat')
+    # Only in ruby 1.9
+    if "".respond_to?(:encoding)
+      def test_writer_bad_encoding
+        writer = MARC::Writer.new('test/writer.dat')
 
 
-      # MARC::Writer should just happily write out whatever bytes you give it, even
-      # mixing encodings that can't be mixed. We ran into an actual example mixing
-      # MARC8 (tagged ruby binary) and UTF8, we want it to be written out. 
+        # MARC::Writer should just happily write out whatever bytes you give it, even
+        # mixing encodings that can't be mixed. We ran into an actual example mixing
+        # MARC8 (tagged ruby binary) and UTF8, we want it to be written out. 
 
-      record = MARC::Record.new
+        record = MARC::Record.new
 
-      record.append MARC::DataField.new('700', '0', ' ', ['a', "Nhouy Abhay,".force_encoding("BINARY")], ["c", "Th\xE5ao,".force_encoding("BINARY")], ["d", "1909-"])
-      record.append MARC::DataField.new('700', '0', ' ', ['a', "Somchin P\xF8\xE5o. Ngin,".force_encoding("BINARY")])
+        record.append MARC::DataField.new('700', '0', ' ', ['a', "Nhouy Abhay,".force_encoding("BINARY")], ["c", "Th\xE5ao,".force_encoding("BINARY")], ["d", "1909-"])
+        record.append MARC::DataField.new('700', '0', ' ', ['a', "Somchin P\xF8\xE5o. Ngin,".force_encoding("BINARY")])
 
-      record.append MARC::DataField.new('100', '0', '0', ['a', "\xE5angkham. ".force_encoding("BINARY")])
-      record.append MARC::DataField.new('245', '1', '0', ['b', "chef-d'oeuvre de la litt\xE2erature lao".force_encoding("BINARY")])
+        record.append MARC::DataField.new('100', '0', '0', ['a', "\xE5angkham. ".force_encoding("BINARY")])
+        record.append MARC::DataField.new('245', '1', '0', ['b', "chef-d'oeuvre de la litt\xE2erature lao".force_encoding("BINARY")])
 
-      # One in UTF8 and marked 
-      record.append MARC::DataField.new('999', '0', '1', ['a', "chef-d'ocuvre de la littU+FFC3\U+FFA9rature".force_encoding("UTF-8")])
+        # One in UTF8 and marked 
+        record.append MARC::DataField.new('999', '0', '1', ['a', "chef-d'ocuvre de la littU+FFC3\U+FFA9rature".force_encoding("UTF-8")])
 
-      writer.write(record)
-      writer.close
+        writer.write(record)
+        writer.close
 
-    ensure 
-        File.unlink('test/writer.dat')
+      ensure 
+          File.unlink('test/writer.dat')
+      end
     end
 
     def test_write_too_long_iso2709
