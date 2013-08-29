@@ -94,6 +94,22 @@ class WriterTest < Test::Unit::TestCase
       assert_equal too_long_record, records[1]
     end
 
+    def test_raises_on_too_long_if_configured
+      too_long_record = MARC::Record.new
+      1.upto(1001) do
+        too_long_record.append MARC::DataField.new("500", ' ', ' ', ['a', 'A really long record.1234567890123456789012345678901234567890123456789012345678901234567890123456789'])
+      end
+
+      wbuffer = StringIO.new("", "w")
+      writer = MARC::Writer.new(wbuffer)
+      writer.allow_oversized = false
+
+      assert_raise(MARC::Exception) do
+        writer.write too_long_record
+      end
+
+    end
+
     
     def test_forgiving_writer
       marc = "00305cam a2200133 a 4500001000700000003000900007005001700016008004100033008004100074035002500115245001700140909001000157909000400167\036635145\036UK-BiLMS\03620060329173705.0\036s1982iieng6                  000 0 eng||\036060116|||||||||xxk                 eng||\036  \037a(UK-BiLMS)M0017366ZW\03600\037aTest record.\036  \037aa\037b\037c\036\037b0\036\035\000"
