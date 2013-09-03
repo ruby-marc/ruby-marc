@@ -59,6 +59,7 @@ class WriterTest < Test::Unit::TestCase
 
       wbuffer = StringIO.new("", "w")
       writer = MARC::Writer.new(wbuffer)
+      writer.allow_oversized = true
 
       writer.write(too_long_record)
       writer.close
@@ -82,6 +83,7 @@ class WriterTest < Test::Unit::TestCase
       good_record.append MARC::DataField.new("500", ' ', ' ', ['a', 'A short record'])
       wbuffer = StringIO.new("", "w")
       writer = MARC::Writer.new(wbuffer)
+      writer.allow_oversized = true
 
       writer.write(good_record)
       writer.write(too_long_record)
@@ -105,7 +107,6 @@ class WriterTest < Test::Unit::TestCase
 
       wbuffer = StringIO.new("", "w")
       writer = MARC::Writer.new(wbuffer)
-      writer.allow_oversized = false
 
       assert_raise(MARC::Exception) do
         writer.write too_long_record

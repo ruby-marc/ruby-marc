@@ -7,13 +7,22 @@ module MARC
   # The MARC binary format only allows records that are total 99999 bytes long,
   # due to size of a length field in the record.
   #
-  # By default, the Writer will write these records out anyway, filling
-  # in any binary length/offset slots with all 0's, if they are not
-  # wide enough to hold the true value. These records are illegal, but
-  # but can still be read back in using the MARC::ForgivingReader
+  # By default, the Writer will raise a MARC::Exception when encountering
+  # in-memory records that are too long to be legally written out as ISO 2709
+  # binary.
+
+  # However, if you set `allow_oversized` to true, then the Writer will
+  # write these records out anyway, filling in any binary length/offset slots
+  # with all 0's, if they are not wide enough to hold the true value.
+  # While these records are illegal, they can still be read back in using
+  # the MARC::ForgivingReader, as well as other platform MARC readers
+  # in tolerant mode.
   #
   # If you set `allow_oversized` to false on the Writer, a MARC::Exception
-  # will be raised instead, if you try to write an oversized record. 
+  # will be raised instead, if you try to write an oversized record.
+  #
+  #    writer = Writer.new(some_path)
+  #    writer.allow_oversized = true
   class Writer
     attr_accessor :allow_oversized
 
@@ -28,7 +37,7 @@ module MARC
       else
         throw "must pass in file name or handle"
       end
-      self.allow_oversized = true
+      self.allow_oversized = false
     end
 
 
@@ -49,9 +58,9 @@ module MARC
     # a static method that accepts a MARC::Record object
     # and returns the record encoded as MARC21 in transmission format
     #
-    # Second arg allow_oversized, default true, set to false
+    # Second arg allow_oversized, default false, set to true
     # to raise on MARC record that can't fit into ISO 2709. 
-    def self.encode(record, allow_oversized = true)
+    def self.encode(record, allow_oversized = false)
       directory = ''
       fields = ''
       offset = 0
