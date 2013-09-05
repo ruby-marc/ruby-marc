@@ -119,4 +119,26 @@ class TestRecord < Test::Unit::TestCase
       assert_equal(five_hundreds.last['a'], 'Composer and program notes in container.')
     end
 
+
+    # Some tests for the internal FieldMap hash, normally
+    # an implementation detail, but things get tricky and we need
+    # tests to make sure we're good. Some of these you might
+    # change if you change FieldMap caching implementation or contract/API. 
+    def test_direct_change_dirties_fieldmap
+      # if we ask for #fields directly, and mutate it
+      # with it's own methods, does any cache update?
+
+      r = MARC::Record.new
+
+      r.fields.push MARC::DataField.new('500', ' ', ' ', ['a', 'notes'])
+
+      # This one fails, due to bug? even when not clean, no reindex on #[] ?
+      #assert r['500']
+
+      assert ! r.fields('500').empty?, "New 505 directly added to #fields is picked up"
+    end
+
+
+
+
 end
