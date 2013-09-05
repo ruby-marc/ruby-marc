@@ -128,11 +128,13 @@ class TestRecord < Test::Unit::TestCase
       # if we ask for #fields directly, and mutate it
       # with it's own methods, does any cache update?
       r = MARC::Record.new
+      assert r.fields('500').empty? 
       r.fields.push MARC::DataField.new('500', ' ', ' ', ['a', 'notes'])
       assert ! r.fields('500').empty?, "New 505 directly added to #fields is picked up"
 
       # Do it again, make sure #[] works too
       r = MARC::Record.new
+      assert r['500'].nil?
       r.fields.push MARC::DataField.new('500', ' ', ' ', ['a', 'notes'])
       assert r['500'], "New 505 directly added to #fields is picked up"
     end
