@@ -131,7 +131,7 @@ module MARC
         if allow_oversized
           formatted = sprintf("%0#{num_digits}i", 0)
         else
-          raise MARC::Exception.new("Can't write MARC record, as length/offset value of #{number} is too long for the #{num_digits} slot in binary format.")
+          raise MARC::Exception.new("Can't write MARC record in binary format, as a length/offset value of #{number} is too long for a #{num_digits}-byte slot.")
         end
       end
       return formatted
