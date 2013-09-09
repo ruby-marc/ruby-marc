@@ -50,7 +50,7 @@ module MARC
   #   record.find_all {|field| field.tag =~ /^6../}  
   # 
   # The accessor 'fields' is also an Array of MARC::DataField objects which
-  # the client can access or modifyi if neccesary.
+  # the client can modify if neccesary.
   #
   #   record.fields.delete(field)
   # 
@@ -259,7 +259,7 @@ module MARC
 
     def to_s
       str = "LEADER #{leader}\n"
-      for field in fields
+      self.each do |field|
         str += field.to_s() + "\n"
       end
       return str
