@@ -9,21 +9,16 @@ module MARC
   class ControlField
     
     # Initially, control tags are the numbers 1 through 9 or the string '000'
-    @@control_tags = Set.new( (1..9).to_a)
-    @@control_tags << '000'
+    @@control_tags = Set.new(%w{000 001 002 003 004 005 006 007 008 009})
  
     def self.control_tags
       return @@control_tags
     end
- 
-    # A tag is a control tag if it is a member of the @@control_tags set
-    # as either a string (e.g., 'FMT') or in its .to_i representation
-    # (e.g., '008'.to_i == 3 is in @@control_tags by default)
-  
+
+    # A tag is a control tag if tag.to_s is a member of the @@control_tags set.
     def self.control_tag?(tag)
-      return (@@control_tags.include?(tag.to_i) or @@control_tags.include?(tag))
+      return @@control_tags.include? tag.to_s
     end
-    
 
     # the tag value (007, 008, etc)
     attr_accessor :tag

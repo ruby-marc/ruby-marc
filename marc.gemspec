@@ -10,6 +10,7 @@ spec = Gem::Specification.new do |s|
   s.homepage      = 'https://github.com/ruby-marc/ruby-marc/'
   s.platform      = Gem::Platform::RUBY
   s.summary       = 'A ruby library for working with Machine Readable Cataloging'
+  s.license       = "MIT"
   s.files         = Dir.glob("{lib,test}/**/*") + ["Rakefile", "README.md", "Changes", "LICENSE"]
   s.require_path  = 'lib'
   s.autorequire   = 'marc'

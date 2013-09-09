@@ -177,22 +177,26 @@ module MARC
     #     print record
     #   end
     def each
-      # while there is data left in the file
-      while rec_length_s = @handle.read(5)
-        # make sure the record length looks like an integer
-        rec_length_i = rec_length_s.to_i
-        if rec_length_i == 0
-          raise MARC::Exception.new("invalid record length: #{rec_length_s}")
+      unless block_given?
+        return self.enum_for(:each)
+      else
+        # while there is data left in the file
+        while rec_length_s = @handle.read(5)
+          # make sure the record length looks like an integer
+          rec_length_i = rec_length_s.to_i
+          if rec_length_i == 0
+            raise MARC::Exception.new("invalid record length: #{rec_length_s}")
+          end
+
+          # get the raw MARC21 for a record back from the file
+          # using the record length
+          raw = rec_length_s + @handle.read(rec_length_i-5)
+
+          # create a record from the data and return it
+          #record = MARC::Record.new_from_marc(raw)
+          record = MARC::Reader.decode(raw, @encoding_options)
+          yield record
         end
-
-        # get the raw MARC21 for a record back from the file
-        # using the record length
-        raw = rec_length_s + @handle.read(rec_length_i-5)
-
-        # create a record from the data and return it
-        #record = MARC::Record.new_from_marc(raw)
-        record = MARC::Reader.decode(raw, @encoding_options)
-        yield record
       end
     end
 
@@ -392,7 +396,7 @@ module MARC
   # Like Reader ForgivingReader lets you read in a batch of MARC21 records
   # but it does not use record lengths and field byte offets found in the
   # leader and directory. It is not unusual to run across MARC records
-  # which have had their offsets calcualted wrong. In situations like this
+  # which have had their offsets calculated wrong. In situations like this
   # the vanilla Reader may fail, and you can try to use ForgivingReader.
   #
   # The one downside to this is that ForgivingReader will assume that the

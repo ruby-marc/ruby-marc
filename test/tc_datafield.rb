@@ -13,6 +13,14 @@ class TestField < Test::Unit::TestCase
         assert_not_equal(f1, f3)
     end
 
+    def test_alphabetic_tag
+        alph = MARC::DataField.new('ALF')
+        assert_equal 'ALF', alph.tag
+
+        alphnum = MARC::DataField.new('0D9')
+        assert_equal '0D9', alphnum.tag
+    end
+
     def test_indicators
         f1 = MARC::DataField.new('100', '0', '1')
         assert_equal('0', f1.indicator1)
