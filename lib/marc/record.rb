@@ -39,6 +39,14 @@ module MARC
         yield tag
       end
     end
+
+    # Freeze for immutability, first reindexing if needed. 
+    # A frozen FieldMap is safe for concurrent access, and also
+    # can more easily avoid accidental reindexing on even read-only use. 
+    def freeze
+      self.reindex unless @clean
+      super
+    end
   end
 
   # A class that represents an individual MARC record. Every record
@@ -50,12 +58,39 @@ module MARC
   #   record.find_all {|field| field.tag =~ /^6../}  
   # 
   # The accessor 'fields' is also an Array of MARC::DataField objects which
-  # the client can access or modifyi if neccesary.
+  # the client can access or modify if neccesary.
   #
   #   record.fields.delete(field)
   # 
   # Other accessor attribute: 'leader' for record leader as String
- 
+  #
+  # == High-performance lookup by tag
+  #
+  # A frequent use case is looking up fields in a MARC record by tag, such
+  # as 'all the 500 fields'.  Certain methods can use a hash keyed by
+  # tag name for higher performance lookup by tag.  The hash is lazily
+  # created on first access -- there is some cost of creating the hash,
+  # testing shows you get a performance advantage to using the hash-based
+  # methods if you are doing at least a dozen lookups.
+  #
+  #     record.fields("500")  # returns an array
+  #     record.each_by_tag("500") {|field| ... }
+  #     record.fields(['100', '700'])   # can also use an array in both methods
+  #     record.each_by_tag( 600..699 )  # or a range
+  #
+  # == Freezing for thread-safety and high performance
+  #
+  # MARC::Record is not generally safe for sharing between threads.
+  # Even if you think you are just acccessing it read-only,
+  # you may accidentally trigger a reindex of the by-tag cache (see above). 
+  #
+  # However, after you are done constructing a Record, you can mark
+  # the `fields` array as immutable. This makes a Record safe for sharing
+  # between threads for read-only use, and also helps you avoid accidentally
+  # triggering a reindex, as accidental reindexes can harm by-tag
+  # lookup performance. 
+  #
+  #     record.fields.freeze
   class Record
     include Enumerable
 
@@ -126,7 +161,10 @@ module MARC
     # in the order they appear in the record.
     def fields(filter=nil)
       unless filter
-        @fields.clean = false
+        # Since we're returning the FieldMap object, which the caller
+        # may mutate, we precautionarily mark dirty -- unless it's frozen
+        # immutable. 
+        @fields.clean = false unless @fields.frozen?
         return @fields 
       end
       @fields.reindex unless @fields.clean
