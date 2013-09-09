@@ -139,7 +139,19 @@ class TestRecord < Test::Unit::TestCase
       assert r['500'], "New 505 directly added to #fields is picked up"
     end
 
+    def test_frozen_fieldmap
+      r = MARC::Record.new
+      r.fields.push MARC::DataField.new('500', ' ', ' ', ['a', 'notes'])
 
+      r.fields.freeze
+
+      r.fields.inspect
+      r.fields
+      assert ! r.fields('500').empty?
+
+      assert r.fields.instance_variable_get("@clean"), "FieldMap still marked clean"
+
+    end
 
 
 end
