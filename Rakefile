@@ -1,5 +1,3 @@
-RUBY_MARC_VERSION = '0.4.4'
-
 require 'rubygems'
 require 'rake'
 require 'rake/testtask'
