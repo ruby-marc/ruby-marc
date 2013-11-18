@@ -10,7 +10,6 @@ Rake::TestTask.new('test') do |t|
   t.libs << 'lib'
   t.pattern = 'test/tc_*.rb'
   t.verbose = true
-  t.ruby_opts = ['-r marc', '-r test/unit']
 end
 
 
