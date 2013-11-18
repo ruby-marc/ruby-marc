@@ -286,31 +286,10 @@ module MARC
 
         # remove end of field
         field_data.delete!(END_OF_FIELD)
-
-        if field_data.respond_to?(:force_encoding)
-          if params[:external_encoding]
-            field_data = field_data.force_encoding(params[:external_encoding])
-          end     
-          
-          # If we're transcoding anyway, pass our invalid/replace options
-          # on to String#encode, which will take care of them -- or raise
-          # with illegal bytes without :replace=>:invalid. 
-          #
-          # If we're NOT transcoding, we need to use our own pure-ruby
-          # implementation to do invalid byte replacements. OR to raise
-          # a predicatable exception iff :validate_encoding, otherwise
-          # for performance we won't check, and you may or may not
-          # get an exception from inside ruby-marc, and it may change
-          # in future implementations. 
-          if params[:internal_encoding]
-            field_data = field_data.encode(params[:internal_encoding], params)
-          elsif (params[:invalid] || params[:replace] || (params[:validate_encoding] == true))
-            field_data = EnsureValidEncoding.ensure_valid_encoding(field_data,  params)
-          end
-          
-        end
+        
         # add a control field or data field
         if MARC::ControlField.control_tag?(tag)
+          field_data = MARC::Reader.set_encoding( field_data , params)
           record.append(MARC::ControlField.new(tag,field_data))
         else
           field = MARC::DataField.new(tag)
@@ -323,12 +302,13 @@ module MARC
           next if subfields.length() < 2
 
           # get indicators
-          indicators = subfields.shift()
+          indicators = MARC::Reader.set_encoding( subfields.shift(), params)
           field.indicator1 = indicators[0,1]
           field.indicator2 = indicators[1,1]
 
           # add each subfield to the field
           subfields.each() do |data|
+            data = MARC::Reader.set_encoding( data, params )
             subfield = MARC::Subfield.new(data[0,1],data[1..-1])
             field.append(subfield)
           end
@@ -339,7 +319,47 @@ module MARC
       end
 
       return record
-    end                  
+    end  
+
+    # input passed in probably has 'binary' encoding. 
+    # We'll set it to the proper encoding, and depending on settings, optionally
+    # * check for valid encoding
+    #   * raise if not valid
+    #   * or replace bad bytes with replacement chars if not valid
+    # * transcode from external_encoding to internal_encoding
+    #
+    # Params options:
+    # 
+    #  * external_encoding: what encoding the input is expected to be in  
+    #  * validate_encoding: if true, will raise if an invalid encoding
+    #  * invalid:  if set to :replace, will replace bad bytes with replacement
+    #              chars instead of raising. 
+    #  * replace: Set replacement char for use with 'invalid', otherwise defaults
+    #             to unicode replacement char, or question mark. 
+    def self.set_encoding(str, params)
+      if str.respond_to?(:force_encoding)
+        if params[:external_encoding]
+          str = str.force_encoding(params[:external_encoding])
+        end     
+            
+        # If we're transcoding anyway, pass our invalid/replace options
+        # on to String#encode, which will take care of them -- or raise
+        # with illegal bytes without :replace=>:invalid. 
+        #
+        # If we're NOT transcoding, we need to use our own pure-ruby
+        # implementation to do invalid byte replacements. OR to raise
+        # a predicatable exception iff :validate_encoding, otherwise
+        # for performance we won't check, and you may or may not
+        # get an exception from inside ruby-marc, and it may change
+        # in future implementations. 
+        if params[:internal_encoding]
+          str = str.encode(params[:internal_encoding], params)
+        elsif (params[:invalid] || params[:replace] || (params[:validate_encoding] == true))
+          str = EnsureValidEncoding.ensure_valid_encoding(str,  params)
+         end          
+       end
+       return str
+    end                
   end
 
 

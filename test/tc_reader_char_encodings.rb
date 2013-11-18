@@ -125,12 +125,38 @@ if "".respond_to?(:encoding)
     end
     
     def test_from_string_with_utf8_encoding
-      marc_string = File.open(@@utf_marc_path).read.force_encoding("UTF-8")
+      marc_file = File.open(@@utf_marc_path)
       
-      reader = MARC::Reader.new(StringIO.new(marc_string))
+      reader = MARC::Reader.new(marc_file)
       record = reader.first
       
-      assert_utf8_right_in_utf8(record)
+
+
+
+    end
+
+    # Something that was failing in my client Blacklight code,
+    # bad bytes should be handled appropriately
+    def test_from_string_utf8_with_bad_byte
+      marc_file = File.open('test/marc_with_bad_utf8.utf8.marc')
+      
+      reader = MARC::Reader.new(marc_file, :invalid => :replace)
+
+      record = reader.first
+
+      record.fields.each do |field|
+        if field.kind_of? MARC::ControlField
+          assert_equal "UTF-8", field.value.encoding.name
+          assert field.value.valid_encoding?
+        else
+          field.subfields.each do |subfield|
+            assert_equal "UTF-8", subfield.value.encoding.name
+            assert subfield.value.valid_encoding?, "value has valid encoding"
+          end
+        end
+      end
+
+      assert record['520']['a'].include?("\uFFFD"), "Value with bad byte now has Unicode Replacement Char"
     end
     
     def test_from_string_with_cp866
