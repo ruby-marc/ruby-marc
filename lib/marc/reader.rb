@@ -1,3 +1,5 @@
+require 'ensure_valid_encoding'
+
 module MARC
   # A class for reading MARC binary (ISO 2709) files. 
   #
@@ -303,7 +305,7 @@ module MARC
           if params[:internal_encoding]
             field_data = field_data.encode(params[:internal_encoding], params)
           elsif (params[:invalid] || params[:replace] || (params[:validate_encoding] == true))
-            field_data = MARC::Reader.validate_encoding(field_data,  params)
+            field_data = EnsureValidEncoding.ensure_valid_encoding(field_data,  params)
           end
           
         end
@@ -337,57 +339,7 @@ module MARC
       end
 
       return record
-    end    
-            
-    # Pass in a string, will raise an Encoding::InvalidByteSequenceError
-    # if it contains an invalid byte for it's encoding; otherwise
-    # returns an equivalent string. Surprisingly not built into 
-    # ruby 1.9.3 (yet?). https://bugs.ruby-lang.org/issues/6321
-    #
-    # The InvalidByteSequenceError will NOT be filled out
-    # with the usual error metadata, sorry. 
-    #
-    # OR, like String#encode, pass in option `:invalid => :replace`
-    # to replace invalid bytes with a replacement string in the
-    # returned string.  Pass in the
-    # char you'd like with option `:replace`, or will, like String#encode
-    # use the unicode replacement char if it thinks it's a unicode encoding,
-    # else ascii '?'.
-    #
-    # in any case, method will raise, or return a new string
-    # that is #valid_encoding?
-    def self.validate_encoding(str, options = {})
-      return str unless str.respond_to?(:encoding)
-      
-      if str.valid_encoding?
-        return str       
-      elsif options[:invalid] != :replace
-        # If we're not replacing, just raise right away without going through
-        # chars for performance. 
-        #
-        # That does mean we're not able to say exactly what byte was bad though.
-        # And the exception isn't filled out with all it's usual attributes,
-        # which would be hard even we were going through all the chars/bytes. 
-        raise  Encoding::InvalidByteSequenceError.new("invalid byte in string for source encoding #{str.encoding.name}")
-      else   
-        # :replace => :invalid, 
-        # actually need to go through chars to replace bad ones
-        return str.chars.collect do |c|
-          if c.valid_encoding?
-            c
-          else
-            options[:replace] || (
-             # surely there's a better way to tell if
-             # an encoding is a 'Unicode encoding form'
-             # than this? What's wrong with you ruby 1.9?
-             str.encoding.name.start_with?('UTF') ?
-                "\uFFFD" :
-                "?" )
-          end
-        end.join
-      end
-    end
-    
+    end                  
   end
 
 
