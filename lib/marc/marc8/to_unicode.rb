@@ -109,12 +109,12 @@ module MARC
                 next
             end
 
-            if code_point > 0x80 and not mb_flag
-                (uni, cflag) = CODESETS[self.g1][code_point]
-            else
-                (uni, cflag) = CODESETS[self.g0][code_point]
+            begin
+              code_set = (code_point > 0x80 and not mb_flag) ? self.g1 : self.g0
+              (uni, cflag) = CODESETS.fetch(code_set).fetch(code_point)
+            rescue KeyError
+              raise Encoding::InvalidByteSequenceError.new("MARC8, input byte offset #{pos}, code set: <#{code_set}>, code point: #{code_point}")
             end
-            
                 
             if cflag
                 combinings.push unichr(uni)

@@ -50,6 +50,9 @@ class TestMarc8ToUnicode < Test::Unit::TestCase
         # our expected data is all in NFC. 
         converted = UNF::Normalizer.normalize(converted, :nfc)
 
+        assert_equal "UTF-8", converted.encoding.name, "Converted data line #{i} is tagged UTF-8"
+        assert converted.valid_encoding?, "Converted data line #{i} is valid_encoding"
+
         assert_equal utf8, converted, "Test data line #{i}, expected converted to match provided utf8"
       end
     rescue EOFError => each 
@@ -59,7 +62,32 @@ class TestMarc8ToUnicode < Test::Unit::TestCase
       $stderr.puts "Error at test data line #{i}"
       raise e
     end
+  end
 
+  def test_bad_byte
+    converter = MARC::Marc8::ToUnicode.new
+
+    bad_marc8 = "\e$1!PVK7oi$N!Q1!G4i$N!0p!Q+{6924f6}\e(B"
+    assert_raise(Encoding::InvalidByteSequenceError) {
+      value = converter.transcode(bad_marc8)
+    }
+  end
+
+  def test_bad_escape
+    converter = MARC::Marc8::ToUnicode.new
+
+    # I do not understand what's going on here, or why this is
+    # desired/expected behavior.  But this
+    # test is copied from pymarc , adapted to be straight data not marc record
+    # https://github.com/edsu/pymarc/blob/master/test/marc8.py?source=cc#L34
+
+    bad_escape_data = "La Soci\xE2et\e,"
+    value = converter.transcode(bad_escape_data)
+
+    assert_equal "UTF-8", value.encoding.name
+    assert value.valid_encoding?, "Valid encoding"
+
+    assert_equal "La Soci\u00E9t\x1B,", UNF::Normalizer.normalize(value, :nfc)
   end
 
 end
