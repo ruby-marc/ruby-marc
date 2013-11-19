@@ -33,9 +33,19 @@ module MARC
         self.g1 = ANSEL
       end
 
-      # Returns UTF-8 encoded string equivalent of marc8_string passed in. 
-      # Raises?
-      def transcode(marc8_string)
+      # Returns UTF-8 encoded string equivalent of marc8_string passed in.       
+      #
+      # Bad Marc8 bytes?  By default will raise an Encoding::InvalidByteSequenceError
+      # (will not have full metadata filled out, but will have a decent error message)
+      #
+      # Set option :invalid => :replace to instead silently replace bad bytes
+      # with a replacement char -- by default Unicode Replacement Char, but can set 
+      # option :replace to something else, including empty string. 
+      #
+      # converter.transcode(bad_marc8, :invalid => :replace, :replace => "")
+      def transcode(marc8_string, options = {})
+        invalid_replacement = (options[:replace] || "\uFFFD")
+        
         # don't choke on empty marc8_string
         return "" if marc8_string.nil? || marc8_string.empty?
          
@@ -112,18 +122,24 @@ module MARC
             begin
               code_set = (code_point > 0x80 and not mb_flag) ? self.g1 : self.g0
               (uni, cflag) = CODESETS.fetch(code_set).fetch(code_point)
-            rescue KeyError
-              raise Encoding::InvalidByteSequenceError.new("MARC8, input byte offset #{pos}, code set: <#{code_set}>, code point: #{code_point}")
-            end
                 
-            if cflag
-                combinings.push unichr(uni)
-            else
-                uni_list.push unichr(uni)
-                if combinings.length > 0
-                    uni_list.concat combinings
-                    combinings = []
-                end
+              if cflag
+                  combinings.push unichr(uni)
+              else
+                  uni_list.push unichr(uni)
+                  if combinings.length > 0
+                      uni_list.concat combinings
+                      combinings = []
+                  end
+              end
+            rescue KeyError
+              if options[:invalid] == :replace
+                # Let's coallesece multiple replacements
+                uni_list.push invalid_replacement unless uni_list.last == invalid_replacement
+                pos += 1
+              else
+                raise Encoding::InvalidByteSequenceError.new("MARC8, input byte offset #{pos}, code set: <#{code_set}>, code point: #{code_point}")
+              end
             end
         end
 

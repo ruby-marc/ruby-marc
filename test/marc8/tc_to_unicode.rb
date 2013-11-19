@@ -73,6 +73,33 @@ class TestMarc8ToUnicode < Test::Unit::TestCase
     }
   end
 
+  def test_bad_byte_with_replacement
+    converter = MARC::Marc8::ToUnicode.new
+
+    bad_marc8 = "\e$1!PVK7oi$N!Q1!G4i$N!0p!Q+{6924f6}\e(B"
+    value = converter.transcode(bad_marc8, :invalid => :replace)
+
+    assert_equal "UTF-8", value.encoding.name
+    assert value.valid_encoding?
+
+    assert value.include?("\uFFFD"), "includes replacement char"    
+    # coalescing multiple replacement chars at end, could change
+    # to not do so, important thing is at least one is there. 
+    assert_equal "米国の統治の仕組�", value
+  end
+
+  def test_bad_byte_with_specified_empty_replacement
+    converter = MARC::Marc8::ToUnicode.new
+
+    bad_marc8 = "\e$1!PVK7oi$N!Q1!G4i$N!0p!Q+{6924f6}\e(B"
+    value = converter.transcode(bad_marc8, :invalid => :replace, :replace => "")
+
+    assert_equal "UTF-8", value.encoding.name
+    assert value.valid_encoding?
+
+    assert_equal "米国の統治の仕組", value
+  end
+
   def test_bad_escape
     converter = MARC::Marc8::ToUnicode.new
 
