@@ -21,4 +21,6 @@ spec = Gem::Specification.new do |s|
   s.bindir        = 'bin'
 
   s.add_dependency "ensure_valid_encoding"  
+
+  s.add_development_dependency "unf" # unicode normalization
 end
