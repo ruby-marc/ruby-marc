@@ -21,10 +21,10 @@ class TestMarc8ToUnicode < Test::Unit::TestCase
   def test_one_example_marc8
     value = MARC::Marc8::ToUnicode.new.transcode("Conversa\xF0c\xE4ao")
     assert_equal "UTF-8", value.encoding.name
-    # decomposed UTF-8 version we know it makes right now; 
-    # in future, may have to change this to normalize before test?
 
-    assert_equal "Conversação", value
+    expected = UNF::Normalizer.normalize("Conversação", :nfc)
+
+    assert_equal expected, value
   end
 
   def test_lots_of_marc8_test_cases
@@ -46,9 +46,6 @@ class TestMarc8ToUnicode < Test::Unit::TestCase
         marc8     = marc8_file.readline.chomp
 
         converted = converter.transcode(marc8)
-        # normalize it to NFC, our converter may not do that itself, but
-        # our expected data is all in NFC. 
-        converted = UNF::Normalizer.normalize(converted, :nfc)
 
         assert_equal "UTF-8", converted.encoding.name, "Converted data line #{i} is tagged UTF-8"
         assert converted.valid_encoding?, "Converted data line #{i} is valid_encoding"
@@ -114,7 +111,7 @@ class TestMarc8ToUnicode < Test::Unit::TestCase
     assert_equal "UTF-8", value.encoding.name
     assert value.valid_encoding?, "Valid encoding"
 
-    assert_equal "La Soci\u00E9t\x1B,", UNF::Normalizer.normalize(value, :nfc)
+    assert_equal "La Soci\u00E9t\x1B,", value
   end
 
 end

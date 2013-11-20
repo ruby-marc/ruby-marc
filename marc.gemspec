@@ -22,5 +22,5 @@ spec = Gem::Specification.new do |s|
 
   s.add_dependency "ensure_valid_encoding"  
 
-  s.add_development_dependency "unf" # unicode normalization
+  s.add_dependency "unf" # unicode normalization
 end

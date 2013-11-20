@@ -2,6 +2,7 @@
 
 require 'marc'
 require 'marc/marc8/map_to_unicode'
+require 'unf/normalizer'
 
 module MARC
   module Marc8
@@ -14,6 +15,9 @@ module MARC
     #
     # Returns UTF-8 encoded string! Encode to something else if you want
     # something else. 
+    #
+    # TODO: unicode NFC normalization 
+    # III proprietary code points?
     class ToUnicode
       BASIC_LATIN = 0x42
       ANSEL = 0x45
@@ -43,8 +47,14 @@ module MARC
       # option :replace to something else, including empty string. 
       #
       # converter.transcode(bad_marc8, :invalid => :replace, :replace => "")
+      #
+      # By default returns NFC normalized, but set :normalization option to:
+      #    :nfd, :nfkd, :nfkc, :nfc, or nil. Set to nil for higher performance,
+      #    we won't do any normalization just take it as it comes out of the
+      #    transcode algorithm. This will generally NOT be composed. 
       def transcode(marc8_string, options = {})
         invalid_replacement = (options[:replace] || "\uFFFD")
+        options[:normalization] = :nfc unless options.has_key?(:normalization)
         
         # don't choke on empty marc8_string
         return "" if marc8_string.nil? || marc8_string.empty?
@@ -146,7 +156,10 @@ module MARC
         # what to do if combining chars left over?
         uni_str = uni_list.join('')
  
-        #TODO: Normalize NFC preferred?       
+
+        if options[:normalization]
+          uni_str = UNF::Normalizer.normalize(uni_str, options[:normalization])
+        end
             
         return uni_str
       end
