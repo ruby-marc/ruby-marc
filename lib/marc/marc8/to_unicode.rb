@@ -6,7 +6,8 @@ require 'unf/normalizer'
 
 module MARC
   module Marc8
-    # Class to convert Marc8 to UTF-8
+    # Class to convert Marc8 to UTF-8. NOTE: Requires ruby 1.9+ (this could be
+    # changed without too much trouble, but we just don't care to support 1.8.7 anymore.)
     #
     # http://www.loc.gov/marc/specifications/speccharmarc8.html
     #
