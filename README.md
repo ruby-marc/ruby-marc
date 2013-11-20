@@ -9,7 +9,7 @@ marc is a ruby library for reading and writing MAchine Readable Cataloging
     require 'marc'
   
     # reading records from a batch file
-    reader = MARC::Reader.new('marc.dat')
+    reader = MARC::Reader.new('marc.dat', :external_encoding => "MARC-8")
     for record in reader
       # print out field 245 subfield a
       puts record['245']['a']
@@ -45,28 +45,17 @@ Or if you're using bundler, add to your Gemfile
 
     gem 'marc'
     
-## Character Encodings
+## Character Encodings in 'binary' ISO-2709 MARC
 
-Dealing with character encoding issues is one of the most confusing programming areas in general, and dealing with MARC (esp 'binary' ISO 2709 marc) can make it even more confusing.   
+The Marc binary (ISO 2709) Reader (MARC::Reader) has some features for helping you deal with character encodings in ruby 1.9. It is always recommended to supply an explicit :external_encoding option to MARC::Reader; either any valid ruby encoding, _or_ the string "MARC-8".  MARC-8 input will by default be transcoded to a UTF-8 internal representation.
 
-In ruby 1.8, if you get your character encodings wrong, you may find what look like garbage characters in your output. In ruby 1.9, you may also cause exceptions to be raised in your code.  ruby-marc as of 0.5.0 has a fairly complete and consistent featureset for helping you deal with character encodings in 'binary' MARC.  
+MARC::Reader does _not_ currently have any facilities for guessing encoding from MARC21 leader byte 9, that is
+ignored. 
 
-There are no tools in ruby for transcoding or dealing with the 'marc8' encoding, used in Marc21 in the US and other countries.  If you have to deal with MARC with marc8 encoding, your best bet is using an external tool to convert between MARC8 and UTF8 before the ruby app even sees it. [MarcEdit](http://people.oregonstate.edu/~reeset/marcedit/html/index.php), [yaz-marcdump command line tool](http://www.indexdata.com/yaz), [Marc4J java library](http://marc4j.tigris.org/)
+Consult the MARC::Reader class docs for a more complete discussion and range of options. 
 
-### 'binary' ISO 2709 MARC
+The MARC binary Writer (MARC::Writer) does not have any encoding-related features -- it's up to you the developer to make sure you create MARC::Records with consistent and expected char encodings, although MARC::Writer will write out a legal ISO 2709 either way, it just might have corrupted encodings.
 
-The Marc binary (ISO 2709) Reader (MARC::Reader) has some features for helping you deal with character encodings in ruby 1.9. It should often do the right thing, especially if you are working only in unicode. See documentation in that class for details, including additional features you can use.   Note it does NOT currently determine encoding based on internal leader bytes in the marc file.   
-
-The MARC binary Writer (MARC::Writer) does not have any such features -- it's up to you the developer to make sure you create MARC::Records with consistent and expected char encodings, although MARC::Writer will write out a legal ISO 2709 either way, it just might have corrupted encodings.
-
-#### jruby note
-
-Note all of our char encoding tests currently pass on jruby in ruby 1.9 mode; if you are using binary MARC records in a non-UTF8 encoding, you may have trouble in jruby. We believe it's a jruby bug. https://jira.codehaus.org/browse/JRUBY-6637
-
-
-### xml or json
-
-For XML or json use, things should probably work right if your input is in UTF-8, but this hasn't been extensively tested. Feel free to file issues if you run into any. 
   
 ## Miscellany 
 
