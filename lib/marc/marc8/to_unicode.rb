@@ -52,9 +52,15 @@ module MARC
       #    :nfd, :nfkd, :nfkc, :nfc, or nil. Set to nil for higher performance,
       #    we won't do any normalization just take it as it comes out of the
       #    transcode algorithm. This will generally NOT be composed. 
+      #
+      # By default, escaped unicode 'named character references' in Marc8 will
+      # be translated to actual UTF8. Eg. "&#x200F;" But pass :expand_ncr => false
+      # to disable. http://www.loc.gov/marc/specifications/speccharconversion.html#lossless
       def transcode(marc8_string, options = {})
-        invalid_replacement = (options[:replace] || "\uFFFD")
-        options[:normalization] = :nfc unless options.has_key?(:normalization)
+        invalid_replacement     = options.fetch(:replace, "\uFFFD")
+        expand_ncr              = options.fetch(:expand_ncr, true)
+        normalization           = options.fetch(:normalization, :nfc)
+
         
         # don't choke on empty marc8_string
         return "" if marc8_string.nil? || marc8_string.empty?
@@ -156,9 +162,14 @@ module MARC
         # what to do if combining chars left over?
         uni_str = uni_list.join('')
  
+        if expand_ncr
+          uni_str.gsub!(/&#x([0-9A-F]{4,6});/) do 
+            [$1.hex].pack("U")
+          end
+        end
 
-        if options[:normalization]
-          uni_str = UNF::Normalizer.normalize(uni_str, options[:normalization])
+        if normalization
+          uni_str = UNF::Normalizer.normalize(uni_str, normalization)
         end
             
         return uni_str
