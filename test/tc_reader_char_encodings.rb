@@ -44,7 +44,24 @@ if "".respond_to?(:encoding)
       assert_equal(encoding, record['001'].value.encoding.name)
       assert_equal(["d09d"], record['001'].value.encode("UTF-8").unpack('H4')) # russian capital N    
     end
+
+    @@bad_marc8_path = "test/bad_eacc_encoding.marc8.marc"
     
+
+    def assert_all_values_valid_encoding(record, encoding_name="UTF-8")
+      record.fields.each do |field|
+        if field.kind_of? MARC::DataField
+          field.subfields.each do |sf|
+            assert_equal encoding_name, sf.value.encoding.name, "Is tagged #{encoding_name}: #{field.tag}: #{sf}"
+            assert field.value.valid_encoding?, "Is valid encoding: #{field.tag}: #{sf}"
+          end
+        else
+          assert_equal encoding_name, field.value.encoding.name, "Is tagged #{encoding_name}: #{field}"
+          assert field.value.valid_encoding?, "Is valid encoding: #{field}"
+        end
+      end
+    end
+
     ####
     # end helper methods
     ####
@@ -100,13 +117,57 @@ if "".respond_to?(:encoding)
     end
     
     def test_marc8_with_binary
-      # Marc8, best we can do is read it in binary. 
+      # Marc8, if we want to keep it without transcoding, best we can do is read it in binary. 
       reader = MARC::Reader.new('test/marc8_accented_chars.marc', :external_encoding => 'binary')
       record = reader.first
    
       assert_equal "ASCII-8BIT", record['100'].subfields.first.value.encoding.name
     end
-  
+
+    def test_marc8_converted_to_unicode
+      reader = MARC::Reader.new('test/marc8_accented_chars.marc', :external_encoding => 'MARC-8')
+      record = reader.first
+
+      assert_all_values_valid_encoding(record)
+
+      assert_equal "Serreau, Geneviève.", record['100']['a']
+    end
+
+    def test_marc8_converted_to_unicode_with_file_handle
+      # had some trouble with this one, let's ensure it with a test
+      file    = File.new('test/marc8_accented_chars.marc')
+      reader  = MARC::Reader.new(file, :external_encoding => "MARC-8")
+      record  =  reader.first
+
+      assert_all_values_valid_encoding(record)
+    end
+
+    def test_marc8_with_char_entity
+      reader = MARC::Reader.new("test/escaped_character_reference.marc8.marc", :external_encoding => "MARC-8")
+      record = reader.first
+
+      assert_all_values_valid_encoding(record)
+
+      assert_equal "Rio de Janeiro escaped replacement char: \uFFFD .", record['260']['a']
+    end
+
+    def test_bad_marc8_raises
+      assert_raise(Encoding::InvalidByteSequenceError) do
+        reader = MARC::Reader.new(@@bad_marc8_path, :external_encoding => 'MARC-8')
+        record = reader.first
+      end
+    end
+
+    def test_bad_marc8_with_replacement
+      reader = MARC::Reader.new(@@bad_marc8_path, :external_encoding => 'MARC-8', :invalid => :replace, :replace => "[?]")
+      record = reader.first
+
+      assert_all_values_valid_encoding(record)      
+      
+      assert record['880']['a'].include?("[?]"), "includes specified replacement string"
+    end
+
+
     def test_load_file_opened_with_external_encoding
       reader = MARC::Reader.new(File.open(@@cp866_marc_path, 'r:cp866'))
       
