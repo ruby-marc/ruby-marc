@@ -159,7 +159,7 @@ module MARC
                 uni_list.push invalid_replacement unless uni_list.last == invalid_replacement
                 pos += 1
               else
-                raise Encoding::InvalidByteSequenceError.new("MARC8, input byte offset #{pos}, code set: <#{code_set}>, code point: #{code_point}")
+                raise Encoding::InvalidByteSequenceError.new("MARC8, input byte offset #{pos}, code set: 0x#{code_set.to_s(16)}, code point: 0x#{code_point.to_s(16)}")
               end
             end
         end
