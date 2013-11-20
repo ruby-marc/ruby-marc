@@ -1,14 +1,16 @@
 require 'rubygems'
+
 require 'rake'
 require 'rake/testtask'
 require 'rdoc/task'
 require 'bundler/gem_tasks'
 
+
 task :default => [:test]
 
 Rake::TestTask.new('test') do |t|
   t.libs << 'lib'
-  t.pattern = 'test/tc_*.rb'
+  t.pattern = 'test/**/tc_*.rb'
   t.verbose = true
 end
 
