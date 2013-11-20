@@ -61,6 +61,28 @@ class TestMarc8ToUnicode < Test::Unit::TestCase
     end
   end
 
+  def test_explicit_normalization
+    # \xC1 is Marc8 "script small letter l", which under unicode
+    # COMPAT normalization will turn into ordinary 'l'
+    marc8     = "Conversa\xF0c\xE4ao \xC1"
+    unicode   = "Conversação \u2113"
+
+    unicode_c   = UNF::Normalizer.normalize(unicode, :nfc)
+    unicode_kc  = UNF::Normalizer.normalize(unicode, :nfkc)
+    unicode_d  = UNF::Normalizer.normalize(unicode, :nfd)
+    unicode_kd  = UNF::Normalizer.normalize(unicode, :nfkd)
+
+    converter = MARC::Marc8::ToUnicode.new
+
+    assert_equal unicode_c,  converter.transcode(marc8, :normalization => :nfc)
+    assert_equal unicode_kc, converter.transcode(marc8, :normalization => :nfkc)
+    assert_equal unicode_d,  converter.transcode(marc8, :normalization => :nfd)
+    assert_equal unicode_kd, converter.transcode(marc8, :normalization => :nfkd)
+
+    # disable normalization for performance or something, we won't end up with NFC. 
+    refute_equal unicode_c, converter.transcode(marc8, :normalization => nil)
+  end
+
   def test_bad_byte
     converter = MARC::Marc8::ToUnicode.new
 
