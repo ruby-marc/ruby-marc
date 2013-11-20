@@ -6,17 +6,18 @@ require 'unf/normalizer'
 
 module MARC
   module Marc8
-    # NOT thread-safe, it needs to keep state as it goes through a string,
-    # do not re-use between threads. 
+    # Class to convert Marc8 to UTF-8
     #
     # http://www.loc.gov/marc/specifications/speccharmarc8.html
+    #
+    # NOT thread-safe, it needs to keep state as it goes through a string,
+    # do not re-use between threads. 
     #
     # Uses 4 spaces per indent, rather than usual ruby 2 space, just to change the python less. 
     #
     # Returns UTF-8 encoded string! Encode to something else if you want
     # something else. 
     #
-    # TODO: unicode NFC normalization 
     # III proprietary code points?
     class ToUnicode
       BASIC_LATIN = 0x42
@@ -56,6 +57,10 @@ module MARC
       # By default, escaped unicode 'named character references' in Marc8 will
       # be translated to actual UTF8. Eg. "&#x200F;" But pass :expand_ncr => false
       # to disable. http://www.loc.gov/marc/specifications/speccharconversion.html#lossless
+      #
+      # String arg passed in WILL have it's encoding tagged 'binary' if
+      # it's not already, if it's Marc8 there's no good reason for it not to
+      # be already. 
       def transcode(marc8_string, options = {})
         invalid_replacement     = options.fetch(:replace, "\uFFFD")
         expand_ncr              = options.fetch(:expand_ncr, true)
@@ -67,9 +72,9 @@ module MARC
          
         # Make sure to call it 'binary', so we can slice it
         # byte by byte, and so ruby doesn't complain about bad
-        # bytes for some other encoding. We'll take a dup
-        # of it first, so we don't change encoding on input, mutating it. 
-        marc8_string = marc8_string.dup
+        # bytes for some other encoding. Yeah, we're changing
+        # encoding on input! If it's Marc8, it ought to be tagged
+        # binary already. 
         marc8_string.force_encoding("binary")
 
         uni_list = []
