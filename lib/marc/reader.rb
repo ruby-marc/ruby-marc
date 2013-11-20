@@ -1,4 +1,5 @@
 require 'ensure_valid_encoding'
+require 'marc/marc8/to_unicode'
 
 module MARC
   # A class for reading MARC binary (ISO 2709) files. 
@@ -328,6 +329,11 @@ module MARC
     #   * or replace bad bytes with replacement chars if not valid
     # * transcode from external_encoding to internal_encoding
     #
+    # Special case for encoding "MARC-8" -- will be transcoded to
+    # UTF-8 (then further transcoded to external_encoding, if set).
+    # For "MARC-8", validate_encoding is always true, there's no way to
+    # ignore bad bytes. 
+    #
     # Params options:
     # 
     #  * external_encoding: what encoding the input is expected to be in  
@@ -339,7 +345,12 @@ module MARC
     def self.set_encoding(str, params)
       if str.respond_to?(:force_encoding)
         if params[:external_encoding]
-          str = str.force_encoding(params[:external_encoding])
+          if params[:external_encoding] == "MARC-8"
+            transcode_params = [:invalid, :replace].each_with_object({}) { |k, hash| hash[k] = params[k] if params.has_key?(k) }
+            str = MARC::Marc8::ToUnicode.new.transcode(str, transcode_params)
+          else
+            str = str.force_encoding(params[:external_encoding])
+          end
         end     
             
         # If we're transcoding anyway, pass our invalid/replace options

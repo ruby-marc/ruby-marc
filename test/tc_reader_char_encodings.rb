@@ -106,6 +106,25 @@ if "".respond_to?(:encoding)
    
       assert_equal "ASCII-8BIT", record['100'].subfields.first.value.encoding.name
     end
+
+    def test_marc8_converted_to_unicode
+      reader = MARC::Reader.new('test/marc8_accented_chars.marc', :external_encoding => 'MARC-8')
+      record = reader.first
+
+      record.fields.each do |field|
+        if field.kind_of? MARC::DataField
+          field.subfields.each do |sf|
+            assert_equal "UTF-8", sf.value.encoding.name, "Is tagged UTF-8: #{field.tag}: #{sf}"
+            assert field.value.valid_encoding?, "Is valid encoding: #{field.tag}: #{sf}"
+          end
+        else
+          assert_equal "UTF-8", field.value.encoding.name, "Is tagged UTF-8: #{field}"
+          assert field.value.valid_encoding?, "Is valid encoding: #{field}"
+        end
+      end
+
+      assert_equal "Serreau, Geneviève.", record['100']['a']
+    end
   
     def test_load_file_opened_with_external_encoding
       reader = MARC::Reader.new(File.open(@@cp866_marc_path, 'r:cp866'))

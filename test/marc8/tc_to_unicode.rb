@@ -88,8 +88,8 @@ class TestMarc8ToUnicode < Test::Unit::TestCase
     
     marc8_ncr = "Weird &#x200F; &#xFFFD; but these aren't changed #x2000; &#200F etc."
     assert_equal "Weird \u200F \uFFFD but these aren't changed #x2000; &#200F etc.", converter.transcode(marc8_ncr)
-    assert_equal marc8_ncr, converter.transcode(marc8_ncr, :expand_ncr => false)
-  end
+    assert_equal marc8_ncr, converter.transcode(marc8_ncr, :expand_ncr => false), "should not expand NCR if disabled"
+  end  
 
   def test_bad_byte
     converter = MARC::Marc8::ToUnicode.new
