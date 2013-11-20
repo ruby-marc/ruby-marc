@@ -44,6 +44,8 @@ if "".respond_to?(:encoding)
       assert_equal(encoding, record['001'].value.encoding.name)
       assert_equal(["d09d"], record['001'].value.encode("UTF-8").unpack('H4')) # russian capital N    
     end
+
+    @@bad_marc8_path = "test/bad_eacc_encoding.marc8.marc"
     
     ####
     # end helper methods
@@ -125,7 +127,34 @@ if "".respond_to?(:encoding)
 
       assert_equal "Serreau, Geneviève.", record['100']['a']
     end
-  
+
+    def test_bad_marc8_raises
+      assert_raise(Encoding::InvalidByteSequenceError) do
+        reader = MARC::Reader.new(@@bad_marc8_path, :external_encoding => 'MARC-8')
+        record = reader.first
+      end
+    end
+
+    def test_bad_marc8_with_replacement
+      reader = MARC::Reader.new(@@bad_marc8_path, :external_encoding => 'MARC-8', :invalid => :replace, :replace => "[?]")
+      record = reader.first
+
+      record.fields.each do |field|
+        if field.kind_of? MARC::DataField
+          field.subfields.each do |sf|
+            assert_equal "UTF-8", sf.value.encoding.name, "Is tagged UTF-8: #{field.tag}: #{sf}"
+            assert field.value.valid_encoding?, "Is valid encoding: #{field.tag}: #{sf}"
+          end
+        else
+          assert_equal "UTF-8", field.value.encoding.name, "Is tagged UTF-8: #{field}"
+          assert field.value.valid_encoding?, "Is valid encoding: #{field}"
+        end
+      end
+      
+      assert record['880']['a'].include?("[?]"), "includes specified replacement string"
+    end
+
+
     def test_load_file_opened_with_external_encoding
       reader = MARC::Reader.new(File.open(@@cp866_marc_path, 'r:cp866'))
       
