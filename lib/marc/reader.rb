@@ -1,5 +1,4 @@
 require 'ensure_valid_encoding'
-require 'marc/marc8/to_unicode'
 
 module MARC
   # A class for reading MARC binary (ISO 2709) files. 
@@ -210,7 +209,13 @@ module MARC
         # with binary marc data, the transcode can mess up the byte count
         # and make it unreadable. 
         @encoding_options[:external_encoding] ||= @handle.external_encoding
-      end      
+      end
+
+      # Only pull in the MARC8 translation if we need it, since it's really big
+      if @encoding_options[:external_encoding]  == "MARC-8"
+        require 'marc/marc8/to_unicode'
+      end
+
     end
 
     # to support iteration:
