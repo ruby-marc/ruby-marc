@@ -1,5 +1,9 @@
 require 'ensure_valid_encoding'
 
+# Note: requiring 'marc/marc8/to_unicode' below, in #initialize,
+# only when necessary
+
+
 module MARC
   # A class for reading MARC binary (ISO 2709) files. 
   #
@@ -213,7 +217,7 @@ module MARC
 
       # Only pull in the MARC8 translation if we need it, since it's really big
       if @encoding_options[:external_encoding]  == "MARC-8"
-        require 'marc/marc8/to_unicode'
+        require 'marc/marc8/to_unicode' unless defined? MARC::Marc8::ToUnicode
       end
 
     end
