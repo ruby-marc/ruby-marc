@@ -25,7 +25,7 @@ module MARC
       elsif file.respond_to?('write')
         @fh = file
       else
-        throw "must pass in file name or handle"
+        raise ArgumentError, "must pass in file name or handle"
       end
       
       @fh.write("<?xml version='1.0'?>\n")

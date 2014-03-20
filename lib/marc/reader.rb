@@ -202,7 +202,7 @@ module MARC
       elsif file.respond_to?("read", 5)
         @handle = file
       else
-        throw "must pass in path or file"
+        raise ArgumentError, "must pass in path or file"
       end
       
       if (! @encoding_options[:external_encoding] ) && @handle.respond_to?(:external_encoding)
@@ -283,7 +283,7 @@ module MARC
       # get the byte offsets from the record directory
       directory = marc[LEADER_LENGTH..base_address-1]
 
-      throw "invalid directory in record" if directory == nil
+      raise MARC::Exception.new("invalid directory in record") if directory == nil
 
       # the number of fields in the record corresponds to
       # how many directory entries there are
