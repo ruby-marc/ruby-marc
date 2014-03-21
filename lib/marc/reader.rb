@@ -231,7 +231,7 @@ module MARC
         return self.enum_for(:each)
       else
         self.each_raw do |raw|
-          record = MARC::Reader.decode(raw, @encoding_options)
+          record = self.decode(raw)
           yield record
         end
       end
@@ -243,11 +243,12 @@ module MARC
     # This allows for handling encoding exceptions per record (e.g. to log which
     # record caused the error):
     #
-    #   reader = MARC::Reader.new("marc_with_some_bad_records.dat")
+    #   reader = MARC::Reader.new("marc_with_some_bad_records.dat",
+    #                                 :external_encoding => "UTF-8",
+    #                                 :validate_encoding => true)
     #   reader.each_raw do |raw|
     #     begin
-    #       record = MARC::Reader.decode(raw, :external_encoding => "UTF-8",
-    #                                         :validate_encodnig => true)
+    #       record = reader.decode(raw)
     #     rescue Encoding::InvalidByteSequenceError => e
     #       record = MARC::Reader.decode(raw, :external_encoding => "UTF-8",
     #                                         :invalid => :replace)
@@ -273,6 +274,14 @@ module MARC
           yield raw
         end
       end
+    end
+
+    # Decodes the given string into a MARC::Record object.
+    #
+    # Wraps the class method MARC::Reader::decode, using the encoding options of
+    # the MARC::Reader instance.
+    def decode(marc)
+      return MARC::Reader.decode(marc, @encoding_options)
     end
 
     # A static method for turning raw MARC data in transission
