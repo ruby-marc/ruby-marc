@@ -21,6 +21,7 @@ spec = Gem::Specification.new do |s|
   s.bindir        = 'bin'
 
   s.add_dependency "ensure_valid_encoding"  
+  s.add_dependency "scrub_rb", ">= 1.0.1", "< 2" # backport for ruby 2.1 String#scrub
 
   s.add_dependency "unf" # unicode normalization
 end

@@ -1,4 +1,4 @@
-require 'ensure_valid_encoding'
+require 'scrub_rb'
 require 'marc/marc8/to_unicode'
 
 module MARC
@@ -404,7 +404,14 @@ module MARC
         if params[:internal_encoding]
           str = str.encode(params[:internal_encoding], params)
         elsif (params[:invalid] || params[:replace] || (params[:validate_encoding] == true))
-          str = EnsureValidEncoding.ensure_valid_encoding(str,  params)
+
+          if params[:validate_encoding] == true && ! str.valid_encoding?
+            raise  Encoding::InvalidByteSequenceError.new("invalid byte in string for source encoding #{str.encoding.name}")
+          end
+          if params[:invalid] == :replace
+            str = str.scrub(params[:replace])
+          end
+          
          end          
        end
        return str
