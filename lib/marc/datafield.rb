@@ -38,13 +38,13 @@ module MARC
     # 
     #   field = MARC::DataField.new('245','0','0',
     #     MARC::Subfield.new('a', 'Consilience :'),
-    #     MARC::Subfield.new('b', 'the unity of knowledge ',
+    #     MARC::Subfield.new('b', 'the unity of knowledge '),
     #     MARC::Subfield.new('c', 'by Edward O. Wilson.'))
     # 
     # or using a shorthand:
     # 
     #   field = MARC::DataField.new('245','0','0',
-    #     ['a', 'Consilience :'],['b','the unity of knowledge ',
+    #     ['a', 'Consilience :'],['b','the unity of knowledge '],
     #     ['c', 'by Edward O. Wilson.'] )
 
     def initialize(tag, i1=' ', i2=' ', *subfields)
