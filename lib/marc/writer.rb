@@ -64,7 +64,7 @@ module MARC
       directory = ''
       fields = ''
       offset = 0
-      for field in record.fields
+      record.each do |field|
 
         # encode the field
         field_data = ''

@@ -95,7 +95,7 @@ module MARC
       leader.add_text(record.leader)
       e.add_element(leader)
       
-      for field in record.fields
+      record.each do |field|
         if field.class == MARC::DataField 
           datafield_elem = REXML::Element.new("datafield")
           

@@ -82,6 +82,29 @@ class ReaderTest < Test::Unit::TestCase
     assert_raises(StopIteration) { iter.next }  
   end
 
-    
+  def test_each_raw
+    reader = MARC::Reader.new('test/batch.dat')
+    count = 0
+    raw = nil
+    reader.each_raw { |r| count += 1; raw = r }
+    assert_equal(count, 10)
+    assert_instance_of(String, raw)
+
+    record = MARC::Reader.decode(raw)
+    assert_instance_of(MARC::Record, record)
+  end
+
+  def test_each_raw_enum
+    reader = MARC::Reader.new('test/batch.dat')
+    enum = reader.each_raw
+    r = enum.next
+    assert_instance_of(String, r)
+
+    record = MARC::Reader.decode(r)
+    assert_instance_of(MARC::Record, record)
+
+    9.times {enum.next} # total of ten records
+    assert_raises(StopIteration) { enum.next }
+  end
 
 end

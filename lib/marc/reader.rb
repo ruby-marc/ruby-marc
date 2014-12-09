@@ -229,7 +229,37 @@ module MARC
       unless block_given?
         return self.enum_for(:each)
       else
-        # while there is data left in the file
+        self.each_raw do |raw|
+          record = self.decode(raw)
+          yield record
+        end
+      end
+    end
+
+    # Iterates over each record as a raw String, rather than a decoded
+    # MARC::Record
+    #
+    # This allows for handling encoding exceptions per record (e.g. to log which
+    # record caused the error):
+    #
+    #   reader = MARC::Reader.new("marc_with_some_bad_records.dat",
+    #                                 :external_encoding => "UTF-8",
+    #                                 :validate_encoding => true)
+    #   reader.each_raw do |raw|
+    #     begin
+    #       record = reader.decode(raw)
+    #     rescue Encoding::InvalidByteSequenceError => e
+    #       record = MARC::Reader.decode(raw, :external_encoding => "UTF-8",
+    #                                         :invalid => :replace)
+    #       warn e.message, record
+    #     end
+    #   end
+    #
+    # If no block is given, an enumerator is returned
+    def each_raw
+      unless block_given?
+        return self.enum_for(:each_raw)
+      else
         while rec_length_s = @handle.read(5)
           # make sure the record length looks like an integer
           rec_length_i = rec_length_s.to_i
@@ -240,15 +270,18 @@ module MARC
           # get the raw MARC21 for a record back from the file
           # using the record length
           raw = rec_length_s + @handle.read(rec_length_i-5)
-
-          # create a record from the data and return it
-          #record = MARC::Record.new_from_marc(raw)
-          record = MARC::Reader.decode(raw, @encoding_options)
-          yield record
+          yield raw
         end
       end
     end
 
+    # Decodes the given string into a MARC::Record object.
+    #
+    # Wraps the class method MARC::Reader::decode, using the encoding options of
+    # the MARC::Reader instance.
+    def decode(marc)
+      return MARC::Reader.decode(marc, @encoding_options)
+    end
 
     # A static method for turning raw MARC data in transission
     # format into a MARC::Record object.
