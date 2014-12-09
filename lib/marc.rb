@@ -28,7 +28,7 @@
 #    # Deal with non-standard control field tags
 #    MARC::Field.control_tags << 'FMT'
 #    record = MARC::Record.new()
-#    record.add_field(MARC::ControlField.new('FMT', 'Book')) # doesn't throw an error
+#    record.add_field(MARC::ControlField.new('FMT', 'Book')) # doesn't raise an error
 
 
 require File.dirname(__FILE__) + '/marc/version'

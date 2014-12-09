@@ -49,7 +49,7 @@ module MARC
       elsif file.respond_to?("read", 5)
         handle = file
       else
-        throw "must pass in path or File"
+        raise ArgumentError, "must pass in path or File"
       end
       @handle = handle
 
