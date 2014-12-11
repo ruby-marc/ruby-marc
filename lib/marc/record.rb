@@ -247,35 +247,30 @@ module MARC
 
     # Returns a (roundtrippable) hash representation for MARC-in-JSON
     def to_hash
-      record_hash = {'leader'=>@leader, 'fields'=>[]}
-      @fields.each do |field|
-        record_hash['fields'] << field.to_hash
-      end
-      record_hash
+      {'leader' => @leader,
+       'fields' => fields.map(&:to_hash)
+      }
+    end
+
+    def self.is_marc_in_json_datafield(tag,data)
+      data.is_a? Hash
     end
 
     def self.new_from_hash(h)
       r = self.new
       r.leader = h['leader']
-      if h['fields']
-        h['fields'].each do |position|
-          position.each_pair do |tag, field|
-            if field.is_a?(Hash)
-              f = MARC::DataField.new(tag, field['ind1'], field['ind2'])
-              field['subfields'].each do | pos |
-                pos.each_pair do |code, value|
-                  f.append MARC::Subfield.new(code, value)
-                end
-              end
-              r << f
-            else
-              r << MARC::ControlField.new(tag, field)
-            end
-          end
+      h['fields'].each do |f|
+        tag,data = f.first
+        if is_marc_in_json_datafield(tag,data)
+          r << MARC::DataField.new_from_marc_in_hash(tag,data)
+        else
+          r << MARC::ControlField.new(tag, data)
         end
       end
-      return r
+      r
     end
+
+
     # Returns a string version of the record, suitable for printing
 
     def to_s

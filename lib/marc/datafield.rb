@@ -112,6 +112,16 @@ module MARC
       return [@tag, @indicator1, @indicator2, @subfields.map {|sf| [sf.code, sf.value]} ]
     end
 
+
+    # Create a datafield from a marc-in-json style tag/datahash pair
+    def self.new_from_marc_in_hash(tag,datahash)
+      f = self.new(tag, datahash['ind1'], datahash['ind2'])
+      datahash['subfields'].each do |sf|
+        code,data = sf.first
+        f.append MARC::Subfield.new(code,data)
+      end
+      f
+    end
     # Turn the variable field and subfields into a hash for MARC-in-JSON
 
     def to_hash
