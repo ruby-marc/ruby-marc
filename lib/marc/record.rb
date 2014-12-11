@@ -33,13 +33,16 @@ module MARC
     # Returns an array of fields, in the order they appear, according to their tag.
     # The tags argument can be a string (e.g. '245'), an array (['100','700','800'])
     # or a range (('600'..'699')).
-    def each_by_tag(tags)
+    def by_tag(tags)
       reindex unless @clean
       indices = @tags.values_at(*(@tags.keys & [*tags])).flatten.sort
       return [] if indices.empty?
-      self.values_at(*indices).each do |tag|
-        yield tag
-      end
+      return self.values_at(*indices)
+    end
+
+    # Iterate over the #by_tag(filter) list
+    def each_by_tag(tags)
+      by_tag(tags).each {|x| yield x }
     end
 
     # Freeze for immutability, first reindexing if needed.
