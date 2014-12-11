@@ -4,7 +4,18 @@ require 'scrub_rb'
 # only when necessary
 
 module MARC
-  # A class for reading MARC binary (ISO 2709) files. 
+  # A class for reading MARC binary (ISO 2709) files.
+  #
+  # == Injecting a record class
+  #
+  # By default, all records created by a reader will be of type
+  # MARC::Record. You can, however, pass in an option of the form
+  #   :record_class => MyRecordClass
+  #
+  # ...to have the produced records be of that type.
+  #
+  # :record_class may be passed to MARC::Reader.new as well as
+  # MARC::Reader.decode
   #
   # == Character Encoding
   #
@@ -12,7 +23,7 @@ module MARC
   # If illegal bytes for that character encoding are encountered in certain
   # operations, ruby will raise an exception. If a String is incorrectly
   # tagged with the wrong character encoding, that makes it fairly likely
-  # an illegal byte for the specified encoding will be encountered. 
+  # an illegal byte for the specified encoding will be encountered.
   #
   # So when reading binary MARC data with the MARC::Reader, it's important
   # that you let it know the expected encoding:
@@ -21,7 +32,7 @@ module MARC
   #
   # If you leave off 'external_encoding', it will use the ruby environment
   # Encoding.default_external, which is usually UTF-8 but may depend on your
-  # environment. 
+  # environment.
   #
   # Even if you expect your data to be (eg) UTF-8, it may include bad/illegal
   # bytes. By default MARC::Reader will leave these in the produced Strings,
@@ -29,58 +40,58 @@ module MARC
   # to catch this early, and ask MARC::Reader to raise immediately on illegal
   # bytes:
   #
-  #     MARC::Reader.new("path/to/file.mrc", :external_encoding => "UTF-8", 
+  #     MARC::Reader.new("path/to/file.mrc", :external_encoding => "UTF-8",
   #       :validate_encoding => true)
   #
   # Alternately, you can have MARC::Reader replace illegal bytes
   # with the Unicode Replacement Character, or with a string
   # of your choice (including the empty string, meaning just omit the bad bytes)
   #
-  #     MARC::Reader("path/to/file.mrc", :external_encoding => "UTF-8", 
+  #     MARC::Reader("path/to/file.mrc", :external_encoding => "UTF-8",
   #        :invalid => :replace)
-  #     MARC::Reader("path/to/file.mrc", :external_encoding => "UTF-8", 
+  #     MARC::Reader("path/to/file.mrc", :external_encoding => "UTF-8",
   #        :invalid => :replace, :replace => "")
   #
   # If you supply an :external_encoding argument, MARC::Reader will
   # always assume that encoding -- if you leave it off, MARC::Reader
   # will use the encoding tagged on any input you pass in, such
-  # as Strings or File handles. 
+  # as Strings or File handles.
   #
   #     # marc data will have same encoding as string.encoding:
   #     MARC::Reader.decode( string )
   #
   #     # Same, values will have encoding of string.encoding:
-  #     MARC::Reader.new(StringIO.new(string)) 
+  #     MARC::Reader.new(StringIO.new(string))
   #
   #     # data values will have cp866 encoding, per external_encoding of
   #     # File object passed in
   #     MARC::Reader.new(File.new("myfile.marc", "r:cp866"))
   #
   #     # explicitly tell MARC::Reader the encoding
-  #     MARC::Reader.new("myfile.marc", :external_encoding => "cp866") 
+  #     MARC::Reader.new("myfile.marc", :external_encoding => "cp866")
   #
   # === MARC-8
   #
   # The legacy MARC-8 encoding needs to be handled differently, because
-  # there is no built-in support in ruby for MARC-8. 
+  # there is no built-in support in ruby for MARC-8.
   #
   # You _can_ specify "MARC-8" as an external encoding. It will trigger
-  # trans-code to UTF-8 (NFC-normalized) in the internal ruby strings. 
+  # trans-code to UTF-8 (NFC-normalized) in the internal ruby strings.
   #
   #     MARC::Reader.new("marc8.mrc", :external_encoding => "MARC-8")
   #
   # For external_encoding "MARC-8", :validate_encoding is always true,
   # there's no way to ignore bad bytes in MARC-8 when transcoding to
-  # unicode.  However, just as with other encodings, the 
+  # unicode.  However, just as with other encodings, the
   # `:invalid => :replace` and `:replace => "string"`
-  # options can be used to replace bad bytes instead of raising. 
+  # options can be used to replace bad bytes instead of raising.
   #
   # If you want your MARC-8 to be transcoded internally to something
   # other than UTF-8, you can use the :internal_encoding option
-  # which works with any encoding in MARC::Reader. 
+  # which works with any encoding in MARC::Reader.
   #
-  #     MARC::Reader.new("marc8.mrc", 
-  #       :external_encoding => "MARC-8", 
+  #     MARC::Reader.new("marc8.mrc",
+  #       :external_encoding => "MARC-8",
   #       :internal_encoding => "UTF-16LE")
   #
   # If you want to read in MARC-8 without transcoding, leaving the
@@ -90,58 +101,58 @@ module MARC
   #
   #     MARC::Reader.new("marc8.mrc", :external_encoding => "binary")
   #
-  # Please note that MARC::Reader does _not_ currently have any facilities 
-  # for guessing encoding from MARC21 leader byte 9, that is ignored. 
+  # Please note that MARC::Reader does _not_ currently have any facilities
+  # for guessing encoding from MARC21 leader byte 9, that is ignored.
   #
   # === Complete Encoding Options
   #
   # These options can all be used on MARC::Reader.new _or_ MARC::Reader.decode
   # to specify external encoding, ask for a transcode to a different
-  # encoding on read, or validate or replace bad bytes in source. 
+  # encoding on read, or validate or replace bad bytes in source.
   #
   # [:external_encoding]
   #    What encoding to consider the MARC record's values to be in. This option
-  #    takes precedence over the File handle or String argument's encodings. 
+  #    takes precedence over the File handle or String argument's encodings.
   # [:internal_encoding]
   #    Ask MARC::Reader to transcode to this encoding in memory after reading
-  #    the file in. 
+  #    the file in.
   # [:validate_encoding]
   #    If you pass in `true`, MARC::Reader will promise to raise an Encoding::InvalidByteSequenceError
   #    if there are illegal bytes in the source for the :external_encoding. There is
   #    a performance penalty for this check. Without this option, an exception
-  #    _may_ or _may not_ be raised, and whether an exception or raised (or 
+  #    _may_ or _may not_ be raised, and whether an exception or raised (or
   #    what class the exception has) may change in future ruby-marc versions
-  #    without warning. 
+  #    without warning.
   # [:invalid]
   #    Just like String#encode, set to :replace and any bytes in source data
-  #    illegal for the source encoding will be replaced with the unicode 
+  #    illegal for the source encoding will be replaced with the unicode
   #    replacement character (when in unicode encodings), or else '?'. Overrides
   #    :validate_encoding. This can help you sanitize your input and
-  #    avoid ruby "invalid UTF-8 byte" exceptions later. 
+  #    avoid ruby "invalid UTF-8 byte" exceptions later.
   # [:replace]
   #    Just like String#encode, combine with `:invalid=>:replace`, set
   #    your own replacement string for invalid bytes. You may use the
-  #    empty string to simply eliminate invalid bytes. 
+  #    empty string to simply eliminate invalid bytes.
   #
   # === Warning on ruby File's own :internal_encoding, and unsafe transcoding from ruby
   #
-  # Be careful with using an explicit File object with the File's own 
-  # :internal_encoding set -- it can cause ruby to transcode your data 
-  # _before_ MARC::Reader gets it, changing the bytecount and making the 
+  # Be careful with using an explicit File object with the File's own
+  # :internal_encoding set -- it can cause ruby to transcode your data
+  # _before_ MARC::Reader gets it, changing the bytecount and making the
   # marc record unreadable in some cases. This
   # applies to Encoding.default_encoding too!
   #
-  #    # May in some cases result in unreadable marc and an exception 
+  #    # May in some cases result in unreadable marc and an exception
   #    MARC::Reader.new(  File.new("marc_in_cp866.mrc", "r:cp866:utf-8") )
   #
   #    # May in some cases result in unreadable marc and an exception
   #    Encoding.default_internal = "utf-8"
   #    MARC::Reader.new(  File.new("marc_in_cp866.mrc", "r:cp866") )
   #
-  #    # However this shoudl be safe:
+  #    # However this should be safe:
   #    MARC::Reader.new(  "marc_in_cp866.mrc", :external_encoding => "cp866")
   #
-  #    # And this shoudl be safe, if you do want to transcode:
+  #    # And this should be safe, if you do want to transcode:
   #    MARC::Reader.new(  "marc_in_cp866.mrc", :external_encoding => "cp866",
   #       :internal_encoding => "utf-8")
   #
@@ -156,7 +167,7 @@ module MARC
   # https://jira.codehaus.org/browse/JRUBY-6637
   #
   # We recommend using the latest version of jruby, especially
-  # at least jruby 1.7.6. 
+  # at least jruby 1.7.6.
   class Reader
     include Enumerable
 
@@ -182,35 +193,46 @@ module MARC
     #
     # Also, if your data encoded with non ascii/utf-8 encoding
     # (for ex. when reading RUSMARC data) and you use ruby 1.9
-    # you can specify source data encoding with an option. 
+    # you can specify source data encoding with an option.
     #
     #   reader = MARC::Reader.new('marc.dat', :external_encoding => 'cp866')
     #
     # or, you can pass IO, opened in the corresponding encoding
     #
     #   reader = MARC::Reader.new(File.new('marc.dat', 'r:cp866'))
-    def initialize(file, options = {})      
+    #
+    #  A reader will usually provide MARC::Record objects, but you can pass
+    #  in a subclass (not the string, the actual constant) and it will use
+    #  that
+    #
+    #  reader = MARC::Reader.new('marc.dat', :record_class => MyMARCRecord)
+
+    attr_accessor :record_class
+
+    def initialize(file, options = {})
+      @record_class = options[:record_class] || MARC::Record
+
       @encoding_options = {}
       # all can be nil
       [:internal_encoding, :external_encoding, :invalid, :replace, :validate_encoding].each do |key|
         @encoding_options[key] = options[key] if options.has_key?(key)
       end
-            
-      if file.is_a?(String)        
+
+      if file.is_a?(String)
         @handle = File.new(file)
       elsif file.respond_to?("read", 5)
         @handle = file
       else
         raise ArgumentError, "must pass in path or file"
       end
-      
+
       if (! @encoding_options[:external_encoding] ) && @handle.respond_to?(:external_encoding)
         # use file encoding only if we didn't already have an explicit one,
-        # explicit one takes precedence. 
+        # explicit one takes precedence.
         #
         # Note, please don't use ruby's own internal_encoding transcode
         # with binary marc data, the transcode can mess up the byte count
-        # and make it unreadable. 
+        # and make it unreadable.
         @encoding_options[:external_encoding] ||= @handle.external_encoding
       end
 
@@ -288,25 +310,27 @@ module MARC
     # First argument is a String
     # options include:
     #   [:external_encoding]  encoding of MARC record data values
-    #   [:forgiving]          needs more docs, true is some kind of forgiving 
-    #                         of certain kinds of bad MARC. 
+    #   [:forgiving]          needs more docs, true is some kind of forgiving
+    #                         of certain kinds of bad MARC.
     def self.decode(marc, params={})
+      rec_class = params[:record_class] || @record_class || MARC::Record
+
       if params.has_key?(:encoding)
         $stderr.puts "DEPRECATION WARNING: MARC::Reader.decode :encoding option deprecated, please use :external_encoding"
         params[:external_encoding] = params.delete(:encoding)
       end
-      
+
       if (! params.has_key? :external_encoding ) && marc.respond_to?(:encoding)
         # If no forced external_encoding giving, respect the encoding
-        # declared on the string passed in. 
+        # declared on the string passed in.
         params[:external_encoding] = marc.encoding
       end
       # And now that we've recorded the current encoding, we force
       # to binary encoding, because we're going to be doing byte arithmetic,
-      # and want to avoid byte-vs-char confusion. 
+      # and want to avoid byte-vs-char confusion.
       marc.force_encoding("binary") if marc.respond_to?(:force_encoding)
-      
-      record = Record.new()
+
+      record = rec_class.new()
       record.leader = marc[0..LEADER_LENGTH-1]
 
       # where the field data starts
@@ -324,13 +348,13 @@ module MARC
       # when operating in forgiving mode we just split on end of
       # field instead of using calculated byte offsets from the
       # directory
-      if params[:forgiving]        
+      if params[:forgiving]
         marc_field_data = marc[base_address..-1]
         # It won't let us do the split on bad utf8 data, but
         # we haven't yet set the 'proper' encoding or used
         # our correction/replace options. So call it binary for now.
         marc_field_data.force_encoding("binary") if marc_field_data.respond_to?(:force_encoding)
-        
+
         all_fields = marc_field_data.split(END_OF_FIELD)
       else
         mba =  marc.bytes.to_a
@@ -366,7 +390,7 @@ module MARC
 
         # remove end of field
         field_data.delete!(END_OF_FIELD)
-        
+
         # add a control field or data field
         if MARC::ControlField.control_tag?(tag)
           field_data = MARC::Reader.set_encoding( field_data , params)
@@ -399,9 +423,9 @@ module MARC
       end
 
       return record
-    end  
+    end
 
-    # input passed in probably has 'binary' encoding. 
+    # input passed in probably has 'binary' encoding.
     # We'll set it to the proper encoding, and depending on settings, optionally
     # * check for valid encoding
     #   * raise if not valid
@@ -411,16 +435,16 @@ module MARC
     # Special case for encoding "MARC-8" -- will be transcoded to
     # UTF-8 (then further transcoded to external_encoding, if set).
     # For "MARC-8", validate_encoding is always true, there's no way to
-    # ignore bad bytes. 
+    # ignore bad bytes.
     #
     # Params options:
-    # 
-    #  * external_encoding: what encoding the input is expected to be in  
+    #
+    #  * external_encoding: what encoding the input is expected to be in
     #  * validate_encoding: if true, will raise if an invalid encoding
     #  * invalid:  if set to :replace, will replace bad bytes with replacement
-    #              chars instead of raising. 
+    #              chars instead of raising.
     #  * replace: Set replacement char for use with 'invalid', otherwise defaults
-    #             to unicode replacement char, or question mark. 
+    #             to unicode replacement char, or question mark.
     def self.set_encoding(str, params)
       if str.respond_to?(:force_encoding)
         if params[:external_encoding]
@@ -430,18 +454,18 @@ module MARC
           else
             str = str.force_encoding(params[:external_encoding])
           end
-        end     
-            
+        end
+
         # If we're transcoding anyway, pass our invalid/replace options
         # on to String#encode, which will take care of them -- or raise
-        # with illegal bytes without :replace=>:invalid. 
+        # with illegal bytes without :replace=>:invalid.
         #
         # If we're NOT transcoding, we need to use our own pure-ruby
         # implementation to do invalid byte replacements. OR to raise
         # a predicatable exception iff :validate_encoding, otherwise
         # for performance we won't check, and you may or may not
         # get an exception from inside ruby-marc, and it may change
-        # in future implementations. 
+        # in future implementations.
         if params[:internal_encoding]
           str = str.encode(params[:internal_encoding], params)
         elsif (params[:invalid] || params[:replace] || (params[:validate_encoding] == true))
@@ -452,11 +476,11 @@ module MARC
           if params[:invalid] == :replace
             str = str.scrub(params[:replace])
           end
-          
-         end          
+
+         end
        end
        return str
-    end                
+    end
   end
 
 
@@ -475,11 +499,11 @@ module MARC
   #
   # **NOTE**: ForgivingReader _may_ have unpredictable results when used
   # with marc records with char encoding other than system default (usually
-  # UTF8), _especially_ if you have Encoding.default_internal set. 
+  # UTF8), _especially_ if you have Encoding.default_internal set.
   #
   # Implemented a sub-class of Reader over-riding #each, so we still
   # get DRY Reader's #initialize with proper char encoding options
-  # and handling. 
+  # and handling.
   class ForgivingReader < Reader
 
     def each
