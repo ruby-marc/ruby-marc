@@ -302,7 +302,7 @@ module MARC
     # Wraps the class method MARC::Reader::decode, using the encoding options of
     # the MARC::Reader instance.
     def decode(marc)
-      return MARC::Reader.decode(marc, @encoding_options)
+      return MARC::Reader.decode(marc, @encoding_options.merge(:record_class => record_class))
     end
 
     # A static method for turning raw MARC data in transission
@@ -313,7 +313,7 @@ module MARC
     #   [:forgiving]          needs more docs, true is some kind of forgiving
     #                         of certain kinds of bad MARC.
     def self.decode(marc, params={})
-      rec_class = params[:record_class] || @record_class || MARC::Record
+      rec_class = params[:record_class] || MARC::Record
 
       if params.has_key?(:encoding)
         $stderr.puts "DEPRECATION WARNING: MARC::Reader.decode :encoding option deprecated, please use :external_encoding"
