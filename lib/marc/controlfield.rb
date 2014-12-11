@@ -40,12 +40,7 @@ module MARC
     # Two control fields are equal if their tags and values are equal.
 
     def ==(other)
-      if @tag != other.tag
-        return false 
-      elsif @value != other.value
-        return false
-      end
-      return true
+      tag == other.tag && value = other.value
     end
 
     # turning it into a marc-hash element
