@@ -1,8 +1,10 @@
-require 'test/unit'
+# encoding: UTF-8
+
+require_relative './test_helper'
 require 'marc'
 require 'rubygems'
 
-class TestHash < Test::Unit::TestCase
+class TestHash < Minitest::Test
 
   def test_to_hash
     raw = IO.read('test/one.dat')
@@ -21,6 +23,6 @@ class TestHash < Test::Unit::TestCase
       assert_equal(r,x)
     end
   end
-  
-  
+
+
 end

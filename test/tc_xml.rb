@@ -1,8 +1,10 @@
-require 'test/unit'
+# encoding: UTF-8
+
+require_relative './test_helper'
 require 'marc'
 require 'stringio'
 
-class XMLTest < Test::Unit::TestCase
+class XMLTest < Minitest::Test
   def setup
     @parsers = [:rexml]
     begin
@@ -32,13 +34,13 @@ class XMLTest < Test::Unit::TestCase
   end
 
 
-  def test_xml_entities    
+  def test_xml_entities
     @parsers.each do | parser |
       puts "\nRunning test_xml_entities with: #{parser}.\n"
       xml_entities_test(parser)
     end
   end
-  
+
   def xml_entities_test(parser)
     r1 = MARC::Record.new
     r1 << MARC::DataField.new('245', '0', '0', ['a', 'foo & bar & baz'])
@@ -47,16 +49,16 @@ class XMLTest < Test::Unit::TestCase
 
     reader = MARC::XMLReader.new(StringIO.new(xml), :parser=>parser)
     r2 = reader.entries[0]
-    assert_equal 'foo & bar & baz', r2['245']['a']    
+    assert_equal 'foo & bar & baz', r2['245']['a']
   end
-  
+
   def test_batch
     @parsers.each do | parser |
       puts "\nRunning test_batch with: #{parser}.\n"
       batch_test(parser)
-    end    
+    end
   end
-  
+
   def batch_test(parser)
     reader = MARC::XMLReader.new('test/batch.xml', :parser=>parser)
     count = 0
@@ -66,12 +68,12 @@ class XMLTest < Test::Unit::TestCase
     end
     assert_equal(count, 2)
   end
-  
+
   def test_read_string
     @parsers.each do | parser |
       puts "\nRunning test_read_string with: #{parser}.\n"
       read_string_test(parser)
-    end  
+    end
   end
 
   def read_string_test(parser)
@@ -79,20 +81,20 @@ class XMLTest < Test::Unit::TestCase
     reader = MARC::XMLReader.new(StringIO.new(xml), :parser=>parser)
     assert_equal 2, reader.entries.length
   end
-  
+
   def test_non_numeric_fields
     @parsers.each do | parser |
       puts "\nRunning test_non_numeric_fields with: #{parser}.\n"
       non_numeric_fields_test(parser)
     end
   end
-    
+
   def non_numeric_fields_test(parser)
     reader = MARC::XMLReader.new('test/non-numeric.xml', :parser=>parser)
       count = 0
       record = nil
       reader.each do | rec |
-        count += 1 
+        count += 1
         record = rec
       end
       assert_equal(1, count)
@@ -104,9 +106,9 @@ class XMLTest < Test::Unit::TestCase
     @parsers.each do | parser |
       puts "\nRunning test_read_no_leading_zero_write_leading_zero with: #{parser}.\n"
       read_no_leading_zero_write_leading_zero_test(parser)
-    end    
+    end
   end
-  
+
   def read_no_leading_zero_write_leading_zero_test(parser)
     reader = MARC::XMLReader.new('test/no-leading-zero.xml', :parser=>parser)
     record = reader.to_a[0]
@@ -118,7 +120,7 @@ class XMLTest < Test::Unit::TestCase
       puts "\nRunning test_leader_from_xml with: #{parser}.\n"
       leader_from_xml_test(parser)
     end
-  end    
+  end
 
   def leader_from_xml_test(parser)
     reader = MARC::XMLReader.new('test/one.xml', :parser=>parser)
@@ -128,19 +130,19 @@ class XMLTest < Test::Unit::TestCase
     record = MARC::Record.new_from_marc(record.to_marc)
     assert_equal '00734njm a2200217uu 4500', record.leader
   end
-  
+
   def test_read_write
     @parsers.each do | parser |
       puts "\nRunning test_read_write with: #{parser}.\n"
       read_write_test(parser)
     end
-  end    
+  end
 
   def read_write_test(parser)
     record1 = MARC::Record.new
     record1.leader =  '00925njm  22002777a 4500'
     record1.append MARC::ControlField.new('007', 'sdubumennmplu')
-    record1.append MARC::DataField.new('245', '0', '4', 
+    record1.append MARC::DataField.new('245', '0', '4',
       ['a', 'The Great Ray Charles'], ['h', '[sound recording].'])
 
     writer = MARC::XMLWriter.new('test/test.xml', :stylesheet => 'style.xsl')
@@ -157,15 +159,15 @@ class XMLTest < Test::Unit::TestCase
 
     File.unlink('test/test.xml')
   end
-  
+
   def test_xml_enumerator
     @parsers.each do | parser |
       puts "\nRunning test_xml_enumerator with: #{parser}.\n"
       xml_enumerator_test(parser)
     end
   end
-  
-  
+
+
   def xml_enumerator_test(parser)
     # confusingly, test/batch.xml only has two records, not 10 like batch.dat
     reader = MARC::XMLReader.new('test/batch.xml', :parser=>parser)
@@ -173,9 +175,9 @@ class XMLTest < Test::Unit::TestCase
     r = iter.next
     assert_instance_of(MARC::Record, r)
     iter.next # total of two records
-    assert_raises(StopIteration) { iter.next }  
+    assert_raises(StopIteration) { iter.next }
   end
-  
+
 
 end
 

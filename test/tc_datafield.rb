@@ -1,7 +1,9 @@
-require 'test/unit'
+# encoding: UTF-8
+
+require_relative './test_helper'
 require 'marc'
 
-class TestField < Test::Unit::TestCase
+class TestField < Minitest::Test
 
     def test_tag
         f1 = MARC::DataField.new('100')
@@ -10,7 +12,7 @@ class TestField < Test::Unit::TestCase
         assert_equal('100', f2.tag)
         assert_equal(f1, f2)
         f3 = MARC::DataField.new('245')
-        assert_not_equal(f1, f3)
+        refute_equal(f1, f3)
     end
 
     def test_alphabetic_tag
@@ -30,30 +32,30 @@ class TestField < Test::Unit::TestCase
         assert_equal('1', f2.indicator2)
         assert_equal(f1, f2)
         f3 = MARC::DataField.new(tag='100', i1='1', i2='1')
-        assert_not_equal(f1, f3)
+        refute_equal(f1, f3)
     end
 
     def test_subfields
-        f1 = MARC::DataField.new('100', '0', '1', 
+        f1 = MARC::DataField.new('100', '0', '1',
             MARC::Subfield.new('a', 'Foo'),
             MARC::Subfield.new('b', 'Bar') )
         assert_equal("100 01 $a Foo $b Bar ", f1.to_s)
         assert_equal("FooBar", f1.value)
-        f2 = MARC::DataField.new('100', '0', '1', 
+        f2 = MARC::DataField.new('100', '0', '1',
             MARC::Subfield.new('a', 'Foo'),
             MARC::Subfield.new('b', 'Bar') )
         assert_equal(f1,f2)
-        f3 = MARC::DataField.new('100', '0', '1', 
+        f3 = MARC::DataField.new('100', '0', '1',
             MARC::Subfield.new('a', 'Foo'),
             MARC::Subfield.new('b', 'Bez') )
-        assert_not_equal(f1,f3)
+        refute_equal(f1,f3)
     end
 
     def test_subfield_shorthand
         f  = MARC::DataField.new('100', '0', '1', ['a', 'Foo'], ['b', 'Bar'])
         assert_equal('100 01 $a Foo $b Bar ', f.to_s)
     end
-            
+
 
     def test_iterator
         field = MARC::DataField.new('100', '0', '1', ['a', 'Foo'],['b', 'Bar'],
@@ -62,7 +64,7 @@ class TestField < Test::Unit::TestCase
         field.each {|x| count += 1}
         assert_equal(count,3)
     end
-    
+
     def test_lookup_shorthand
         f  = MARC::DataField.new('100', '0', '1', ['a', 'Foo'], ['b', 'Bar'])
         assert_equal(f['b'], 'Bar')

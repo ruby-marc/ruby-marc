@@ -1,9 +1,11 @@
 # -*- encoding: utf-8 -*-
 
-require 'test/unit'
+# encoding: UTF-8
+
+require_relative './test_helper'
 require 'marc'
 
-class ReaderTest < Test::Unit::TestCase
+class ReaderTest < Minitest::Test
 
   def test_batch
     reader = MARC::Reader.new('test/batch.dat')
@@ -18,19 +20,19 @@ class ReaderTest < Test::Unit::TestCase
     reader.each { count += 1 }
     assert_equal(10, count)
   end
-  
+
   def test_loose_utf8
-    # This isn't actually a corrupt file, but it is utf8, 
+    # This isn't actually a corrupt file, but it is utf8,
     # and I have some reason to believe forgiving reader isn't
-    # working properly with UTF8 in ruby 1.9, so testing it. 
+    # working properly with UTF8 in ruby 1.9, so testing it.
     reader = MARC::ForgivingReader.new('test/utf8.marc')
     count = 0
     reader.each { count += 1 }
     assert_equal(1, count)
   end
-  
+
   def test_loose_unimarc
-    # Unimarc might use a different record seperator? Let's make sure it works. 
+    # Unimarc might use a different record seperator? Let's make sure it works.
     reader = MARC::Reader.new(File.open('test/cp866_unimarc.marc', 'r:cp866'))
     count = 0
     reader.each {|a| count += 1 }
@@ -72,14 +74,14 @@ class ReaderTest < Test::Unit::TestCase
     records = reader.find_all { |r| r =~ /Foo/ }
     assert_equal(0, records.length)
   end
-  
+
   def test_binary_enumerator
     reader = MARC::Reader.new('test/batch.dat')
     iter = reader.each
     r = iter.next
     assert_instance_of(MARC::Record, r)
     9.times {iter.next} # total of ten records
-    assert_raises(StopIteration) { iter.next }  
+    assert_raises(StopIteration) { iter.next }
   end
 
   def test_each_raw

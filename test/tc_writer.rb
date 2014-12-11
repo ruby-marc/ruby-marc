@@ -1,9 +1,11 @@
-require 'test/unit'
+# encoding: UTF-8
+
+require_relative './test_helper'
 require 'marc'
 
 require 'stringio'
 
-class WriterTest < Test::Unit::TestCase
+class WriterTest < Minitest::Test
 
     def test_writer
         writer = MARC::Writer.new('test/writer.dat')
@@ -30,7 +32,7 @@ class WriterTest < Test::Unit::TestCase
 
         # MARC::Writer should just happily write out whatever bytes you give it, even
         # mixing encodings that can't be mixed. We ran into an actual example mixing
-        # MARC8 (tagged ruby binary) and UTF8, we want it to be written out. 
+        # MARC8 (tagged ruby binary) and UTF8, we want it to be written out.
 
         record = MARC::Record.new
 
@@ -40,13 +42,13 @@ class WriterTest < Test::Unit::TestCase
         record.append MARC::DataField.new('100', '0', '0', ['a', "\xE5angkham. ".force_encoding("BINARY")])
         record.append MARC::DataField.new('245', '1', '0', ['b', "chef-d'oeuvre de la litt\xE2erature lao".force_encoding("BINARY")])
 
-        # One in UTF8 and marked 
+        # One in UTF8 and marked
         record.append MARC::DataField.new('999', '0', '1', ['a', "chef-d'ocuvre de la littU+FFC3\U+FFA9rature".force_encoding("UTF-8")])
 
         writer.write(record)
         writer.close
 
-      ensure 
+      ensure
           File.unlink('test/writer.dat')
       end
     end
@@ -69,13 +71,13 @@ class WriterTest < Test::Unit::TestCase
       rbuffer = StringIO.new(wbuffer.string.dup)
 
       # Regular reader won't read our illegal record.
-      #assert_raise(NoMethodError) do
+      #assert_raises(NoMethodError) do
       #  reader = MARC::Reader.new(rbuffer)
       #  reader.first
       #end
 
       # Forgiving reader will, round trippable
-      new_record = MARC::Reader.decode(rbuffer.string, :forgiving => true)      
+      new_record = MARC::Reader.decode(rbuffer.string, :forgiving => true)
       assert_equal too_long_record, new_record, "Too long record round-trippable with forgiving mode"
 
       # Test in the middle of a MARC file
@@ -108,28 +110,31 @@ class WriterTest < Test::Unit::TestCase
       wbuffer = StringIO.new("", "w")
       writer = MARC::Writer.new(wbuffer)
 
-      assert_raise(MARC::Exception) do
+      assert_raises(MARC::Exception) do
         writer.write too_long_record
       end
 
     end
 
-    
+
     def test_forgiving_writer
       marc = "00305cam a2200133 a 4500001000700000003000900007005001700016008004100033008004100074035002500115245001700140909001000157909000400167\036635145\036UK-BiLMS\03620060329173705.0\036s1982iieng6                  000 0 eng||\036060116|||||||||xxk                 eng||\036  \037a(UK-BiLMS)M0017366ZW\03600\037aTest record.\036  \037aa\037b\037c\036\037b0\036\035\000"
       rec = MARC::Record.new_from_marc(marc)
-      assert_nothing_raised do 
+      begin
         rec.to_marc
+        assert_equal(true, true, "Forgiving writer took valid record")
+      rescue => e
+        refute_equal(true, true, "Forgiving writer took valid record")
       end
     end
 
     def test_unicode_roundtrip
       record = MARC::Reader.new('test/utf8.marc', :external_encoding => "UTF-8").first
-      
-      writer = MARC::Writer.new('test/writer.dat')      
-      writer.write(record)      
-      writer.close      
-      
+
+      writer = MARC::Writer.new('test/writer.dat')
+      writer.write(record)
+      writer.close
+
       read_back_record = MARC::Reader.new('test/writer.dat', :external_encoding => "UTF-8").first
 
       # Make sure the one we wrote out then read in again
@@ -137,6 +142,6 @@ class WriterTest < Test::Unit::TestCase
       # Looks like "==" is over-ridden to do that. Don't ever change, #==
       assert_equal record, read_back_record, "Round-tripped record must equal original record"
     end
-    
+
 
 end

@@ -4,7 +4,9 @@
 # not already installed one
 $LOAD_PATH.unshift("lib")
 
-require 'test/unit'
+# encoding: UTF-8
+
+require_relative './test_helper'
 require 'test/tc_subfield'
 require 'test/tc_datafield'
 require 'test/tc_controlfield'
