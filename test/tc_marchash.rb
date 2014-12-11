@@ -1,8 +1,10 @@
-require 'test/unit'
+# encoding: UTF-8
+
+require_relative './test_helper'
 require 'marc'
 require 'rubygems'
 
-class TestMARCHASH < Test::Unit::TestCase
+class TestMARCHASH < Minitest::Test
 
   def test_simple
     simple = {
@@ -10,7 +12,7 @@ class TestMARCHASH < Test::Unit::TestCase
       'version' => [1,0],
       'leader' => 'LEADER',
       'fields' => [
-        ['245', '1', '0', 
+        ['245', '1', '0',
           [
             ['a', 'TITLE'],
             ['b', 'SUBTITLE']
@@ -32,6 +34,6 @@ class TestMARCHASH < Test::Unit::TestCase
       assert_equal(r,x)
     end
   end
-  
-  
+
+
 end

@@ -20,8 +20,14 @@ spec = Gem::Specification.new do |s|
   s.test_file     = 'test/ts_marc.rb'
   s.bindir        = 'bin'
 
-  s.add_dependency "ensure_valid_encoding"  
+  s.add_dependency "ensure_valid_encoding"
   s.add_dependency "scrub_rb", ">= 1.0.1", "< 2" # backport for ruby 2.1 String#scrub
-
   s.add_dependency "unf" # unicode normalization
+  s.add_dependency 'nokogiri', '>=1.6'
+
+  s.add_development_dependency 'minitest', '~>5'
+  s.add_development_dependency 'rake', '~>10'
+  s.add_development_dependency 'xml-simple', '>=1.1'
+
+
 end

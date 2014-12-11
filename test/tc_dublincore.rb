@@ -1,7 +1,9 @@
-require 'test/unit'
+# encoding: UTF-8
+
+require_relative './test_helper'
 require 'marc'
 
-class DublinCoreTest < Test::Unit::TestCase
+class DublinCoreTest < Minitest::Test
 
     def test_mapping
         reader = MARC::Reader.new('test/batch.dat')
