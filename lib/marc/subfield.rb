@@ -17,7 +17,7 @@ module MARC
     end
 
     def ==(other)
-      @core == other.code and
+      @code == other.code and
         @value == other.value
     end
 
