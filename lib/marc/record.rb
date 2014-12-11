@@ -56,6 +56,7 @@ module MARC
     # Set up the fields as dirty, unless it's frozen
     def dirty!
       self.clean = false unless self.frozen?
+      self
     end
 
   end
@@ -109,7 +110,7 @@ module MARC
     # Delegate the enumeration and tag stuff to
     # the fields
 
-    def_delegators :@fields, :each, :each_by_tag
+    def_delegators :@fields, :each, :each_by_tag, :by_tag
 
 
     # the record fields
@@ -152,25 +153,15 @@ module MARC
     # a string, array or range of tags will return an array of fields
     # in the order they appear in the record.
     def fields(filter=nil)
-      unless filter
-        # Since we're returning the FieldMap object, which the caller
-        # may mutate, we precautionarily mark dirty -- unless it's frozen
-        # immutable.
+      # In the abcense of a filter, we're returning the FieldMap object,
+      # which the caller may mutate. We take the precaution of marking it
+      # dirty
+      if filter.nil?
         @fields.dirty!
-        return @fields
+      else
+        @fields.reindex unless @fields.clean
+        @fields.by_tag(filter)
       end
-      @fields.reindex unless @fields.clean
-      flds = []
-      if filter.is_a?(String) && @fields.tags[filter]
-        @fields.tags[filter].each do |idx|
-          flds << @fields[idx]
-        end
-      elsif filter.is_a?(Array) || filter.is_a?(Range)
-        @fields.each_by_tag(filter) do |tag|
-          flds << tag
-        end
-      end
-      flds
     end
 
     # Returns an array of all of the tags that appear in the record (not necessarily in the order they appear).
