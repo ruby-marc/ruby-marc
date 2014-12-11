@@ -125,11 +125,13 @@ module MARC
     # Turn the variable field and subfields into a hash for MARC-in-JSON
 
     def to_hash
-      field_hash = {@tag=>{'ind1'=>@indicator1,'ind2'=>@indicator2,'subfields'=>[]}}
-      self.each do |subfield|
-        field_hash[@tag]['subfields'] << {subfield.code=>subfield.value}
-      end
-      field_hash
+      { @tag =>
+        {
+         'ind1' => @indicator1,
+         'ind2' => @indicator2,
+         'subfields' => @subfields.map{|x| {x.code => x.value}}
+        }
+      }
     end
 
     # Add a subfield (MARC::Subfield) to the field
