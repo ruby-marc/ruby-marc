@@ -1,7 +1,9 @@
-module MARC  
-    
+require 'forwardable'
+
+module MARC
+
   # The FieldMap is an Array of DataFields and Controlfields.
-  # It also contains a Hash representation 
+  # It also contains a Hash representation
   # of the fields for faster lookups (under certain conditions)
   class FieldMap < Array
     attr_reader :tags
@@ -10,7 +12,7 @@ module MARC
       @tags = {}
       @clean = true
     end
-    
+
     # Rebuild the HashWithChecksumAttribute with the current
     # values of the fields Array
     def reindex
@@ -21,13 +23,13 @@ module MARC
       end
       @clean = true
     end
-    
+
     # Returns an array of all of the tags that appear in the record (not in the order they appear, however).
     def tag_list
       reindex unless @clean
       @tags.keys
     end
-    
+
     # Returns an array of fields, in the order they appear, according to their tag.
     # The tags argument can be a string (e.g. '245'), an array (['100','700','800'])
     # or a range (('600'..'699')).
@@ -40,28 +42,34 @@ module MARC
       end
     end
 
-    # Freeze for immutability, first reindexing if needed. 
+    # Freeze for immutability, first reindexing if needed.
     # A frozen FieldMap is safe for concurrent access, and also
-    # can more easily avoid accidental reindexing on even read-only use. 
+    # can more easily avoid accidental reindexing on even read-only use.
     def freeze
       self.reindex unless @clean
       super
     end
+
+    # Set up the fields as dirty, unless it's frozen
+    def dirty!
+      self.clean = false unless self.frozen?
+    end
+
   end
 
   # A class that represents an individual MARC record. Every record
-  # is made up of a collection of MARC::DataField objects. 
+  # is made up of a collection of MARC::DataField objects.
   #
   # MARC::Record mixes in Enumerable to enable access to constituent
   # DataFields. For example, to return a list of all subject DataFields:
   #
-  #   record.find_all {|field| field.tag =~ /^6../}  
-  # 
+  #   record.find_all {|field| field.tag =~ /^6../}
+  #
   # The accessor 'fields' is also an Array of MARC::DataField objects which
   # the client can modify if neccesary.
   #
   #   record.fields.delete(field)
-  # 
+  #
   # Other accessor attribute: 'leader' for record leader as String
   #
   # == High-performance lookup by tag
@@ -82,17 +90,24 @@ module MARC
   #
   # MARC::Record is not generally safe for sharing between threads.
   # Even if you think you are just acccessing it read-only,
-  # you may accidentally trigger a reindex of the by-tag cache (see above). 
+  # you may accidentally trigger a reindex of the by-tag cache (see above).
   #
   # However, after you are done constructing a Record, you can mark
   # the `fields` array as immutable. This makes a Record safe for sharing
   # between threads for read-only use, and also helps you avoid accidentally
   # triggering a reindex, as accidental reindexes can harm by-tag
-  # lookup performance. 
+  # lookup performance.
   #
   #     record.fields.freeze
   class Record
     include Enumerable
+    extend Forwardable
+
+    # Delegate the enumeration and tag stuff to
+    # the fields
+
+    def_delegators :@fields, :each, :each_by_tag
+
 
     # the record fields
     #attr_reader :fields
@@ -118,43 +133,17 @@ module MARC
       @fields.clean = false
     end
 
-    # alias to append
-    
-    def <<(field)
-      append(field)      
-    end
+    alias_method :<<, :append
 
-    # each() is here to support iterating and searching since MARC::Record
-    # mixes in Enumerable
-    #
-    # iterating through the fields in a record:
-    #   record.each { |f| print f }
-    #
-    # getting the 245
-    #   title = record.find {|f| f.tag == '245'}
-    #
-    # getting all subjects
-    #   subjects = record.find_all {|f| ('600'..'699') === f.tag}
 
-    def each
-      for field in @fields
-        yield field
-      end
-    end
-    
-    # A more convenient way to iterate over each field with a given tag.  
-    # The filter argument can be a string, array or range.
-    def each_by_tag(filter)
-      @fields.each_by_tag(filter) {|tag| yield tag }
-    end
-
-    # You can lookup fields using this shorthand:
+    # You can lookup the first field with a given tag using this shorthand:
     #   title = record['245']
 
     def [](tag)
       return self.find {|f| f.tag == tag}
     end
-    
+
+
     # Provides a backwards compatible means to access the FieldMap.
     # No argument returns the FieldMap array in entirety.  Providing
     # a string, array or range of tags will return an array of fields
@@ -163,9 +152,9 @@ module MARC
       unless filter
         # Since we're returning the FieldMap object, which the caller
         # may mutate, we precautionarily mark dirty -- unless it's frozen
-        # immutable. 
-        @fields.clean = false unless @fields.frozen?
-        return @fields 
+        # immutable.
+        @fields.dirty!
+        return @fields
       end
       @fields.reindex unless @fields.clean
       flds = []
@@ -180,18 +169,18 @@ module MARC
       end
       flds
     end
-    
+
     # Returns an array of all of the tags that appear in the record (not necessarily in the order they appear).
     def tags
       return @fields.tag_list
     end
 
-    # Factory method for creating a MARC::Record from MARC21 in 
+    # Factory method for creating a MARC::Record from MARC21 in
     # transmission format.
     #
     #   record = MARC::Record.new_from_marc(marc21)
     #
-    # in cases where you might be working with somewhat flawed 
+    # in cases where you might be working with somewhat flawed
     # MARC data you may want to use the :forgiving parameter which
     # will bypass using field byte offsets and simply look for the
     # end of field byte to figure out the end of fields.
@@ -203,12 +192,12 @@ module MARC
     end
 
 
-    # Returns a record in MARC21 transmission format (ANSI Z39.2). 
+    # Returns a record in MARC21 transmission format (ANSI Z39.2).
     # Really this is just a wrapper around MARC::MARC21::encode
     #
     #   marc = record.to_marc()
 
-    def to_marc 
+    def to_marc
       return MARC::Writer.encode(self)
     end
 
@@ -246,22 +235,22 @@ module MARC
     # a marchash object
     #
     # record = MARC::Record->new_from_marchash(mh)
-    
+
     def self.new_from_marchash(mh)
       r = self.new()
       r.leader = mh['leader']
       mh['fields'].each do |f|
-        if (f.length == 2) 
+        if (f.length == 2)
           r << MARC::ControlField.new(f[0], f[1])
-        elsif 
+        elsif
           r << MARC::DataField.new(f[0], f[1], f[2], *f[3])
         end
       end
       return r
     end
-    
 
-    
+
+
     # Returns a (roundtrippable) hash representation for MARC-in-JSON
     def to_hash
       record_hash = {'leader'=>@leader, 'fields'=>[]}
@@ -269,7 +258,7 @@ module MARC
         record_hash['fields'] << field.to_hash
       end
       record_hash
-    end    
+    end
 
     def self.new_from_hash(h)
       r = self.new
@@ -290,8 +279,8 @@ module MARC
             end
           end
         end
-      end  
-      return r            
+      end
+      return r
     end
     # Returns a string version of the record, suitable for printing
 
@@ -315,7 +304,7 @@ module MARC
     #   if record =~ /Gravity's Rainbow/ then print "Slothrop" end
 
     def =~(regex)
-      return self.to_s =~ regex 
+      return self.to_s =~ regex
     end
 
   end
