@@ -325,11 +325,11 @@ module MARC
       # where the field data starts
       base_address = record_leader[12..16].to_i
       num_fields = (base_address - LEADER_LENGTH) / DIRECTORY_ENTRY_LENGTH
-
+      buf5 = '     ' # buffer for transient data in parsing
       entries = Array.new(num_fields) do
-        [marc.read(3), marc.read(4).to_i, marc.read(5).to_i]
+        [marc.read(3), marc.read(4,buf5).to_i, marc.read(5,buf5).to_i]
       end
-      raise "missing field terminator after directory" unless marc.read(1).eql? END_OF_FIELD
+      raise "missing field terminator after directory" unless marc.read(1,buf5).eql? END_OF_FIELD
       # when operating in forgiving mode we just split on end of
       # field instead of using calculated byte offsets from the
       # directory
@@ -381,7 +381,7 @@ module MARC
         indicators = MARC::Reader.set_encoding( subfields.shift(), params)
         subfields = subfields.collect do |data|
           data = MARC::Reader.set_encoding( data, params )
-          MARC::Subfield.new(data[0,1],data[1..-1])
+          MARC::Subfield.new(data.slice!(0,1),data)
         end
         field = MARC::DataField.new(tag,indicators[0,1],indicators[1,1], *subfields)
 
