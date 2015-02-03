@@ -326,8 +326,8 @@ module MARC
       base_address = record_leader[12..16].to_i
       num_fields = (base_address - LEADER_LENGTH) / DIRECTORY_ENTRY_LENGTH
 
-      entries = (0...num_fields).collect do
-        {tag: marc.read(3), length: marc.read(4).to_i, offset: marc.read(5).to_i}
+      entries = Array.new(num_fields) do
+        [marc.read(3), marc.read(4).to_i, marc.read(5).to_i]
       end
       raise "missing field terminator after directory" unless marc.read(1).eql? END_OF_FIELD
       # when operating in forgiving mode we just split on end of
@@ -336,22 +336,22 @@ module MARC
       if params[:forgiving]
         entries.each do |entry|
           marc_field_data = marc.gets(END_OF_FIELD)
-          add_field(record, entry, marc_field_data, params)
+          add_field(record, entry[0], marc_field_data, params)
         end
       else
         offset = base_address
         # get the byte offsets from the record directory
-        entries.sort! {|a,b| a[:offset] <=> b[:offset]}.each do |entry|
-          entry_offset = entry[:offset] + base_address
+        entries.sort! {|a,b| a[2] <=> b[2]}.each do |entry|
+          entry_offset = entry[2] + base_address
           raise MARC::Exception.new('overlapping entries') if offset > entry_offset
-          raise MARC::Exception.new('entry points past end of record') if (entry_offset + entry[:length]) > record_length
+          raise MARC::Exception.new('entry points past end of record') if (entry_offset + entry[1]) > record_length
           if entry_offset > offset
             marc.seek(entry_offset - offset, IO::SEEK_CUR)
             offset = entry_offset
           end
-          marc_field_data = marc.read(entry[:length])        
+          marc_field_data = marc.read(entry[1])
           offset += marc_field_data.length
-          add_field(record, entry, marc_field_data, params)
+          add_field(record, entry[0], marc_field_data, params)
         end
       end
 
@@ -361,16 +361,14 @@ module MARC
       return record
     end
 
-    def self.add_field(record, entry, field_data, params)
+    def self.add_field(record, tag, field_data, params)
       # remove end of field
       field_data.delete!(END_OF_FIELD)
-      tag = entry[:tag]
       # add a control field or data field
       if MARC::ControlField.control_tag?(tag)
         field_data = MARC::Reader.set_encoding( field_data , params)
         record.append(MARC::ControlField.new(tag,field_data))
       else
-        field = MARC::DataField.new(tag)
 
         # get all subfields
         subfields = field_data.split(SUBFIELD_INDICATOR)
@@ -381,15 +379,11 @@ module MARC
 
         # get indicators
         indicators = MARC::Reader.set_encoding( subfields.shift(), params)
-        field.indicator1 = indicators[0,1]
-        field.indicator2 = indicators[1,1]
-
-        # add each subfield to the field
-        subfields.each() do |data|
+        subfields = subfields.collect do |data|
           data = MARC::Reader.set_encoding( data, params )
-          subfield = MARC::Subfield.new(data[0,1],data[1..-1])
-          field.append(subfield)
+          MARC::Subfield.new(data[0,1],data[1..-1])
         end
+        field = MARC::DataField.new(tag,indicators[0,1],indicators[1,1], *subfields)
 
         # add the field to the record
         record.append(field)
@@ -445,11 +439,10 @@ module MARC
           end
           if params[:invalid] == :replace
             str = str.scrub(params[:replace])
-          end
-          
-         end          
-       end
-       return str
+          end          
+        end          
+      end
+      return str
     end                
   end
 

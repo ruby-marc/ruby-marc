@@ -59,8 +59,6 @@ module MARC
       # screw us up later when we try to encode
       @indicator1 = i1 == nil ? ' ' : i1
       @indicator2 = i2 == nil ? ' ' : i2
-      
-      @subfields = []
 
       # must use MARC::ControlField for tags < 010 or
       # those in MARC::ControlField#extra_control_fields
@@ -72,17 +70,16 @@ module MARC
 
       # allows MARC::Subfield objects to be passed directly
       # or a shorthand of ['a','Foo'], ['b','Bar']
-      subfields.each do |subfield| 
+      @subfields = subfields.collect do |subfield| 
         case subfield
         when MARC::Subfield
-          @subfields.push(subfield)
+          subfield
         when Array
           if subfield.length > 2
             raise MARC::Exception.new(),
               "arrays must only have 2 elements: " + subfield.to_s 
           end
-          @subfields.push(
-            MARC::Subfield.new(subfield[0],subfield[1]))
+          MARC::Subfield.new(subfield[0],subfield[1])
         else 
           raise MARC::Exception.new(), 
             "invalid subfield type #{subfield.class}"
