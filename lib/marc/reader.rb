@@ -229,9 +229,13 @@ module MARC
       unless block_given?
         return self.enum_for(:each)
       else
-        self.each_raw do |raw|
-          record = self.decode(raw)
-          yield record
+        until @handle.eof? do
+          record = self.decode(@handle)
+          if record
+            yield record
+          else
+            break
+          end
         end
       end
     end
@@ -303,104 +307,94 @@ module MARC
       end
       # And now that we've recorded the current encoding, we force
       # to binary encoding, because we're going to be doing byte arithmetic,
-      # and want to avoid byte-vs-char confusion. 
-      marc.force_encoding("binary") if marc.respond_to?(:force_encoding)
-      
+      # and want to avoid byte-vs-char confusion.
+      if marc.is_a? String
+        marc.force_encoding('binary') if marc.respond_to? :force_encoding
+        marc = StringIO.new(marc) if marc.is_a? String
+      else
+        marc = marc.binmode
+      end
+      record_leader = marc.read(LEADER_LENGTH)
+
+      record_length = record_leader[0..4].to_i
+      if record_length == 0 && !params[:forgiving]
+        raise MARC::Exception.new("invalid record length: #{record_leader[0..4]}'")
+      end
       record = Record.new()
-      record.leader = marc[0..LEADER_LENGTH-1]
-
+      record.leader = record_leader
       # where the field data starts
-      base_address = record.leader[12..16].to_i
+      base_address = record_leader[12..16].to_i
+      num_fields = (base_address - LEADER_LENGTH) / DIRECTORY_ENTRY_LENGTH
 
-      # get the byte offsets from the record directory
-      directory = marc[LEADER_LENGTH..base_address-1]
-
-      raise MARC::Exception.new("invalid directory in record") if directory == nil
-
-      # the number of fields in the record corresponds to
-      # how many directory entries there are
-      num_fields = directory.length / DIRECTORY_ENTRY_LENGTH
-
+      entries = (0...num_fields).collect do
+        {tag: marc.read(3), length: marc.read(4).to_i, offset: marc.read(5).to_i}
+      end
+      raise "missing field terminator after directory" unless marc.read(1).eql? END_OF_FIELD
       # when operating in forgiving mode we just split on end of
       # field instead of using calculated byte offsets from the
       # directory
-      if params[:forgiving]        
-        marc_field_data = marc[base_address..-1]
-        # It won't let us do the split on bad utf8 data, but
-        # we haven't yet set the 'proper' encoding or used
-        # our correction/replace options. So call it binary for now.
-        marc_field_data.force_encoding("binary") if marc_field_data.respond_to?(:force_encoding)
-        
-        all_fields = marc_field_data.split(END_OF_FIELD)
+      if params[:forgiving]
+        entries.each do |entry|
+          marc_field_data = marc.gets(END_OF_FIELD)
+          add_field(record, entry, marc_field_data, params)
+        end
       else
-        mba =  marc.bytes.to_a
-      end
-
-      0.upto(num_fields-1) do |field_num|
-
-        # pull the directory entry for a field out
-        entry_start = field_num * DIRECTORY_ENTRY_LENGTH
-        entry_end = entry_start + DIRECTORY_ENTRY_LENGTH
-        entry = directory[entry_start..entry_end]
-
-        # extract the tag
-        tag = entry[0..2]
-
-        # get the actual field data
-        # if we were told to be forgiving we just use the
-        # next available chuck of field data that we
-        # split apart based on the END_OF_FIELD
-        field_data = ''
-        if params[:forgiving]
-          field_data = all_fields.shift()
-
-        # otherwise we actually use the byte offsets in
-        # directory to figure out what field data to extract
-        else
-          length = entry[3..6].to_i
-          offset = entry[7..11].to_i
-          field_start = base_address + offset
-          field_end = field_start + length - 1
-          field_data = mba[field_start..field_end].pack("c*")
-        end
-
-        # remove end of field
-        field_data.delete!(END_OF_FIELD)
-        
-        # add a control field or data field
-        if MARC::ControlField.control_tag?(tag)
-          field_data = MARC::Reader.set_encoding( field_data , params)
-          record.append(MARC::ControlField.new(tag,field_data))
-        else
-          field = MARC::DataField.new(tag)
-
-          # get all subfields
-          subfields = field_data.split(SUBFIELD_INDICATOR)
-
-          # must have at least 2 elements (indicators, and 1 subfield)
-          # TODO some sort of logging?
-          next if subfields.length() < 2
-
-          # get indicators
-          indicators = MARC::Reader.set_encoding( subfields.shift(), params)
-          field.indicator1 = indicators[0,1]
-          field.indicator2 = indicators[1,1]
-
-          # add each subfield to the field
-          subfields.each() do |data|
-            data = MARC::Reader.set_encoding( data, params )
-            subfield = MARC::Subfield.new(data[0,1],data[1..-1])
-            field.append(subfield)
+        offset = base_address
+        # get the byte offsets from the record directory
+        entries.sort! {|a,b| a[:offset] <=> b[:offset]}.each do |entry|
+          entry_offset = entry[:offset] + base_address
+          raise MARC::Exception.new('overlapping entries') if offset > entry_offset
+          raise MARC::Exception.new('entry points past end of record') if (entry_offset + entry[:length]) > record_length
+          if entry_offset > offset
+            marc.seek(entry_offset - offset, IO::SEEK_CUR)
+            offset = entry_offset
           end
-
-          # add the field to the record
-          record.append(field)
+          marc_field_data = marc.read(entry[:length])        
+          offset += marc_field_data.length
+          add_field(record, entry, marc_field_data, params)
         end
       end
+
+      # discard any remaining data including the record terminator
+      marc.gets(END_OF_RECORD)
 
       return record
-    end  
+    end
 
+    def self.add_field(record, entry, field_data, params)
+      # remove end of field
+      field_data.delete!(END_OF_FIELD)
+      tag = entry[:tag]
+      # add a control field or data field
+      if MARC::ControlField.control_tag?(tag)
+        field_data = MARC::Reader.set_encoding( field_data , params)
+        record.append(MARC::ControlField.new(tag,field_data))
+      else
+        field = MARC::DataField.new(tag)
+
+        # get all subfields
+        subfields = field_data.split(SUBFIELD_INDICATOR)
+
+        # must have at least 2 elements (indicators, and 1 subfield)
+        # TODO some sort of logging?
+        return if subfields.length() < 2
+
+        # get indicators
+        indicators = MARC::Reader.set_encoding( subfields.shift(), params)
+        field.indicator1 = indicators[0,1]
+        field.indicator2 = indicators[1,1]
+
+        # add each subfield to the field
+        subfields.each() do |data|
+          data = MARC::Reader.set_encoding( data, params )
+          subfield = MARC::Subfield.new(data[0,1],data[1..-1])
+          field.append(subfield)
+        end
+
+        # add the field to the record
+        record.append(field)
+      end
+    end
     # input passed in probably has 'binary' encoding. 
     # We'll set it to the proper encoding, and depending on settings, optionally
     # * check for valid encoding
