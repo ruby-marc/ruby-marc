@@ -470,9 +470,9 @@ module MARC
   class ForgivingReader < Reader
 
     def each
-      @handle.each_line(END_OF_RECORD) do |raw|
+      until @handle.eof? do
         begin
-          record = MARC::Reader.decode(raw, @encoding_options.merge(:forgiving => true))
+          record = MARC::Reader.decode(@handle, @encoding_options.merge(:forgiving => true))
           yield record
         rescue StandardError => e
           # caught exception just keep barrelling along
