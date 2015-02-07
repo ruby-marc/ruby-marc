@@ -7,7 +7,8 @@ group :test do
   gem 'rake'
   gem 'rdoc'
   gem 'xml-simple'
-end  
+  gem 'minitest', '~>4'
+end
 
 # Specify your gem's dependencies in ..gemspec
 gemspec

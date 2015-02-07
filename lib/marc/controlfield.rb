@@ -2,15 +2,15 @@ require 'set'
 
 module MARC
 
-  # MARC records contain control fields, each of which has a 
+  # MARC records contain control fields, each of which has a
   # tag and value. Tags for control fields must be in the
   # 001-009 range or be specially added to the @@control_tags Set
 
   class ControlField
-    
+
     # Initially, control tags are the numbers 1 through 9 or the string '000'
     @@control_tags = Set.new(%w{000 001 002 003 004 005 006 007 008 009})
- 
+
     def self.control_tags
       return @@control_tags
     end
@@ -26,7 +26,7 @@ module MARC
     # the value of the control field
     attr_accessor :value
 
-    # The constructor which must be passed a tag value and 
+    # The constructor which must be passed a tag value and
     # an optional value for the field.
 
     def initialize(tag,value='')
@@ -40,31 +40,26 @@ module MARC
     # Two control fields are equal if their tags and values are equal.
 
     def ==(other)
-      if @tag != other.tag
-        return false 
-      elsif @value != other.value
-        return false
-      end
-      return true
+      tag == other.tag && value == other.value
     end
 
     # turning it into a marc-hash element
     def to_marchash
       return [@tag, @value]
     end
-    
+
     # Turn the control field into a hash for MARC-in-JSON
     def to_hash
       return {@tag=>@value}
     end
-    
+
     def to_s
-      return "#{tag} #{value}" 
+      return "#{tag} #{value}"
     end
 
     def =~(regex)
       return self.to_s =~ regex
-    end      
+    end
 
   end
 

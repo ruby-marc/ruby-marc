@@ -5,6 +5,7 @@ require 'rake/testtask'
 require 'rdoc/task'
 require 'bundler/gem_tasks'
 
+require 'minitest/autorun'
 
 task :default => [:test]
 
