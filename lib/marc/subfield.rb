@@ -25,7 +25,7 @@ module MARC
     end
 
     def to_s
-      return "$#{code} #{value} "
+      return "$#{@code} #{@value} "
     end
   end
 end

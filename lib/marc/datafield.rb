@@ -91,7 +91,7 @@ module MARC
     #  245 00 $aConsilience :$bthe unity of knowledge $cby Edward O. Wilson.
 
     def to_s
-      str = "#{tag} #{indicator1}#{indicator2} "
+      str = "#{@tag} #{@indicator1}#{@indicator2} "
       @subfields.each { |subfield| str << subfield.to_s }
       return str
     end

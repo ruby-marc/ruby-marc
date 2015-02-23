@@ -14,5 +14,6 @@ module MARC
   # marc-hash
   MARCHASH_MAJOR_VERSION = 1
   MARCHASH_MINOR_VERSION = 0
-  
+  # encoding params
+  MARC8_PARAM = "MARC-8".freeze
 end

@@ -214,7 +214,7 @@ module MARC
       end
 
       # Only pull in the MARC8 translation if we need it, since it's really big
-      if @encoding_options[:external_encoding]  == "MARC-8"
+      if MARC8_PARAM.eql? @encoding_options[:external_encoding]
         require 'marc/marc8/to_unicode' unless defined? MARC::Marc8::ToUnicode
       end
 
@@ -420,8 +420,8 @@ module MARC
     def self.set_encoding!(str, params)
       if str.respond_to?(:force_encoding)
         if params[:external_encoding]
-          if params[:external_encoding] == "MARC-8"
-            transcode_params = [:invalid, :replace].each_with_object({}) { |k, hash| hash[k] = params[k] if params.has_key?(k) }
+          if MARC8_PARAM.eql? params[:external_encoding]
+            transcode_params = params.reject {|k,v| :invalid != k && :replace != k}
             str.replace(MARC::Marc8::ToUnicode.new.transcode(str, transcode_params))
           else
             str.force_encoding(params[:external_encoding])
@@ -442,11 +442,11 @@ module MARC
           str.encode!(params[:internal_encoding], params)
         elsif (params[:invalid] || params[:replace] || (params[:validate_encoding] == true))
 
-          if params[:validate_encoding] == true && ! str.valid_encoding?
+          if true == params[:validate_encoding] && ! str.valid_encoding?
             raise  Encoding::InvalidByteSequenceError.new("invalid byte in string for source encoding #{str.encoding.name}")
           end
-          if params[:invalid] == :replace
-            str = str.scrub!(params[:replace])
+          if :replace == params[:invalid]
+            str.scrub!(params[:replace])
           end          
         end          
       end
