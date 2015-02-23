@@ -59,8 +59,6 @@ module MARC
       # screw us up later when we try to encode
       @indicator1 = i1 == nil ? ' ' : i1
       @indicator2 = i2 == nil ? ' ' : i2
-      
-      @subfields = []
 
       # must use MARC::ControlField for tags < 010 or
       # those in MARC::ControlField#extra_control_fields
@@ -72,17 +70,16 @@ module MARC
 
       # allows MARC::Subfield objects to be passed directly
       # or a shorthand of ['a','Foo'], ['b','Bar']
-      subfields.each do |subfield| 
+      @subfields = subfields.collect! do |subfield|
         case subfield
         when MARC::Subfield
-          @subfields.push(subfield)
+          subfield
         when Array
           if subfield.length > 2
             raise MARC::Exception.new(),
-              "arrays must only have 2 elements: " + subfield.to_s 
+              "arrays must only have 2 elements: #{subfield.to_s}" 
           end
-          @subfields.push(
-            MARC::Subfield.new(subfield[0],subfield[1]))
+          MARC::Subfield.new(subfield[0],subfield[1])
         else 
           raise MARC::Exception.new(), 
             "invalid subfield type #{subfield.class}"
@@ -90,14 +87,12 @@ module MARC
       end
     end
 
-
     # Returns a string representation of the field such as:
     #  245 00 $aConsilience :$bthe unity of knowledge $cby Edward O. Wilson.
 
     def to_s
-      str = "#{tag} "
-      str += "#{indicator1}#{indicator2} " 
-      @subfields.each { |subfield| str += subfield.to_s }
+      str = "#{@tag} #{@indicator1}#{@indicator2} "
+      @subfields.each { |subfield| str << subfield.to_s }
       return str
     end
 
@@ -128,10 +123,8 @@ module MARC
     # You can iterate through the subfields in a Field:
     #   field.each {|s| print s}
 
-    def each
-      for subfield in subfields
-        yield subfield
-      end
+    def each &block
+      @subfields.each &block
     end
 
     #def each_by_code(filter)
@@ -141,18 +134,14 @@ module MARC
     # You can lookup subfields with this shorthand. Note it 
     # will return a string and not a MARC::Subfield object.
     #   subfield = field['a']
-    
     def [](code)
-      subfield = self.find {|s| s.code == code}
-      return subfield.value if subfield
-      return
+      @subfields.each {|s| return s.value if s.code == code}
     end
  
 
     def codes(dedup=true)
-      codes = []
-      @subfields.each {|s| codes << s.code }
-      dedup ? codes.uniq : codes
+      codes = @subfields.collect {|s| s.code }
+      dedup ? codes.uniq! : codes
     end
 
     # Two fields are equal if their tag, indicators and 
@@ -187,8 +176,9 @@ module MARC
     # print record['245'].value
 
     def value
-      return(@subfields.map {|s| s.value} .join '')
+      buf = ''
+      @subfields.each {|s| buf << s.value}
+      buf
     end
-
   end
 end
