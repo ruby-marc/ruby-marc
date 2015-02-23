@@ -292,7 +292,7 @@ module MARC
     # options include:
     #   [:external_encoding]  encoding of MARC record data values
     #   [:forgiving]          needs more docs, true is some kind of forgiving 
-    #                         of certain kinds of bad MARC. 
+    #                         of certain kinds of bad MARC.
     def self.decode(marc, params={})
       if params.has_key?(:encoding)
         $stderr.puts "DEPRECATION WARNING: MARC::Reader.decode :encoding option deprecated, please use :external_encoding"
@@ -327,7 +327,9 @@ module MARC
       buf12 = '            ' # buffer for transient data in parsing
       entries = Array.new(num_fields) do
         buf12 = marc.read(12)
-        [buf12.slice!(0,3), buf12.slice!(0,4).to_i, buf12.to_i]
+        #[buf12.slice!(0,3), buf12.slice!(0,4).to_i, buf12.to_i]
+        t = buf12.slice!(0,3)
+        buf12.to_i.divmod(100000).unshift(t)
       end
       raise "missing field terminator after directory" unless marc.read(1,buf12).eql? END_OF_FIELD
       # when operating in forgiving mode we just split on end of
@@ -368,7 +370,7 @@ module MARC
       field_data.delete!(END_OF_FIELD)
       # add a control field or data field
       if MARC::ControlField.control_tag?(tag)
-        field_data = MARC::Reader.set_encoding( field_data , params)
+        field_data = MARC::Reader.set_encoding!( field_data , params)
         record.append(MARC::ControlField.new(tag,field_data))
       else
 
@@ -380,9 +382,10 @@ module MARC
         return if subfields.length() < 2
 
         # get indicators
-        indicators = MARC::Reader.set_encoding( subfields.shift(), params)
+        indicators = subfields.shift()
+        MARC::Reader.set_encoding!( indicators, params)
         subfields = subfields.collect! do |data|
-          data = MARC::Reader.set_encoding( data, params )
+          MARC::Reader.set_encoding!( data, params )
           MARC::Subfield.new(data.slice!(0,1),data)
         end
         field = MARC::DataField.new(tag,indicators.slice!(0,1),indicators,*subfields)
@@ -412,13 +415,16 @@ module MARC
     #  * replace: Set replacement char for use with 'invalid', otherwise defaults
     #             to unicode replacement char, or question mark. 
     def self.set_encoding(str, params)
+      set_encoding!(str.dup,params)
+    end
+    def self.set_encoding!(str, params)
       if str.respond_to?(:force_encoding)
         if params[:external_encoding]
           if params[:external_encoding] == "MARC-8"
             transcode_params = [:invalid, :replace].each_with_object({}) { |k, hash| hash[k] = params[k] if params.has_key?(k) }
-            str = MARC::Marc8::ToUnicode.new.transcode(str, transcode_params)
+            str.replace(MARC::Marc8::ToUnicode.new.transcode(str, transcode_params))
           else
-            str = str.force_encoding(params[:external_encoding])
+            str.force_encoding(params[:external_encoding])
           end
         end     
             
@@ -433,7 +439,7 @@ module MARC
         # get an exception from inside ruby-marc, and it may change
         # in future implementations. 
         if params[:internal_encoding]
-          str = str.encode(params[:internal_encoding], params)
+          str.encode!(params[:internal_encoding], params)
         elsif (params[:invalid] || params[:replace] || (params[:validate_encoding] == true))
 
           if params[:validate_encoding] == true && ! str.valid_encoding?
@@ -444,7 +450,7 @@ module MARC
           end          
         end          
       end
-      return str
+      str
     end                
   end
 
