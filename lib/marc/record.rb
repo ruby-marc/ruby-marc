@@ -14,9 +14,9 @@ module MARC
     # Rebuild the HashWithChecksumAttribute with the current
     # values of the fields Array
     def reindex
-      @tags = {}
+      @tags.clear
       self.each_with_index do |field, i|
-        @tags[field.tag] ||= []
+        @tags[field.tag.freeze] ||= []
         @tags[field.tag] << i
       end
       @clean = true
@@ -33,10 +33,19 @@ module MARC
     # or a range (('600'..'699')).
     def each_by_tag(tags)
       reindex unless @clean
-      indices = @tags.values_at(*(@tags.keys & [*tags])).flatten.sort
-      return [] if indices.empty?
-      self.values_at(*indices).each do |tag|
-        yield tag
+      tags = [*tags] unless Array === tags
+      #indices = @tags.values_at(*(@tags.keys & tags))
+      indices = []
+      tags.each do |tag|
+        t = @tags[tag]
+        indices.concat(t) if t
+      end
+      #indices = []
+      #tags.each {|t| v = @tags[t]; (indices << v) if v}
+      #indices.flatten!
+      indices.sort!
+      indices.each do |tag|
+        yield self[tag]
       end
     end
 
@@ -235,10 +244,10 @@ module MARC
     # Return a marc-hash version of the record
     def to_marchash
       return {
-        'type' => 'marc-hash',
-        'version' => [MARCHASH_MAJOR_VERSION, MARCHASH_MINOR_VERSION],
-        'leader' => self.leader,
-        'fields' => self.map {|f| f.to_marchash}
+        'type'.freeze => 'marc-hash',
+        'version'.freeze => [MARCHASH_MAJOR_VERSION, MARCHASH_MINOR_VERSION],
+        'leader'.freeze => self.leader,
+        'fields'.freeze => self.map {|f| f.to_marchash}
       }
     end #to_hash
 
@@ -264,7 +273,7 @@ module MARC
     
     # Returns a (roundtrippable) hash representation for MARC-in-JSON
     def to_hash
-      record_hash = {'leader'=>@leader, 'fields'=>[]}
+      record_hash = {'leader'.freeze=>@leader, 'fields'.freeze=>[]}
       @fields.each do |field|
         record_hash['fields'] << field.to_hash
       end
@@ -298,7 +307,7 @@ module MARC
     def to_s
       str = "LEADER #{leader}\n"
       self.each do |field|
-        str += field.to_s() + "\n"
+        str << field.to_s() << "\n"
       end
       return str
     end

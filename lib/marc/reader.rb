@@ -159,7 +159,6 @@ module MARC
   # at least jruby 1.7.6. 
   class Reader
     include Enumerable
-
     # The constructor which you may pass either a path
     #
     #   reader = MARC::Reader.new('marc.dat')
@@ -325,11 +324,12 @@ module MARC
       # where the field data starts
       base_address = record_leader[12..16].to_i
       num_fields = (base_address - LEADER_LENGTH) / DIRECTORY_ENTRY_LENGTH
-      buf5 = '     ' # buffer for transient data in parsing
+      buf12 = '            ' # buffer for transient data in parsing
       entries = Array.new(num_fields) do
-        [marc.read(3), marc.read(4,buf5).to_i, marc.read(5,buf5).to_i]
+        buf12 = marc.read(12)
+        [buf12.slice!(0,3), buf12.slice!(0,4).to_i, buf12.to_i]
       end
-      raise "missing field terminator after directory" unless marc.read(1,buf5).eql? END_OF_FIELD
+      raise "missing field terminator after directory" unless marc.read(1,buf12).eql? END_OF_FIELD
       # when operating in forgiving mode we just split on end of
       # field instead of using calculated byte offsets from the
       # directory
@@ -341,16 +341,18 @@ module MARC
       else
         offset = base_address
         # get the byte offsets from the record directory
-        entries.sort! {|a,b| a[2] <=> b[2]}.each do |entry|
+        curr_entry_len = 0
+        entries.sort_by! {|a| a[2]}.each do |entry|
           entry_offset = entry[2] + base_address
+          curr_entry_len = entry[1]
           raise MARC::Exception.new('overlapping entries') if offset > entry_offset
-          raise MARC::Exception.new('entry points past end of record') if (entry_offset + entry[1]) > record_length
+          raise MARC::Exception.new('entry points past end of record') if (entry_offset + curr_entry_len) > record_length
           if entry_offset > offset
             marc.seek(entry_offset - offset, IO::SEEK_CUR)
             offset = entry_offset
           end
-          marc_field_data = marc.read(entry[1])
-          offset += marc_field_data.length
+          marc_field_data = marc.read(curr_entry_len)
+          offset += curr_entry_len #marc_field_data.length
           add_field(record, entry[0], marc_field_data, params)
         end
       end
@@ -379,11 +381,11 @@ module MARC
 
         # get indicators
         indicators = MARC::Reader.set_encoding( subfields.shift(), params)
-        subfields = subfields.collect do |data|
+        subfields = subfields.collect! do |data|
           data = MARC::Reader.set_encoding( data, params )
           MARC::Subfield.new(data.slice!(0,1),data)
         end
-        field = MARC::DataField.new(tag,indicators[0,1],indicators[1,1], *subfields)
+        field = MARC::DataField.new(tag,indicators.slice!(0,1),indicators,*subfields)
 
         # add the field to the record
         record.append(field)
@@ -438,7 +440,7 @@ module MARC
             raise  Encoding::InvalidByteSequenceError.new("invalid byte in string for source encoding #{str.encoding.name}")
           end
           if params[:invalid] == :replace
-            str = str.scrub(params[:replace])
+            str = str.scrub!(params[:replace])
           end          
         end          
       end
