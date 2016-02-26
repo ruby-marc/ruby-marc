@@ -3,11 +3,6 @@ bundler_args: --without documentation
 rvm:
   - 1.8.7
   - 1.9.3
-  - 2.0.0
-  - 2.1.0
-  - jruby-18mode
+  - 2.3.0
   - jruby-19mode
-branches:
-  only:
-    - master
-    - /^ci-.*$/ 
+  - jruby
