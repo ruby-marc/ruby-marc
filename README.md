@@ -69,8 +69,6 @@ Developers, release new version of gem to rubygems with `rake release`
 (bundler-supplied task). Note that one nice thing this will do is automatically
 tag the version in git, very important for later figuring out what's going on.
 
-Please send bugs, requests and comments to Code4Lib Mailing list (https://listserv.nd.edu/cgi-bin/wa?A0=CODE4LIB). 
-
 ## Authors
 
 Kevin Clarke <ksclarke@gmail.com>
