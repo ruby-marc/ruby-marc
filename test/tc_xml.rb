@@ -175,7 +175,11 @@ class XMLTest < Test::Unit::TestCase
     iter.next # total of two records
     assert_raises(StopIteration) { iter.next }  
   end
-  
 
+  def test_xml_count
+    reader = MARC::XMLReader.new('test/batch.xml')
+    count1 = reader.count
+    count2 = reader.count
+    assert_equal(count1, count2)
+  end
 end
-
