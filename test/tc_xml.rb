@@ -182,4 +182,18 @@ class XMLTest < Test::Unit::TestCase
     count2 = reader.count
     assert_equal(count1, count2)
   end
+
+  def test_xml_each
+    reader = MARC::XMLReader.new('test/batch.xml')
+    count1 = 0
+    reader.each do |_|
+      count1 +=1
+    end
+
+    count2 = 0
+    reader.each do |_|
+      count2 +=1
+    end
+    assert_equal(count1, count2)
+  end
 end
