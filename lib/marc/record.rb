@@ -133,6 +133,23 @@ module MARC
       @fields.clean = false
     end
 
+    # remove all fields or a single field from the record
+    # if argument is a string, remove all fields matching that tag,
+    # otherwise if field is a MARC::DataField, remove only that specific
+    # field.
+
+    def remove(field)
+      case field
+      when String
+        @fields.delete_if { |f| f.tag == field }
+      when MARC::DataField
+        @fields.delete_if { |f| f == field }
+      else
+        raise MARC::Exception
+      end
+      @fields.clean = false
+    end
+    
     # alias to append
 
     def <<(field)

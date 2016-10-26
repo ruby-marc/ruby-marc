@@ -123,6 +123,23 @@ module MARC
       @subfields.push(subfield)
     end
 
+    # Remove a subfield (MARC::Subfield) from the field
+    # either by
+    #    field.remove('a')
+    # which will remove all $a, or by
+    #    field.remove(<MARC::Subfield>)
+    # which will only remove that specific subfield (same object)
+
+    def remove(subfield)
+      case subfield
+      when String
+        @subfields.delete_if { |sf| sf.code == subfield }
+      when MARC::Subfield
+        @subfields.delete_if { |sf| sf == subfield }
+      else
+        raise MARC::Exception
+      end
+    end
     
 
     # You can iterate through the subfields in a Field:
