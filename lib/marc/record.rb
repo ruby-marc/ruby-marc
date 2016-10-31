@@ -137,6 +137,12 @@ module MARC
     # if argument is a string, remove all fields matching that tag,
     # otherwise if field is a MARC::DataField, remove only that specific
     # field.
+    #
+    # Removing all 500 fields from the record:
+    #   record.remove('500')
+    #
+    # Removing a specific 500 field:
+    #   record.remove(MARC::DataField.new('500', '1', '0', ['a', 'note']))
 
     def remove(field)
       case field
@@ -149,10 +155,20 @@ module MARC
       end
       @fields.clean = false
     end
+
+    # remove field at a specific index position of all fields in the record.
+    # if the index is greater than the number of fields, a MARC::Exception
+    # will be thrown. Index is 0 based.
+    #
+    # To remove the field at pos 20:
+    #   record.remove_at(20)
     
     def remove_at(field_idx)
       case field_idx
       when Fixnum
+        if field_idx >= @fields.count
+          raise MARC::Exception
+        end
         @fields.delete_at(field_idx)
       else
         raise MARC::Exception

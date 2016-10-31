@@ -192,4 +192,16 @@ class TestRecord < Test::Unit::TestCase
       assert_equal(r.fields('500').count, 1)
       assert_equal(r['500']['a'], 'Note 2')
     end
+
+    def test_remove_field_by_invalid_index
+      r = MARC::Record.new
+      r.fields.push MARC::DataField.new('100', '0', '1', ['a', 'Author'])
+      r.fields.push MARC::DataField.new('245', '1', '0', ['a', 'Title'])
+      r.fields.push MARC::DataField.new('500', '0', '4', ['a', 'Note 1'])
+      r.fields.push MARC::DataField.new('500', '0', '5', ['a', 'Note 2'])
+
+      assert_raise MARC::Exception do
+        r.remove_at(10)
+      end
+    end
 end

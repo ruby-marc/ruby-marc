@@ -124,11 +124,13 @@ module MARC
     end
 
     # Remove a subfield (MARC::Subfield) from the field
-    # either by
+    # either by giving a subfield code or a subfield object
+    #
+    # To remove all subfield 'a' from a DataField:
     #    field.remove('a')
-    # which will remove all $a, or by
-    #    field.remove(<MARC::Subfield>)
-    # which will only remove that specific subfield (same object)
+    #
+    # To remove a specific subfield:
+    #    field.remove(MARC::Subfield.new('a', 'value'))
 
     def remove(subfield)
       case subfield
@@ -141,9 +143,19 @@ module MARC
       end
     end
 
+    # remove field at a specific index position of all fields in the record.
+    # if the index is greater than the number of fields, a MARC::Exception
+    # will be thrown. Index is 0 based.
+    #
+    # To remove the subfield at pos 2:
+    #   field.remove_at(2)
+    
     def remove_at(subfield_idx)
       case subfield_idx
       when Fixnum
+        if subfield_idx >= @subfields.count
+          raise MARC::Exception
+        end
         @subfields.delete_at(subfield_idx)
       else
         raise MARC::Exception
