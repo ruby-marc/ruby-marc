@@ -187,7 +187,7 @@ class TestRecord < Test::Unit::TestCase
       r.fields.push MARC::DataField.new('500', '0', '5', ['a', 'Note 2'])
       assert_equal(r.fields('500').count, 2)
 
-      r.remove(2)
+      r.remove_at(2)
 
       assert_equal(r.fields('500').count, 1)
       assert_equal(r['500']['a'], 'Note 2')

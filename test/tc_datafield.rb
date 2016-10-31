@@ -95,7 +95,7 @@ class TestField < Test::Unit::TestCase
         MARC::Subfield.new('a', 'Foz'),
         MARC::Subfield.new('b', 'Bar') )
       assert_equal('100 01 $a Foo $a Foz $b Bar ', f.to_s)
-      f.remove(0)
+      f.remove_at(0)
       assert_equal('100 01 $a Foz $b Bar ', f.to_s)
     end
 end

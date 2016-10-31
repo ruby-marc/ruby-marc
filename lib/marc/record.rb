@@ -144,14 +144,22 @@ module MARC
         @fields.delete_if { |f| f.tag == field }
       when MARC::DataField
         @fields.delete_if { |f| f == field }
-      when Fixnum
-        @fields.delete_at(field)
       else
         raise MARC::Exception
       end
       @fields.clean = false
     end
     
+    def remove_at(field_idx)
+      case field_idx
+      when Fixnum
+        @fields.delete_at(field_idx)
+      else
+        raise MARC::Exception
+      end
+      @fields.clean = false
+    end
+
     # alias to append
 
     def <<(field)

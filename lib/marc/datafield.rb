@@ -136,13 +136,19 @@ module MARC
         @subfields.delete_if { |sf| sf.code == subfield }
       when MARC::Subfield
         @subfields.delete_if { |sf| sf == subfield }
-      when Fixnum
-        @subfields.delete_at(subfield)
       else
         raise MARC::Exception
       end
     end
-    
+
+    def remove_at(subfield_idx)
+      case subfield_idx
+      when Fixnum
+        @subfields.delete_at(subfield_idx)
+      else
+        raise MARC::Exception
+      end
+    end
 
     # You can iterate through the subfields in a Field:
     #   field.each {|s| print s}
