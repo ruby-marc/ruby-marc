@@ -136,6 +136,8 @@ module MARC
         @subfields.delete_if { |sf| sf.code == subfield }
       when MARC::Subfield
         @subfields.delete_if { |sf| sf == subfield }
+      when Fixnum
+        @subfields.delete_at(subfield)
       else
         raise MARC::Exception
       end

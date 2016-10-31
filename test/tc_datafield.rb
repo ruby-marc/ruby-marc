@@ -88,4 +88,14 @@ class TestField < Test::Unit::TestCase
       f.remove(subfield)
       assert_equal('100 01 $a Foo $b Bar ', f.to_s)
     end
+
+    def test_remove_subfield_by_index
+      f  = MARC::DataField.new('100', '0', '1',
+        MARC::Subfield.new('a', 'Foo'),
+        MARC::Subfield.new('a', 'Foz'),
+        MARC::Subfield.new('b', 'Bar') )
+      assert_equal('100 01 $a Foo $a Foz $b Bar ', f.to_s)
+      f.remove(0)
+      assert_equal('100 01 $a Foz $b Bar ', f.to_s)
+    end
 end

@@ -144,6 +144,8 @@ module MARC
         @fields.delete_if { |f| f.tag == field }
       when MARC::DataField
         @fields.delete_if { |f| f == field }
+      when Fixnum
+        @fields.delete_at(field)
       else
         raise MARC::Exception
       end
