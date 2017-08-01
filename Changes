@@ -1,3 +1,7 @@
+v1.0.2 July 2017
+ - Now (correctly) throw an error if datafield string is the empty string
+   (thanks to @bibliotechy)
+
 v1.0.1 February 2016
 - Non-user-facing change in implementation of FieldMap strictly for performance
 
