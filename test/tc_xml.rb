@@ -56,7 +56,7 @@ class XMLTest < Test::Unit::TestCase
       batch_test(parser)
     end    
   end
-  
+
   def batch_test(parser)
     reader = MARC::XMLReader.new('test/batch.xml', :parser=>parser)
     count = 0
@@ -65,6 +65,23 @@ class XMLTest < Test::Unit::TestCase
       assert_instance_of(MARC::Record, record)
     end
     assert_equal(count, 2)
+  end
+
+  def test_skip_bad_xml_record
+    @parsers.each do | parser |
+      puts "\nRunning skip_bad_xml_record with: #{parser}.\n"
+      batch_skip_bad_xml_record_test(parser)
+    end
+  end
+
+  def batch_skip_bad_xml_record_test(parser)
+    reader = MARC::XMLReader.new('test/bad_record.xml', :parser=>parser)
+    count = 0
+    for record in reader
+      count += 1
+      assert_instance_of(MARC::Record, record)
+    end
+    assert_equal(count, 1)
   end
   
   def test_read_string

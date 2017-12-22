@@ -34,8 +34,14 @@ module MARC
 
     # Returns our MARC::Record object to the #each block.
     def yield_record
-      @block.call(@record[:record])       
+      if @record[:error]
+        warn "Skipping record do to error: #{@record[:error]}"
+      else
+        @block.call(@record[:record])
+      end
+
       @record[:record] = nil
+      @record[:error] = nil
     end    
 
     def start_element_namespace name, attributes = [], prefix = nil, uri = nil, ns = {}
@@ -46,18 +52,28 @@ module MARC
          when 'leader' then @current_element = :leader
          when 'controlfield'
            @current_element=:field
-           @record[:field] = MARC::ControlField.new(attributes["tag"])
+           @record[:field] = new_field(MARC::ControlField, attributes["tag"])
+
          when 'datafield'
-           @record[:field] = MARC::DataField.new(attributes["tag"], attributes['ind1'], attributes['ind2'])
+           @record[:field] = new_field(MARC::DataField, attributes["tag"], attributes['ind1'], attributes['ind2'])
          when 'subfield'
            @current_element=:subfield
-           @record[:subfield] = MARC::Subfield.new(attributes['code'])
+           @record[:subfield] = new_field(MARC::Subfield, attributes['code'])
          end
        end
-     end
+    end
 
+    def new_field(f, *args)
+      begin
+        f.new(*args)
+      rescue MARC::Exception => e
+        @record[:error] = e.message
+        nil
+      end
+    end
 
     def characters text
+      return if @record[:error]
       case @current_element
       when :leader then @record[:record].leader = text
       when :field then @record[:field].value << text
@@ -156,6 +172,7 @@ module MARC
   # which will cascade down to REXML if nothing better is found.
   #  
   module REXMLReader
+    include GenericPullParser
     def self.extended(receiver)
       require 'rexml/document'
       require 'rexml/parsers/pullparser'
@@ -164,6 +181,7 @@ module MARC
     
     # Sets our parser
     def init
+      @record = { error: nil }
       @parser = REXML::Parsers::PullParser.new(@handle)
     end
     
@@ -176,7 +194,15 @@ module MARC
           event = @parser.pull
           # if it's the start of a record element 
           if event.start_element? and strip_ns(event[0]) == 'record'
-            yield build_record
+            record = build_record
+
+            if @record[:error]
+              warn "Skipping record do to error: #{@record[:error]}"
+            else
+              yield record
+            end
+
+            @record[:error] = nil
           end
         end    
       end
@@ -222,17 +248,17 @@ module MARC
           when "controlfield"
             record << datafield if datafield
             datafield = nil
-            control_field = MARC::ControlField.new(node.attribute('tag'))
+            control_field = new_field(MARC::ControlField, node.attribute('tag'))
             record << control_field
             cursor = control_field
           when "datafield"  
             record << datafield if datafield
             datafield = nil
-            data_field = MARC::DataField.new(node.attribute('tag'), node.attribute('ind1'), node.attribute('ind2'))
+            data_field = new_field(MARC::DataField, node.attribute('tag'), node.attribute('ind1'), node.attribute('ind2'))
             datafield = data_field
           when "subfield"
             raise "No datafield to add to" unless datafield
-            subfield = MARC::Subfield.new(node.attribute('code'))
+            subfield = new_field(MARC::Subfield, node.attribute('code'))
             datafield.append(subfield)
             cursor = subfield
           when "record"
@@ -257,14 +283,14 @@ module MARC
             case strip_ns(event[0])
             when 'controlfield'
               text = ''
-              control_field = MARC::ControlField.new(attrs['tag'])
+              control_field = new_field(MARC::ControlField, attrs['tag'])
             when 'datafield'
               text = ''
-              data_field = MARC::DataField.new(attrs['tag'], attrs['ind1'], 
+              data_field = new_field(MARC::DataField, attrs['tag'], attrs['ind1'],
                 attrs['ind2'])
             when 'subfield'
               text = ''
-              subfield = MARC::Subfield.new(attrs['code'])
+              subfield = new_field(MARC::Subfield, attrs['code'])
             end
           end
 
@@ -275,12 +301,12 @@ module MARC
             when 'record'
               return record
             when 'controlfield'
-              control_field.value = text
+              control_field.value = text unless control_field.nil?
               record.append(control_field)
             when 'datafield'
               record.append(data_field)
             when 'subfield'
-              subfield.value = text
+              subfield.value = text unless subfield.nil?
               data_field.append(subfield)
             end
           end
@@ -360,7 +386,7 @@ module MARC
       return r
     end
   end
-end
+  end
 
   # The JrubySTAXReader uses native java calls to parse the incoming stream
   # of marc-xml. It includes most of the work from GenericPullParser
