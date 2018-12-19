@@ -112,6 +112,10 @@ module MARC
         @parser.parse(@handle)
       end
     end
+
+    def error(evt)
+      raise(StandardError, "XML parsing error: #{evt}")
+    end
         
 
     def method_missing(methName, *args)
