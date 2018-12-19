@@ -138,10 +138,10 @@ module MARC
   #    Encoding.default_internal = "utf-8"
   #    MARC::Reader.new(  File.new("marc_in_cp866.mrc", "r:cp866") )
   #
-  #    # However this shoudl be safe:
+  #    # However this should be safe:
   #    MARC::Reader.new(  "marc_in_cp866.mrc", :external_encoding => "cp866")
   #
-  #    # And this shoudl be safe, if you do want to transcode:
+  #    # And this should be safe, if you do want to transcode:
   #    MARC::Reader.new(  "marc_in_cp866.mrc", :external_encoding => "cp866",
   #       :internal_encoding => "utf-8")
   #
