@@ -1,4 +1,8 @@
 module MARC
+  # Exception class to be thrown when an XML parser
+  # encounters an unrecoverable error.
+  class XMLParseError < StandardError; end
+
   # The MagicReader will try to use the best available XML Parser at the
   # time of initialization.  
   # The order is currently:
@@ -114,7 +118,7 @@ module MARC
     end
 
     def error(evt)
-      raise(StandardError, "XML parsing error: #{evt}")
+      raise(XMLParseError, "XML parsing error: #{evt}")
     end
         
 
