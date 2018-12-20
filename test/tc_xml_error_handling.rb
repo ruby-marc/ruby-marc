@@ -9,6 +9,7 @@ class BadXMLHandlingTestCase < Test::Unit::TestCase
     rescue LoadError
       omit("nokogiri not installed, cannot test")
     end
+    omit("nokogiri under jruby doesn't support error handling: sparklemotion/nokogiri#1847") if RUBY_PLATFORM == 'java'
     count = 0
     reader = MARC::XMLReader.new('test/three-records-second-bad.xml', :parser => :nokogiri)
     assert_raise MARC::XMLParseError do
