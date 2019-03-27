@@ -14,7 +14,6 @@ spec = Gem::Specification.new do |s|
   s.files         = Dir.glob("{lib,test}/**/*") + ["Rakefile", "README.md", "Changes", "LICENSE"]
   s.require_path  = 'lib'
   s.autorequire   = 'marc'
-  s.has_rdoc      = true
   s.required_ruby_version = '>= 1.8.6'
   s.authors       = ["Kevin Clarke", "Bill Dueber", "William Groppe", "Jonathan Rochkind", "Ross Singer", "Ed Summers"]
   s.test_file     = 'test/ts_marc.rb'
