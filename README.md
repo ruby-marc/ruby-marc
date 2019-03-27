@@ -56,7 +56,17 @@ Consult the MARC::Reader class docs for a more complete discussion and range of 
 
 The MARC binary Writer (MARC::Writer) does not have any encoding-related features -- it's up to you the developer to make sure you create MARC::Records with consistent and expected char encodings, although MARC::Writer will write out a legal ISO 2709 either way, it just might have corrupted encodings.
 
-  
+When parsing MARCXML _with Nokogiri as your XML parser implementation_ up to
+and including version `1.0.2` of this gem, if the XML was badly formed, parsing
+would stop and no error would be reported to your code.  
+
+If you are using a version > `1.0.2` of `ruby-marc` with MRI + Nokogiri, XML
+syntax errors will be thrown (and you may need to adjust your code to account
+for this).  *JRuby users*: If you are using a version later than `1.0.2` and
+using Nokogiri as an XML parser with JRuby as your ruby implementation, XML
+syntax errors will still be ignored unless you have Nokogiri version `1.10.2`
+or later.
+
 ## Miscellany 
 
 Source code at: https://github.com/ruby-marc/ruby-marc/
