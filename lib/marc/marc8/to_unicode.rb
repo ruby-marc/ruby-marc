@@ -160,7 +160,7 @@ module MARC
                 uni_list.push invalid_replacement unless uni_list.last == invalid_replacement
                 pos += 1
               else
-                raise Encoding::InvalidByteSequenceError.new("MARC8, input byte offset #{pos}, code set: 0x#{code_set.to_s(16)}, code point: 0x#{code_point.to_s(16)}, value: #{transcode(marc8_string, :invalid => :replace, :replace => "<?>")}")
+                raise Encoding::InvalidByteSequenceError.new("MARC8, input byte offset #{pos}, code set: 0x#{code_set.to_s(16)}, code point: 0x#{code_point.to_s(16)}, value: #{transcode(marc8_string, :invalid => :replace, :replace => "�")}")
               end
             end
         end
