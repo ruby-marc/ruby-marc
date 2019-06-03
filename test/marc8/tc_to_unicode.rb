@@ -98,22 +98,32 @@ if "".respond_to?(:encoding)
       converter = MARC::Marc8::ToUnicode.new
 
       bad_marc8 = "\e$1!PVK7oi$N!Q1!G4i$N!0p!Q+{6924f6}\e(B"
-      err = assert_raise(Encoding::InvalidByteSequenceError) {
+      assert_raise(Encoding::InvalidByteSequenceError) {
         converter.transcode(bad_marc8)
       }
+    end
 
-      assert_equal("MARC8, input byte offset 30, code set: 0x31, code point: 0x7b3639, value: 米国の統治の仕組�", err.message)
+    def test_bad_byte_error_message
+      converter = MARC::Marc8::ToUnicode.new
+
+      bad_marc8 = "\e$1!PVK7oi$N!Q1!G4i$N!0p!Q+{6924f6}\e(B"
+      begin
+        converter.transcode(bad_marc8)
+      rescue Encoding::InvalidByteSequenceError => err
+        assert_equal("MARC8, input byte offset 30, code set: 0x31, code point: 0x7b3639, value: 米国の統治の仕組�", err.message)
+      end
     end
 
     def test_multiple_bad_byte_error_message
       converter = MARC::Marc8::ToUnicode.new
 
       bad_marc8 = "\e$1!Q1!G4i$N!0p!Q+{6924f6}\e(B \e$1!PVK7oi$N!Q1!G4i$N!0p!Q+{6924f6}\e(B \e$1!PVK7oi$N!Q1!G4i$N!0p!Q+{6924f6}\e(B"
-      err = assert_raise(Encoding::InvalidByteSequenceError) {
+      begin
         converter.transcode(bad_marc8)
-      }
-      # It still identifies the first bad byte found in the offset info, but replaces all bad bytes in the error message
-      assert_equal("MARC8, input byte offset 21, code set: 0x31, code point: 0x7b3639, value: 統治の仕組� 米国の統治の仕組� 米国の統治の仕組�", err.message)
+      rescue Encoding::InvalidByteSequenceError => err
+        # It still identifies the first bad byte found in the offset info, but replaces all bad bytes in the error message
+        assert_equal("MARC8, input byte offset 21, code set: 0x31, code point: 0x7b3639, value: 統治の仕組� 米国の統治の仕組� 米国の統治の仕組�", err.message)
+      end
     end
 
     def test_bad_byte_with_replacement
