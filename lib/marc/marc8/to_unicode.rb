@@ -12,12 +12,12 @@ module MARC
     # http://www.loc.gov/marc/specifications/speccharmarc8.html
     #
     # NOT thread-safe, it needs to keep state as it goes through a string,
-    # do not re-use between threads. 
+    # do not re-use between threads.
     #
-    # Uses 4 spaces per indent, rather than usual ruby 2 space, just to change the python less. 
+    # Uses 4 spaces per indent, rather than usual ruby 2 space, just to change the python less.
     #
     # Returns UTF-8 encoded string! Encode to something else if you want
-    # something else. 
+    # something else.
     #
     # III proprietary code points?
     class ToUnicode
@@ -31,7 +31,7 @@ module MARC
 
       # These are state flags, MARC8 requires you to keep
       # track of 'current char sets' or something like that, which
-      # are changed with escape codes, or something like that. 
+      # are changed with escape codes, or something like that.
       attr_accessor :g0, :g1
 
       def initialize
@@ -39,21 +39,21 @@ module MARC
         self.g1 = ANSEL
       end
 
-      # Returns UTF-8 encoded string equivalent of marc8_string passed in.       
+      # Returns UTF-8 encoded string equivalent of marc8_string passed in.
       #
       # Bad Marc8 bytes?  By default will raise an Encoding::InvalidByteSequenceError
       # (will not have full metadata filled out, but will have a decent error message)
       #
       # Set option :invalid => :replace to instead silently replace bad bytes
-      # with a replacement char -- by default Unicode Replacement Char, but can set 
-      # option :replace to something else, including empty string. 
+      # with a replacement char -- by default Unicode Replacement Char, but can set
+      # option :replace to something else, including empty string.
       #
       # converter.transcode(bad_marc8, :invalid => :replace, :replace => "")
       #
       # By default returns NFC normalized, but set :normalization option to:
       #    :nfd, :nfkd, :nfkc, :nfc, or nil. Set to nil for higher performance,
       #    we won't do any normalization just take it as it comes out of the
-      #    transcode algorithm. This will generally NOT be composed. 
+      #    transcode algorithm. This will generally NOT be composed.
       #
       # By default, escaped unicode 'named character references' in Marc8 will
       # be translated to actual UTF8. Eg. "&#x200F;" But pass :expand_ncr => false
@@ -61,21 +61,21 @@ module MARC
       #
       # String arg passed in WILL have it's encoding tagged 'binary' if
       # it's not already, if it's Marc8 there's no good reason for it not to
-      # be already. 
+      # be already.
       def transcode(marc8_string, options = {})
         invalid_replacement     = options.fetch(:replace, "\uFFFD")
         expand_ncr              = options.fetch(:expand_ncr, true)
         normalization           = options.fetch(:normalization, :nfc)
 
-        
+
         # don't choke on empty marc8_string
         return "" if marc8_string.nil? || marc8_string.empty?
-         
+
         # Make sure to call it 'binary', so we can slice it
         # byte by byte, and so ruby doesn't complain about bad
         # bytes for some other encoding. Yeah, we're changing
         # encoding on input! If it's Marc8, it ought to be tagged
-        # binary already. 
+        # binary already.
         marc8_string.force_encoding("binary")
 
         uni_list = []
@@ -124,7 +124,7 @@ module MARC
             end
 
             mb_flag = is_multibyte(self.g0)
-                
+
             if mb_flag
                 code_point = (marc8_string[pos].ord * 65536 +
                      marc8_string[pos+1].ord * 256 +
@@ -134,7 +134,7 @@ module MARC
                 code_point = marc8_string[pos].ord
                 pos += 1
             end
-                
+
             if (code_point < 0x20 or
                 (code_point > 0x80 and code_point < 0xa0))
                 uni = unichr(code_point)
@@ -144,7 +144,7 @@ module MARC
             begin
               code_set = (code_point > 0x80 and not mb_flag) ? self.g1 : self.g0
               (uni, cflag) = CODESETS.fetch(code_set).fetch(code_point)
-                
+
               if cflag
                   combinings.push unichr(uni)
               else
@@ -160,16 +160,16 @@ module MARC
                 uni_list.push invalid_replacement unless uni_list.last == invalid_replacement
                 pos += 1
               else
-                raise Encoding::InvalidByteSequenceError.new("MARC8, input byte offset #{pos}, code set: 0x#{code_set.to_s(16)}, code point: 0x#{code_point.to_s(16)}")
+                raise Encoding::InvalidByteSequenceError.new("MARC8, input byte offset #{pos}, code set: 0x#{code_set.to_s(16)}, code point: 0x#{code_point.to_s(16)}, value: #{transcode(marc8_string, :invalid => :replace, :replace => "�")}")
               end
             end
         end
 
         # what to do if combining chars left over?
         uni_str = uni_list.join('')
- 
+
         if expand_ncr
-          uni_str.gsub!(/&#x([0-9A-F]{4,6});/) do 
+          uni_str.gsub!(/&#x([0-9A-F]{4,6});/) do
             [$1.hex].pack("U")
           end
         end
@@ -177,7 +177,7 @@ module MARC
         if normalization
           uni_str = UNF::Normalizer.normalize(uni_str, normalization)
         end
-            
+
         return uni_str
       end
 
@@ -188,7 +188,7 @@ module MARC
       end
 
       # input single unicode codepoint as integer; output encoded as a UTF-8 string
-      # python has unichr built-in, we just define it for convenience no problem. 
+      # python has unichr built-in, we just define it for convenience no problem.
       def unichr(code_point)
         [code_point].pack("U")
       end
