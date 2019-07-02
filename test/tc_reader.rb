@@ -107,4 +107,11 @@ class ReaderTest < Test::Unit::TestCase
     assert_raises(StopIteration) { enum.next }
   end
 
+  def test_reader_opens_file_at_pathname
+    path = Pathname.new('test/batch.dat')
+    reader = MARC::Reader.new(path)
+
+    assert reader.instance_variable_get(:@handle).is_a? File
+  end
+
 end

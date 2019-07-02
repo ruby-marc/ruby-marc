@@ -138,5 +138,20 @@ class WriterTest < Test::Unit::TestCase
       assert_equal record, read_back_record, "Round-tripped record must equal original record"
     end
     
+    def test_writer_opens_file_at_pathname
+      path = Pathname.new("test/writer.dat")
+      writer = MARC::Writer.new(path) 
+
+      assert writer.instance_variable_get(:@fh).is_a? File
+      assert_equal(writer.instance_variable_get(:@fh).path, path.to_s)
+      assert_nothing_raised do 
+        record = MARC::Record.new()
+        record.append(MARC::DataField.new('245', '0', '1', ['a', 'foo']))
+        writer.write(record)
+        writer.close()
+      end
+      
+      File.unlink('test/writer.dat')
+    end
 
 end
