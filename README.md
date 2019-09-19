@@ -34,7 +34,7 @@ marc is a ruby library for reading and writing MAchine Readable Cataloging
 
 MARC::Record provides `#to_hash` and `#from_hash` implementations that deal in ruby
 hash's that are compatible with the 
-[marc-in-json](http://dilettantes.code4lib.org/blog/2010/09/a-proposal-to-serialize-marc-in-json/)
+[marc-in-json](https://rossfsinger.com/blog/2010/09/a-proposal-to-serialize-marc-in-json/)
 serialization format. You are responsible for serializing the hash to/from JSON yourself. 
 
 ## Installation
