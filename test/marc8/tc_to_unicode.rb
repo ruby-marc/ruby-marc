@@ -55,7 +55,7 @@ if "".respond_to?(:encoding)
 
           assert_equal utf8, converted, "Test data line #{i}, expected converted to match provided utf8"
         end
-      rescue EOFError => each
+      rescue EOFError
         # just means the file was over, no biggie
         assert i > 1500, "Read as many lines as we expected to, at least 1500"
       rescue Exception => e

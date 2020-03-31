@@ -5,6 +5,7 @@ rvm:
   - 2.3.7
   - 2.4.2
   - 2.5.3
+  - 2.7.0
   - jruby-19mode
   - jruby
 before_install:
