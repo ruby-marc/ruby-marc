@@ -60,17 +60,18 @@ module MARC
     end
       
     def self.get_field_value(field)
-      return if field.nil?
-      
-      if !field.kind_of?(String) && field.respond_to?(:each)
+      if field.nil?
+        nil
+      elsif field.kind_of?(String)
+        field
+      elsif field.respond_to?(:value)
+        field.value
+      elsif field.respond_to?(:each)
         values = []
         field.each do |element|
           values << get_field_value(element)
         end
         values
-      else
-        return field if field.kind_of?(String)
-        return field.value if field.respond_to?(:value)
       end
     end
     
