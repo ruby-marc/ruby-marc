@@ -1,5 +1,5 @@
 [![Gem Version](https://badge.fury.io/rb/marc.png)](http://badge.fury.io/rb/marc)
-[![Build Status](https://secure.travis-ci.org/ruby-marc/ruby-marc.png)](http://travis-ci.org/ruby-marc/ruby-marc)
+![Build Status](https://github.com/ruby-marc/ruby-marc/workflows/CI/badge.svg) | 
 
 marc is a ruby library for reading and writing MAchine Readable Cataloging
 (MARC). More information about MARC can be found at <http://www.loc.gov/marc>.
