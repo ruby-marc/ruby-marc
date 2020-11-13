@@ -32,9 +32,22 @@ module MARC
     def initialize(tag, value = '')
       @tag = tag
       @value = value
-      if not MARC::ControlField.control_tag?(@tag)
-        raise MARC::Exception.new(), "tag must be in 001-009 or in the MARC::ControlField.control_tags set"
+    end
+
+    # Returns true if there are no error messages associated with the field
+    def valid?
+      errors.none?
+    end
+
+    # Returns an array of validation errors
+    def errors
+      messages = []
+
+      unless MARC::ControlField.control_tag?(@tag)
+        messages << "tag must be in 001-009 or in the MARC::ControlField.control_tags set"
       end
+
+      messages
     end
 
     # Two control fields are equal if their tags and values are equal.
