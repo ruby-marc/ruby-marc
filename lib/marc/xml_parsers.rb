@@ -40,10 +40,12 @@ module MARC
     def yield_record
       if @record[:record].valid?
         @block.call(@record[:record])
+      elsif @error_handler
+        @error_handler.call(self, @record[:record], @block)
       else
         raise MARC::RecordException, @record[:record]
       end
-
+    ensure
       @record[:record] = nil
     end
 
