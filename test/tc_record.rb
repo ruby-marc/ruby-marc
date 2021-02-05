@@ -153,5 +153,55 @@ class TestRecord < Test::Unit::TestCase
 
     end
 
+    def test_remove_field
+      r = MARC::Record.new
+      r.fields.push MARC::DataField.new('100', '0', '1', ['a', 'Author'])
+      r.fields.push MARC::DataField.new('245', '1', '0', ['a', 'Title'])
+      r.fields.push MARC::DataField.new('500', '0', '1', ['a', 'Note 1'])
+      r.fields.push MARC::DataField.new('500', '0', '2', ['a', 'Note 2'])
+      assert_equal(r.fields('500').count, 2)
+      r.remove('500')
+      assert_equal(r.fields('500').count, 0)
+    end
 
+    def test_remove_specific_field
+      r = MARC::Record.new
+      r.fields.push MARC::DataField.new('100', '0', '1', ['a', 'Author'])
+      r.fields.push MARC::DataField.new('245', '1', '0', ['a', 'Title'])
+      r.fields.push MARC::DataField.new('500', '0', '4', ['a', 'Note 1'])
+      r.fields.push MARC::DataField.new('500', '0', '5', ['a', 'Note 2'])
+      assert_equal(r.fields('500').count, 2)
+
+      specific_field = r.fields.find { |f| f.tag == '500' && f.indicator2 == '4' }
+      r.remove(specific_field)
+
+      assert_equal(r.fields('500').count, 1)
+      assert_equal(r['500']['a'], 'Note 2')
+    end
+
+    def test_remove_field_by_index
+      r = MARC::Record.new
+      r.fields.push MARC::DataField.new('100', '0', '1', ['a', 'Author'])
+      r.fields.push MARC::DataField.new('245', '1', '0', ['a', 'Title'])
+      r.fields.push MARC::DataField.new('500', '0', '4', ['a', 'Note 1'])
+      r.fields.push MARC::DataField.new('500', '0', '5', ['a', 'Note 2'])
+      assert_equal(r.fields('500').count, 2)
+
+      r.remove_at(2)
+
+      assert_equal(r.fields('500').count, 1)
+      assert_equal(r['500']['a'], 'Note 2')
+    end
+
+    def test_remove_field_by_invalid_index
+      r = MARC::Record.new
+      r.fields.push MARC::DataField.new('100', '0', '1', ['a', 'Author'])
+      r.fields.push MARC::DataField.new('245', '1', '0', ['a', 'Title'])
+      r.fields.push MARC::DataField.new('500', '0', '4', ['a', 'Note 1'])
+      r.fields.push MARC::DataField.new('500', '0', '5', ['a', 'Note 2'])
+
+      assert_raise MARC::Exception do
+        r.remove_at(10)
+      end
+    end
 end
