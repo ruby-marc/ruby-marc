@@ -22,4 +22,5 @@ spec = Gem::Specification.new do |s|
   s.add_dependency "scrub_rb", ">= 1.0.1", "< 2" # backport for ruby 2.1 String#scrub
 
   s.add_dependency "unf" # unicode normalization
+  s.add_dependency "rexml" # rexml was unbundled from the stdlib in ruby 3
 end
