@@ -443,7 +443,11 @@ module MARC
         # get an exception from inside ruby-marc, and it may change
         # in future implementations. 
         if params[:internal_encoding]
-          str = str.encode(params[:internal_encoding], params)
+          if RUBY_VERSION >= '3.0'
+            str = str.encode(params[:internal_encoding], **params)
+          else
+            str = str.encode(params[:internal_encoding], params)
+          end
         elsif (params[:invalid] || params[:replace] || (params[:validate_encoding] == true))
 
           if params[:validate_encoding] == true && ! str.valid_encoding?
