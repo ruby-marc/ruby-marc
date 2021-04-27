@@ -59,16 +59,8 @@ module MARC
       # screw us up later when we try to encode
       @indicator1 = i1 == nil ? ' ' : i1
       @indicator2 = i2 == nil ? ' ' : i2
-      
-      @subfields = []
 
-      # must use MARC::ControlField for tags < 010 or
-      # those in MARC::ControlField#extra_control_fields
-      
-      if MARC::ControlField.control_tag?(@tag)
-        raise MARC::Exception.new(),
-          "MARC::DataField objects can't have ControlField tag '" + @tag + "')"
-      end
+      @subfields = []
 
       # allows MARC::Subfield objects to be passed directly
       # or a shorthand of ['a','Foo'], ['b','Bar']
@@ -90,6 +82,24 @@ module MARC
       end
     end
 
+    # Returns true if there are no error messages associated with the field
+    def valid?
+      errors.none?
+    end
+
+    # Returns an array of validation errors
+    def errors
+      messages = []
+
+      # must use MARC::ControlField for tags < 010 or
+      # those in MARC::ControlField#extra_control_fields
+
+      if MARC::ControlField.control_tag?(@tag)
+        messages << "MARC::DataField objects can't have ControlField tag '" + @tag + "'"
+      end
+
+      messages
+    end
 
     # Returns a string representation of the field such as:
     #  245 00 $aConsilience :$bthe unity of knowledge $cby Edward O. Wilson.

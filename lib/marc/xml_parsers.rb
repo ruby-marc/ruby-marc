@@ -27,20 +27,27 @@ module MARC
       end
     end
   end
-  
+
   module GenericPullParser
     # Submodules must include
     #  self.extended()
     #  init()
     #  attributes_to_hash(attributes)
     #  each
-    
+
 
     # Returns our MARC::Record object to the #each block.
     def yield_record
-      @block.call(@record[:record])       
+      if @record[:record].valid?
+        @block.call(@record[:record])
+      elsif @error_handler
+        @error_handler.call(self, @record[:record], @block)
+      else
+        raise MARC::RecordException, @record[:record]
+      end
+    ensure
       @record[:record] = nil
-    end    
+    end
 
     def start_element_namespace name, attributes = [], prefix = nil, uri = nil, ns = {}
        attributes = attributes_to_hash(attributes)

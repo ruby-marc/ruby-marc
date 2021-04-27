@@ -28,10 +28,16 @@ module MARC
   #
   # Use:
   #   MARC::XMLReader.best_available!
-  # 
+  #
   # or
   #   MARC::XMLReader.nokogiri!
-  # 
+  #
+  # You can also pass in an error_handler option that will be called if
+  # there are any validation errors found when parsing a record.
+  #
+  #  reader = MARC::XMLReader.new(fh, error_handler: ->(reader, record, block) { ... })
+  #
+  # By default, a MARC::RecordException is raised halting all future parsing.
   class XMLReader
     include Enumerable
     USE_BEST_AVAILABLE = 'magic'
@@ -41,8 +47,8 @@ module MARC
     USE_JSTAX = 'jstax'
     USE_LIBXML = 'libxml'    
     @@parser = USE_REXML
-    attr_reader :parser
- 
+    attr_reader :parser, :error_handler
+
     def initialize(file, options = {})
       if file.is_a?(String)
         handle = File.new(file)
@@ -71,6 +77,8 @@ module MARC
       when 'libxml' then extend LibXMLReader
         raise ArgumentError, "libxml not available under jruby" if defined? JRUBY_VERSION
       end
+
+      @error_handler = options[:error_handler]
     end
 
     # Returns the currently set parser type
