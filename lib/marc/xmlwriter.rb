@@ -60,7 +60,7 @@ module MARC
     # and returns a REXML::Document for the XML serialization.
 
     def self.encode(record, opts={})
-      singleChar = Regexp.new('[\da-z ]{1}')
+      singleChar = Regexp.new('[\dA-Za-z!"#$%&\'()*+,-./:;<=>?{}_^`~\[\]\\\]{1}')
       ctrlFieldTag = Regexp.new('00[1-9A-Za-z]{1}')
       
       # Right now, this writer handles input from the strict and

@@ -1,3 +1,6 @@
+v1.1.0 June 2021
+ - Add support for additional valid subfield codes in marcxml
+
 v1.0.2 July 2017
  - Now (correctly) throw an error if datafield string is the empty string
    (thanks to @bibliotechy)
@@ -147,4 +150,3 @@ v0.0.2  Mon Oct 17 17:42:57 CDT 2005
 
 v0.0.1  Mon Oct 10 10:29:20 CDT 2005
 - initial release
-
