@@ -140,11 +140,16 @@ class XMLTest < Test::Unit::TestCase
     record1 = MARC::Record.new
     record1.leader =  '00925njm  22002777a 4500'
     record1.append MARC::ControlField.new('007', 'sdubumennmplu')
-    record1.append MARC::DataField.new('245', '0', '4', 
+    record1.append MARC::DataField.new('245', '0', '4',
       ['a', 'The Great Ray Charles'], ['h', '[sound recording].'])
+    record1.append MARC::DataField.new('998', ' ', ' ',
+      ['^', 'Valid local subfield'])
+
+    # MARC::XMLWriter mutates records
+    dup_record = MARC::Record.new_from_hash(record1.to_hash)
 
     writer = MARC::XMLWriter.new('test/test.xml', :stylesheet => 'style.xsl')
-    writer.write(record1)
+    writer.write(dup_record)
     writer.close
 
     xml = File.read('test/test.xml')
