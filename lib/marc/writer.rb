@@ -30,7 +30,7 @@ module MARC
     # or an object that responds to a write message
 
     def initialize(file)
-      if file.class == String
+      if file.is_a?(String) || file.is_a?(Pathname)
         @fh = File.new(file,"w")
       elsif file.respond_to?('write')
         @fh = file

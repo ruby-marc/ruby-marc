@@ -196,7 +196,7 @@ module MARC
         @encoding_options[key] = options[key] if options.has_key?(key)
       end
             
-      if file.is_a?(String)        
+      if file.is_a?(String) || file.is_a?(Pathname)
         @handle = File.new(file)
       elsif file.respond_to?("read", 5)
         @handle = file
