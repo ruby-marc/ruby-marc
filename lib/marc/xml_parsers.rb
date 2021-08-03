@@ -35,6 +35,12 @@ module MARC
     #  attributes_to_hash(attributes)
     #  each
 
+    def init
+      @record = { :record => nil, :leader => '', :field => nil, :subfield => nil }
+      @current_element = nil
+      @ns = "http://www.loc.gov/MARC21/slim"
+    end
+
     # Returns our MARC::Record object to the #each block.
     def yield_record
       @block.call(@record[:record])
@@ -103,9 +109,7 @@ module MARC
 
     # Sets our instance variables for SAX parsing in Nokogiri and parser
     def init
-      @record = { :record => nil, :leader => '', :field => nil, :subfield => nil }
-      @current_element = nil
-      @ns = "http://www.loc.gov/MARC21/slim"
+      super
       @parser = Nokogiri::XML::SAX::Parser.new(self)
     end
 
@@ -382,9 +386,7 @@ module MARC
       end
 
       def init
-        @record = { :record => nil, :leader => '', :field => nil, :subfield => nil }
-        @current_element = nil
-        @ns = "http://www.loc.gov/MARC21/slim"
+        super
         @factory = javax.xml.stream.XMLInputFactory.newInstance
         @parser = @factory.createXMLStreamReader(@handle.to_inputstream)
       end
