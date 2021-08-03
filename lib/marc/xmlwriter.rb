@@ -79,6 +79,9 @@ module MARC
       # MARCXML only allows alphanumerics or spaces in the leader
       leader = record.leader.gsub(/[^\w|^\s]/, 'Z')
 
+      # The leader must have at least 24 characters
+      leader = leader.ljust(24) if leader.length < 24
+
       # MARCXML is particular about last four characters; ILSes aren't
       if (leader[20..23] != "4500")
         leader[20..23] = "4500"

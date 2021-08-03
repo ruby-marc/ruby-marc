@@ -176,5 +176,19 @@ class XMLTest < Test::Unit::TestCase
     assert_raises(StopIteration) { iter.next }
   end
 
-end
+  def test_truncated_leader_roundtripping
+    record1 = MARC::Record.new
+    record1.leader =  '00925njm  22002777a'
 
+    writer = MARC::XMLWriter.new('test/test.xml', :stylesheet => 'style.xsl')
+    writer.write(record1)
+    writer.close
+
+    reader = MARC::XMLReader.new('test/test.xml')
+    record2 = reader.entries[0]
+
+    assert_equal('00925njm  22002777a 4500', record2.leader)
+  ensure
+    File.unlink('test/test.xml')
+  end
+end
