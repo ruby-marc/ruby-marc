@@ -179,5 +179,13 @@ class XMLTest < Test::Unit::TestCase
     assert_raises(StopIteration) { iter.next }
   end
 
+  def test_xml_weird_leader
+    @parsers.each do | parser |
+      puts "\nRunning test_xml_enumerator with: #{parser}.\n"
+      reader = MARC::XMLReader.new('test/messed_up_leader.xml', :parser=>parser)
+      record = reader.first
+      assert_equal(record.leader, '01301nam a22003618< 4500')
+    end
+  end
 end
 
