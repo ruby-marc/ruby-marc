@@ -7,10 +7,10 @@ module MARC
   # 001-009 range or be specially added to the @@control_tags Set
 
   class ControlField
-    
+
     # Initially, control tags are the numbers 1 through 9 or the string '000'
     @@control_tags = Set.new(%w{000 001 002 003 004 005 006 007 008 009})
- 
+
     def self.control_tags
       return @@control_tags
     end
@@ -29,7 +29,7 @@ module MARC
     # The constructor which must be passed a tag value and 
     # an optional value for the field.
 
-    def initialize(tag,value='')
+    def initialize(tag, value = '')
       @tag = tag
       @value = value
       if not MARC::ControlField.control_tag?(@tag)
@@ -41,7 +41,7 @@ module MARC
 
     def ==(other)
       if @tag != other.tag
-        return false 
+        return false
       elsif @value != other.value
         return false
       end
@@ -52,19 +52,19 @@ module MARC
     def to_marchash
       return [@tag, @value]
     end
-    
+
     # Turn the control field into a hash for MARC-in-JSON
     def to_hash
-      return {@tag=>@value}
+      return { @tag => @value }
     end
-    
+
     def to_s
-      return "#{tag} #{value}" 
+      return "#{tag} #{value}"
     end
 
     def =~(regex)
       return self.to_s =~ regex
-    end      
+    end
 
   end
 

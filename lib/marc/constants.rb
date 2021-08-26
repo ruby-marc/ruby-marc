@@ -14,5 +14,5 @@ module MARC
   # marc-hash
   MARCHASH_MAJOR_VERSION = 1
   MARCHASH_MINOR_VERSION = 0
-  
+
 end
