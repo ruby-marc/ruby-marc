@@ -7,8 +7,8 @@ filename = ARGV[0]
 
 reader = MARC::ForgivingReader.new(filename)
 
-for record in reader
+reader.each { |record|
     puts record
-end
+}
 
 

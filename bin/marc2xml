@@ -8,9 +8,9 @@ filename = ARGV[0]
 reader = MARC::ForgivingReader.new(filename)
 writer = MARC::XMLWriter.new($stdout)
 
-for record in reader
+reader.each { |record|
   writer.write(record)
-end
+}
 
 writer.close
 

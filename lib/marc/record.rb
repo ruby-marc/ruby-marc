@@ -8,7 +8,7 @@ module MARC
     attr_accessor :clean
 
     def initialize
-      @tags  = {}
+      @tags = {}
       @clean = true
     end
 
@@ -45,15 +45,13 @@ module MARC
       indices.compact!
       return [] if indices.empty?
 
-     # Sort it, so we get the fields back in the order they appear in the record
+      # Sort it, so we get the fields back in the order they appear in the record
       indices.sort!
 
       indices.each do |tag|
         yield self[tag]
       end
     end
-
-
 
     # Freeze for immutability, first reindexing if needed.
     # A frozen FieldMap is safe for concurrent access, and also
@@ -116,9 +114,9 @@ module MARC
     attr_accessor :leader
 
     def initialize
-      @fields         = FieldMap.new
+      @fields = FieldMap.new
       # leader is 24 bytes
-      @leader         = ' ' * 24
+      @leader = ' ' * 24
       # leader defaults:
       # http://www.loc.gov/marc/bibliographic/ecbdldrd.html
       @leader[10..11] = '22'
@@ -174,7 +172,7 @@ module MARC
     # No argument returns the FieldMap array in entirety.  Providing
     # a string, array or range of tags will return an array of fields
     # in the order they appear in the record.
-    def fields(filter=nil)
+    def fields(filter = nil)
       unless filter
         # Since we're returning the FieldMap object, which the caller
         # may mutate, we precautionarily mark dirty -- unless it's frozen
@@ -213,10 +211,9 @@ module MARC
     #
     #  record = MARC::Record.new_from_marc(marc21, :forgiving => true)
 
-    def self.new_from_marc(raw, params={})
+    def self.new_from_marc(raw, params = {})
       return MARC::Reader.decode(raw, params)
     end
-
 
     # Returns a record in MARC21 transmission format (ANSI Z39.2).
     # Really this is just a wrapper around MARC::MARC21::encode
@@ -250,10 +247,10 @@ module MARC
     # Return a marc-hash version of the record
     def to_marchash
       return {
-          'type'    => 'marc-hash',
-          'version' => [MARCHASH_MAJOR_VERSION, MARCHASH_MINOR_VERSION],
-          'leader'  => self.leader,
-          'fields'  => self.map { |f| f.to_marchash }
+        'type' => 'marc-hash',
+        'version' => [MARCHASH_MAJOR_VERSION, MARCHASH_MINOR_VERSION],
+        'leader' => self.leader,
+        'fields' => self.map { |f| f.to_marchash }
       }
     end
 
@@ -265,7 +262,7 @@ module MARC
     # record = MARC::Record->new_from_marchash(mh)
 
     def self.new_from_marchash(mh)
-      r        = self.new()
+      r = self.new()
       r.leader = mh['leader']
       mh['fields'].each do |f|
         if (f.length == 2)
@@ -276,10 +273,9 @@ module MARC
       return r
     end
 
-
     # Returns a (roundtrippable) hash representation for MARC-in-JSON
     def to_hash
-      record_hash = {'leader' => @leader, 'fields' => []}
+      record_hash = { 'leader' => @leader, 'fields' => [] }
       @fields.each do |field|
         record_hash['fields'] << field.to_hash
       end
@@ -287,7 +283,7 @@ module MARC
     end
 
     def self.new_from_hash(h)
-      r        = self.new
+      r = self.new
       r.leader = h['leader']
       if h['fields']
         h['fields'].each do |position|
@@ -319,13 +315,11 @@ module MARC
       return str
     end
 
-
     # For testing if two records can be considered equal.
 
     def ==(other)
       return self.to_s == other.to_s
     end
-
 
     # Handy for using a record in a regex:
     #   if record =~ /Gravity's Rainbow/ then print "Slothrop" end

@@ -63,10 +63,9 @@ module MARC
       # it's not already, if it's Marc8 there's no good reason for it not to
       # be already.
       def transcode(marc8_string, options = {})
-        invalid_replacement     = options.fetch(:replace, "\uFFFD")
-        expand_ncr              = options.fetch(:expand_ncr, true)
-        normalization           = options.fetch(:normalization, :nfc)
-
+        invalid_replacement = options.fetch(:replace, "\uFFFD")
+        expand_ncr = options.fetch(:expand_ncr, true)
+        normalization = options.fetch(:normalization, :nfc)
 
         # don't choke on empty marc8_string
         return "" if marc8_string.nil? || marc8_string.empty?
@@ -82,87 +81,87 @@ module MARC
         combinings = []
         pos = 0
         while pos < marc8_string.length
-            if marc8_string[pos] == "\x1b"
-                next_byte = marc8_string[pos+1]
-                if G0_SET.include? next_byte
-                    if marc8_string.length >= pos + 3
-                        if marc8_string[pos+2] == ',' and next_byte == '$'
-                            pos += 1
-                        end
-                        self.g0 = marc8_string[pos+2].ord
-                        pos = pos + 3
-                        next
-                    else
-                        # if there aren't enough remaining characters, readd
-                        # the escape character so it doesn't get lost; may
-                        # help users diagnose problem records
-                        uni_list.push marc8_string[pos]
-                        pos += 1
-                        next
-                    end
-
-                elsif G1_SET.include? next_byte
-                    if marc8_string[pos+2] == '-' and next_byte == '$'
-                        pos += 1
-                    end
-                    self.g1 = marc8_string[pos+2].ord
-                    pos = pos + 3
-                    next
-                else
-                    charset = next_byte.ord
-                    if CODESETS.has_key? charset
-                        self.g0 = charset
-                        pos += 2
-                    elsif charset == 0x73
-                        self.g0 = BASIC_LATIN
-                        pos += 2
-                        if pos == marc8_string.length
-                            break
-                        end
-                    end
+          if marc8_string[pos] == "\x1b"
+            next_byte = marc8_string[pos + 1]
+            if G0_SET.include? next_byte
+              if marc8_string.length >= pos + 3
+                if marc8_string[pos + 2] == ',' and next_byte == '$'
+                  pos += 1
                 end
-            end
-
-            mb_flag = is_multibyte(self.g0)
-
-            if mb_flag
-                code_point = (marc8_string[pos].ord * 65536 +
-                     marc8_string[pos+1].ord * 256 +
-                     marc8_string[pos+2].ord)
-                pos += 3
-            else
-                code_point = marc8_string[pos].ord
-                pos += 1
-            end
-
-            if (code_point < 0x20 or
-                (code_point > 0x80 and code_point < 0xa0))
-                uni = unichr(code_point)
+                self.g0 = marc8_string[pos + 2].ord
+                pos = pos + 3
                 next
-            end
-
-            begin
-              code_set = (code_point > 0x80 and not mb_flag) ? self.g1 : self.g0
-              (uni, cflag) = CODESETS.fetch(code_set).fetch(code_point)
-
-              if cflag
-                  combinings.push unichr(uni)
               else
-                  uni_list.push unichr(uni)
-                  if combinings.length > 0
-                      uni_list.concat combinings
-                      combinings = []
-                  end
-              end
-            rescue KeyError
-              if options[:invalid] == :replace
-                # Let's coallesece multiple replacements
-                uni_list.push invalid_replacement unless uni_list.last == invalid_replacement
+                # if there aren't enough remaining characters, readd
+                # the escape character so it doesn't get lost; may
+                # help users diagnose problem records
+                uni_list.push marc8_string[pos]
                 pos += 1
-              else
-                raise Encoding::InvalidByteSequenceError.new("MARC8, input byte offset #{pos}, code set: 0x#{code_set.to_s(16)}, code point: 0x#{code_point.to_s(16)}, value: #{transcode(marc8_string, :invalid => :replace, :replace => "�")}")
+                next
+              end
+
+            elsif G1_SET.include? next_byte
+              if marc8_string[pos + 2] == '-' and next_byte == '$'
+                pos += 1
+              end
+              self.g1 = marc8_string[pos + 2].ord
+              pos = pos + 3
+              next
+            else
+              charset = next_byte.ord
+              if CODESETS.has_key? charset
+                self.g0 = charset
+                pos += 2
+              elsif charset == 0x73
+                self.g0 = BASIC_LATIN
+                pos += 2
+                if pos == marc8_string.length
+                  break
+                end
               end
             end
+          end
+
+          mb_flag = is_multibyte(self.g0)
+
+          if mb_flag
+            code_point = (marc8_string[pos].ord * 65536 +
+              marc8_string[pos + 1].ord * 256 +
+              marc8_string[pos + 2].ord)
+            pos += 3
+          else
+            code_point = marc8_string[pos].ord
+            pos += 1
+          end
+
+          if (code_point < 0x20 or
+            (code_point > 0x80 and code_point < 0xa0))
+            uni = unichr(code_point)
+            next
+          end
+
+          begin
+            code_set = (code_point > 0x80 and not mb_flag) ? self.g1 : self.g0
+            (uni, cflag) = CODESETS.fetch(code_set).fetch(code_point)
+
+            if cflag
+              combinings.push unichr(uni)
+            else
+              uni_list.push unichr(uni)
+              if combinings.length > 0
+                uni_list.concat combinings
+                combinings = []
+              end
+            end
+          rescue KeyError
+            if options[:invalid] == :replace
+              # Let's coallesece multiple replacements
+              uni_list.push invalid_replacement unless uni_list.last == invalid_replacement
+              pos += 1
+            else
+              raise Encoding::InvalidByteSequenceError.new("MARC8, input byte offset #{pos}, code set: 0x#{code_set.to_s(16)}, code point: 0x#{code_point.to_s(16)}, value: #{transcode(marc8_string, :invalid => :replace, :replace => "�")}")
+            end
+          end
         end
 
         # what to do if combining chars left over?

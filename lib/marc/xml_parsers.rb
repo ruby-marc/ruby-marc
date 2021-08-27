@@ -15,7 +15,7 @@ module MARC
   # parsers.  The magic should be used selectively, however.  After all,
   # one project's definition of 'best' might not apply universally.  It
   # is arguable which is "best" on JRuby:  Nokogiri or jrexml.  
-  module MagicReader    
+  module MagicReader
     def self.extended(receiver)
       magic = MARC::XMLReader.best_available
       case magic
@@ -27,39 +27,37 @@ module MARC
       end
     end
   end
-  
+
   module GenericPullParser
     # Submodules must include
     #  self.extended()
     #  init()
     #  attributes_to_hash(attributes)
     #  each
-    
 
     # Returns our MARC::Record object to the #each block.
     def yield_record
-      @block.call(@record[:record])       
+      @block.call(@record[:record])
       @record[:record] = nil
-    end    
+    end
 
     def start_element_namespace name, attributes = [], prefix = nil, uri = nil, ns = {}
-       attributes = attributes_to_hash(attributes)
-       if uri == @ns
-         case name.downcase
-         when 'record' then @record[:record] = MARC::Record.new
-         when 'leader' then @current_element = :leader
-         when 'controlfield'
-           @current_element=:field
-           @record[:field] = MARC::ControlField.new(attributes["tag"])
-         when 'datafield'
-           @record[:field] = MARC::DataField.new(attributes["tag"], attributes['ind1'], attributes['ind2'])
-         when 'subfield'
-           @current_element=:subfield
-           @record[:subfield] = MARC::Subfield.new(attributes['code'])
-         end
-       end
-     end
-
+      attributes = attributes_to_hash(attributes)
+      if uri == @ns
+        case name.downcase
+        when 'record' then @record[:record] = MARC::Record.new
+        when 'leader' then @current_element = :leader
+        when 'controlfield'
+          @current_element = :field
+          @record[:field] = MARC::ControlField.new(attributes["tag"])
+        when 'datafield'
+          @record[:field] = MARC::DataField.new(attributes["tag"], attributes['ind1'], attributes['ind2'])
+        when 'subfield'
+          @current_element = :subfield
+          @record[:subfield] = MARC::Subfield.new(attributes['code'])
+        end
+      end
+    end
 
     def characters text
       case @current_element
@@ -77,38 +75,38 @@ module MARC
         when /(control|data)field/
           @record[:record] << @record[:field]
           @record[:field] = nil
-          @current_element = nil if @current_element == :field          
+          @current_element = nil if @current_element == :field
         when 'subfield'
           @record[:field].append(@record[:subfield])
           @record[:subfield] = nil
           @current_element = nil if @current_element == :subfield
         end
       end
-    end  
+    end
   end
-  
 
   # NokogiriReader uses the Nokogiri SAX Parser to quickly read
   # a MARCXML document.  Because dynamically subclassing MARC::XMLReader
   # is a little ugly, we need to recreate all of the SAX event methods
   # from Nokogiri::XML::SAX::Document here rather than subclassing.    
-  module NokogiriReader 
+  module NokogiriReader
     include GenericPullParser
+
     def self.extended(receiver)
       require 'nokogiri'
       receiver.init
     end
-    
+
     # Sets our instance variables for SAX parsing in Nokogiri and parser
     def init
-      @record = {:record=>nil,:field=>nil,:subfield=>nil}
+      @record = { :record => nil, :field => nil, :subfield => nil }
       @current_element = nil
       @ns = "http://www.loc.gov/MARC21/slim"
-      @parser = Nokogiri::XML::SAX::Parser.new(self)         
+      @parser = Nokogiri::XML::SAX::Parser.new(self)
     end
-    
+
     # Loop through the MARC records in the XML document
-    def each(&block)    
+    def each(&block)
       unless block_given?
         return self.enum_for(:each)
       else
@@ -120,29 +118,26 @@ module MARC
     def error(evt)
       raise(XMLParseError, "XML parsing error: #{evt}")
     end
-        
 
     def method_missing(methName, *args)
       sax_methods = [:xmldecl, :start_document, :end_document, :start_element,
-        :end_element, :comment, :warning, :error, :cdata_block, :processing_instruction]
+                     :end_element, :comment, :warning, :error, :cdata_block, :processing_instruction]
       unless sax_methods.index(methName)
         raise NoMethodError.new("undefined method '#{methName} for #{self}", 'no_meth')
       end
     end
-     
-     private 
 
-     def attributes_to_hash(attributes)
-       hash = {}
-       attributes.each do | att |
-         hash[att.localname] = att.value
-       end
-       hash
-     end     
+    private
+
+    def attributes_to_hash(attributes)
+      hash = {}
+      attributes.each do |att|
+        hash[att.localname] = att.value
+      end
+      hash
+    end
   end
 
-
-  
   # The REXMLReader is the 'default' parser, since we can at least be
   # assured that REXML is probably there.  It uses REXML's PullParser
   # to handle larger document sizes without consuming insane amounts of
@@ -169,12 +164,12 @@ module MARC
       require 'rexml/parsers/pullparser'
       receiver.init
     end
-    
+
     # Sets our parser
     def init
       @parser = REXML::Parsers::PullParser.new(@handle)
     end
-    
+
     # Loop through the MARC records in the XML document
     def each
       unless block_given?
@@ -186,15 +181,16 @@ module MARC
           if event.start_element? and strip_ns(event[0]) == 'record'
             yield build_record
           end
-        end    
+        end
       end
     end
-    
+
     private
+
     def strip_ns(str)
       return str.sub(/^.*:/, '')
     end
-    
+
     # will accept parse events until a record has been built up
     #
     def build_record
@@ -202,13 +198,13 @@ module MARC
       data_field = nil
       control_field = nil
       subfield = nil
-      text = '' 
+      text = ''
       attrs = nil
       if Module.constants.index('Nokogiri') and @parser.is_a?(Nokogiri::XML::Reader)
         datafield = nil
         cursor = nil
         open_elements = []
-        @parser.each do | node |
+        @parser.each do |node|
           if node.value? && cursor
             if cursor.is_a?(Symbol) and cursor == :leader
               record.leader = node.value
@@ -233,7 +229,7 @@ module MARC
             control_field = MARC::ControlField.new(node.attribute('tag'))
             record << control_field
             cursor = control_field
-          when "datafield"  
+          when "datafield"
             record << datafield if datafield
             datafield = nil
             data_field = MARC::DataField.new(node.attribute('tag'), node.attribute('ind1'), node.attribute('ind2'))
@@ -246,10 +242,10 @@ module MARC
           when "record"
             record << datafield if datafield
             return record
-          end          
+          end
           #puts node.name
         end
-        
+
       else
         while @parser.has_next?
           event = @parser.pull
@@ -268,8 +264,8 @@ module MARC
               control_field = MARC::ControlField.new(attrs['tag'])
             when 'datafield'
               text = ''
-              data_field = MARC::DataField.new(attrs['tag'], attrs['ind1'], 
-                attrs['ind2'])
+              data_field = MARC::DataField.new(attrs['tag'], attrs['ind1'],
+                                               attrs['ind2'])
             when 'subfield'
               text = ''
               subfield = MARC::Subfield.new(attrs['code'])
@@ -294,9 +290,9 @@ module MARC
           end
         end
       end
-    end        
+    end
   end
-  
+
   # The JREXMLReader is really just here to set the load order for
   # injecting the Java pull parser.  
   module JREXMLReader
@@ -308,67 +304,66 @@ module MARC
       receiver.extend(REXMLReader)
     end
   end
-  
-  
-  
-  
+
   unless defined? JRUBY_VERSION
     module LibXMLReader
 
-    def self.extended(receiver)
-      require 'xml'
-      receiver.init
-    end
-
-    def init
-      @ns = "http://www.loc.gov/MARC21/slim"
-      @parser = XML::Reader.io(@handle)
-    end
-
-    def each
-      unless block_given?
-        return self.enum_for(:each)
-      else
-        while (@parser.read) do
-         if @parser.local_name == 'record' && @parser.namespace_uri == @ns
-           yield build_record
-         end
-        end # while
+      def self.extended(receiver)
+        require 'xml'
+        receiver.init
       end
-    end # each
 
-    def build_record
-      r = MARC::Record.new()
+      def init
+        @ns = "http://www.loc.gov/MARC21/slim"
+        @parser = XML::Reader.io(@handle)
+      end
+
+      def each
+        unless block_given?
+          return self.enum_for(:each)
+        else
+          while (@parser.read) do
+            if @parser.local_name == 'record' && @parser.namespace_uri == @ns
+              yield build_record
+            end
+          end # while
+        end
+      end
+
+      # each
+
+      def build_record
+        r = MARC::Record.new()
         until (@parser.local_name == 'record' and @parser.node_type == XML::Reader::TYPE_END_ELEMENT) do
           @parser.read
           next if @parser.node_type == XML::Reader::TYPE_END_ELEMENT
           case @parser.local_name
           when 'leader'
-           @parser.read
-           r.leader = @parser.value
+            @parser.read
+            r.leader = @parser.value
           when 'controlfield'
-           tag = @parser['tag']
-           @parser.read
-           r << MARC::ControlField.new(tag, @parser.value)
+            tag = @parser['tag']
+            @parser.read
+            r << MARC::ControlField.new(tag, @parser.value)
           when 'datafield'
-           data = MARC::DataField.new(@parser['tag'], @parser['ind1'], @parser['ind2'])
-           while (@parser.read and !(@parser.local_name == 'datafield' and @parser.node_type == XML::Reader::TYPE_END_ELEMENT)) do
-             next if @parser.node_type == XML::Reader::TYPE_END_ELEMENT
-             case @parser.local_name
-             when 'subfield'
-               code =@parser['code']
-               @parser.read
-               data.append(MARC::Subfield.new(code, @parser.value))
-             end
-           end
-           r << data
+            data = MARC::DataField.new(@parser['tag'], @parser['ind1'], @parser['ind2'])
+            while (@parser.read and !(@parser.local_name == 'datafield' and @parser.node_type == XML::Reader::TYPE_END_ELEMENT)) do
+              next if @parser.node_type == XML::Reader::TYPE_END_ELEMENT
+              case @parser.local_name
+              when 'subfield'
+                code = @parser['code']
+                @parser.read
+                data.append(MARC::Subfield.new(code, @parser.value))
+              end
+            end
+            r << data
 
           end # case
         end #until
-      return r
+        return r
+      end
     end
   end
-end
 
   # The JrubySTAXReader uses native java calls to parse the incoming stream
   # of marc-xml. It includes most of the work from GenericPullParser
@@ -376,13 +371,14 @@ end
   if defined? JRUBY_VERSION
     module JRubySTAXReader
       include GenericPullParser
+
       def self.extended(receiver)
         require 'java' # may only be neccesary in jruby 1.6
         receiver.init
       end
 
       def init
-        @record = {:record=>nil,:field=>nil,:subfield=>nil}
+        @record = { :record => nil, :field => nil, :subfield => nil }
         @current_element = nil
         @ns = "http://www.loc.gov/MARC21/slim"
         @factory = javax.xml.stream.XMLInputFactory.newInstance
@@ -390,7 +386,7 @@ end
       end
 
       # Loop through the MARC records in the XML document
-      def each(&block)  
+      def each(&block)
         unless block_given?
           return self.enum_for(:each)
         else
@@ -402,23 +398,23 @@ end
       def parser_dispatch
         while event = @parser.next and event != javax.xml.stream.XMLStreamConstants.END_DOCUMENT do
           case event
-            when javax.xml.stream.XMLStreamConstants.START_ELEMENT
-              start_element_namespace(@parser.getLocalName, [], nil,  @parser.getNamespaceURI, nil)
-            when javax.xml.stream.XMLStreamConstants.END_ELEMENT
-              end_element_namespace(@parser.getLocalName, @parser.getPrefix, @parser.getNamespaceURI)
-            when javax.xml.stream.XMLStreamConstants.CHARACTERS
-              characters(@parser.getText)
+          when javax.xml.stream.XMLStreamConstants.START_ELEMENT
+            start_element_namespace(@parser.getLocalName, [], nil, @parser.getNamespaceURI, nil)
+          when javax.xml.stream.XMLStreamConstants.END_ELEMENT
+            end_element_namespace(@parser.getLocalName, @parser.getPrefix, @parser.getNamespaceURI)
+          when javax.xml.stream.XMLStreamConstants.CHARACTERS
+            characters(@parser.getText)
           end
         end
       end
 
       def attributes_to_hash(attributes)
         hash = {}
-        @parser.getAttributeCount.times do | i |
+        @parser.getAttributeCount.times do |i|
           hash[@parser.getAttributeName(i).getLocalPart] = @parser.getAttributeValue(i)
         end
         hash
-      end     
+      end
     end # end of module
   end # end of if jruby  
 end

@@ -189,22 +189,22 @@ module MARC
     # or, you can pass IO, opened in the corresponding encoding
     #
     #   reader = MARC::Reader.new(File.new('marc.dat', 'r:cp866'))
-    def initialize(file, options = {})      
+    def initialize(file, options = {})
       @encoding_options = {}
       # all can be nil
       [:internal_encoding, :external_encoding, :invalid, :replace, :validate_encoding].each do |key|
         @encoding_options[key] = options[key] if options.has_key?(key)
       end
-            
-      if file.is_a?(String)        
+
+      if file.is_a?(String)
         @handle = File.new(file)
       elsif file.respond_to?("read", 5)
         @handle = file
       else
         raise ArgumentError, "must pass in path or file"
       end
-      
-      if (! @encoding_options[:external_encoding] ) && @handle.respond_to?(:external_encoding)
+
+      if (!@encoding_options[:external_encoding]) && @handle.respond_to?(:external_encoding)
         # use file encoding only if we didn't already have an explicit one,
         # explicit one takes precedence. 
         #
@@ -215,7 +215,7 @@ module MARC
       end
 
       # Only pull in the MARC8 translation if we need it, since it's really big
-      if @encoding_options[:external_encoding]  == "MARC-8"
+      if @encoding_options[:external_encoding] == "MARC-8"
         require 'marc/marc8/to_unicode' unless defined? MARC::Marc8::ToUnicode
       end
 
@@ -269,7 +269,7 @@ module MARC
 
           # get the raw MARC21 for a record back from the file
           # using the record length
-          raw = rec_length_s + @handle.read(rec_length_i-5)
+          raw = rec_length_s + @handle.read(rec_length_i - 5)
           yield raw
         end
       end
@@ -290,13 +290,13 @@ module MARC
     #   [:external_encoding]  encoding of MARC record data values
     #   [:forgiving]          needs more docs, true is some kind of forgiving 
     #                         of certain kinds of bad MARC. 
-    def self.decode(marc, params={})
+    def self.decode(marc, params = {})
       if params.has_key?(:encoding)
         $stderr.puts "DEPRECATION WARNING: MARC::Reader.decode :encoding option deprecated, please use :external_encoding"
         params[:external_encoding] = params.delete(:encoding)
       end
-      
-      if (! params.has_key? :external_encoding ) && marc.respond_to?(:encoding)
+
+      if (!params.has_key? :external_encoding) && marc.respond_to?(:encoding)
         # If no forced external_encoding giving, respect the encoding
         # declared on the string passed in. 
         params[:external_encoding] = marc.encoding
@@ -305,15 +305,15 @@ module MARC
       # to binary encoding, because we're going to be doing byte arithmetic,
       # and want to avoid byte-vs-char confusion. 
       marc.force_encoding("binary") if marc.respond_to?(:force_encoding)
-      
+
       record = Record.new()
-      record.leader = marc[0..LEADER_LENGTH-1]
+      record.leader = marc[0..LEADER_LENGTH - 1]
 
       # where the field data starts
       base_address = record.leader[12..16].to_i
 
       # get the byte offsets from the record directory
-      directory = marc[LEADER_LENGTH..base_address-1]
+      directory = marc[LEADER_LENGTH..base_address - 1]
 
       raise MARC::Exception.new("invalid directory in record") if directory == nil
 
@@ -324,19 +324,19 @@ module MARC
       # when operating in forgiving mode we just split on end of
       # field instead of using calculated byte offsets from the
       # directory
-      if params[:forgiving]        
+      if params[:forgiving]
         marc_field_data = marc[base_address..-1]
         # It won't let us do the split on bad utf8 data, but
         # we haven't yet set the 'proper' encoding or used
         # our correction/replace options. So call it binary for now.
         marc_field_data.force_encoding("binary") if marc_field_data.respond_to?(:force_encoding)
-        
+
         all_fields = marc_field_data.split(END_OF_FIELD)
       else
-        mba =  marc.bytes.to_a
+        mba = marc.bytes.to_a
       end
 
-      0.upto(num_fields-1) do |field_num|
+      0.upto(num_fields - 1) do |field_num|
 
         # pull the directory entry for a field out
         entry_start = field_num * DIRECTORY_ENTRY_LENGTH
@@ -354,8 +354,8 @@ module MARC
         if params[:forgiving]
           field_data = all_fields.shift()
 
-        # otherwise we actually use the byte offsets in
-        # directory to figure out what field data to extract
+          # otherwise we actually use the byte offsets in
+          # directory to figure out what field data to extract
         else
           length = entry[3..6].to_i
           offset = entry[7..11].to_i
@@ -366,11 +366,11 @@ module MARC
 
         # remove end of field
         field_data.delete!(END_OF_FIELD)
-        
+
         # add a control field or data field
         if MARC::ControlField.control_tag?(tag)
-          field_data = MARC::Reader.set_encoding( field_data , params)
-          record.append(MARC::ControlField.new(tag,field_data))
+          field_data = MARC::Reader.set_encoding(field_data, params)
+          record.append(MARC::ControlField.new(tag, field_data))
         else
           field = MARC::DataField.new(tag)
 
@@ -382,14 +382,14 @@ module MARC
           next if subfields.length() < 2
 
           # get indicators
-          indicators = MARC::Reader.set_encoding( subfields.shift(), params)
-          field.indicator1 = indicators[0,1]
-          field.indicator2 = indicators[1,1]
+          indicators = MARC::Reader.set_encoding(subfields.shift(), params)
+          field.indicator1 = indicators[0, 1]
+          field.indicator2 = indicators[1, 1]
 
           # add each subfield to the field
           subfields.each() do |data|
-            data = MARC::Reader.set_encoding( data, params )
-            subfield = MARC::Subfield.new(data[0,1],data[1..-1])
+            data = MARC::Reader.set_encoding(data, params)
+            subfield = MARC::Subfield.new(data[0, 1], data[1..-1])
             field.append(subfield)
           end
 
@@ -399,7 +399,7 @@ module MARC
       end
 
       return record
-    end  
+    end
 
     # input passed in probably has 'binary' encoding. 
     # We'll set it to the proper encoding, and depending on settings, optionally
@@ -430,8 +430,8 @@ module MARC
           else
             str = str.force_encoding(params[:external_encoding])
           end
-        end     
-            
+        end
+
         # If we're transcoding anyway, pass our invalid/replace options
         # on to String#encode, which will take care of them -- or raise
         # with illegal bytes without :replace=>:invalid. 
@@ -450,21 +450,18 @@ module MARC
           end
         elsif (params[:invalid] || params[:replace] || (params[:validate_encoding] == true))
 
-          if params[:validate_encoding] == true && ! str.valid_encoding?
-            raise  Encoding::InvalidByteSequenceError.new("invalid byte in string for source encoding #{str.encoding.name}")
+          if params[:validate_encoding] == true && !str.valid_encoding?
+            raise Encoding::InvalidByteSequenceError.new("invalid byte in string for source encoding #{str.encoding.name}")
           end
           if params[:invalid] == :replace
             str = str.scrub(params[:replace])
           end
-          
-         end          
-       end
-       return str
-    end                
+
+        end
+      end
+      return str
+    end
   end
-
-
-
 
   # Like Reader ForgivingReader lets you read in a batch of MARC21 records
   # but it does not use record lengths and field byte offets found in the

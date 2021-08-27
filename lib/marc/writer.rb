@@ -31,7 +31,7 @@ module MARC
 
     def initialize(file)
       if file.class == String
-        @fh = File.new(file,"w")
+        @fh = File.new(file, "w")
       elsif file.respond_to?('write')
         @fh = file
       else
@@ -40,20 +40,17 @@ module MARC
       self.allow_oversized = false
     end
 
-
     # write a record to the file or handle
 
     def write(record)
       @fh.write(MARC::Writer.encode(record, self.allow_oversized))
     end
 
-
     # close underlying filehandle
 
     def close
       @fh.close
     end
-
 
     # a static method that accepts a MARC::Record object
     # and returns the record encoded as MARC21 in transmission format
@@ -68,7 +65,7 @@ module MARC
 
         # encode the field
         field_data = ''
-        if field.class == MARC::DataField 
+        if field.class == MARC::DataField
           warn("Warn:  Missing indicator") unless field.indicator1 && field.indicator2
           field_data = (field.indicator1 || " ") + (field.indicator2 || " ")
           for s in field.subfields
@@ -81,13 +78,12 @@ module MARC
 
         # calculate directory entry for the field
         field_length = (field_data.respond_to?(:bytesize) ?
-          field_data.bytesize() :
-          field_data.length())
+                          field_data.bytesize() :
+                          field_data.length())
         directory += sprintf("%03s", field.tag) + format_byte_count(field_length, allow_oversized, 4) + format_byte_count(offset, allow_oversized)
 
-
         # add field to data for other fields
-        fields += field_data 
+        fields += field_data
 
         # update offset for next field
         offset += field_length
@@ -102,14 +98,13 @@ module MARC
       # update leader with the byte offest to the end of the directory
       bytesize = base.respond_to?(:bytesize) ? base.bytesize() : base.length()
       marc[12..16] = format_byte_count(bytesize, allow_oversized)
-      
 
       # update the record length
       bytesize = marc.respond_to?(:bytesize) ? marc.bytesize() : marc.length()
-      marc[0..4] = format_byte_count(bytesize, allow_oversized)      
+      marc[0..4] = format_byte_count(bytesize, allow_oversized)
 
       # store updated leader in the record that was passed in
-      record.leader = marc[0..LEADER_LENGTH-1]
+      record.leader = marc[0..LEADER_LENGTH - 1]
 
       # return encoded marc
       return marc
@@ -123,7 +118,7 @@ module MARC
     #
     # first arg is number, second is boolean whether to allow oversized,
     # third is max digits (default 5)
-    def self.format_byte_count(number, allow_oversized, num_digits=5)
+    def self.format_byte_count(number, allow_oversized, num_digits = 5)
       formatted = sprintf("%0#{num_digits}i", number)
       if formatted.length > num_digits
         # uh, oh, we've exceeded our max. Either zero out

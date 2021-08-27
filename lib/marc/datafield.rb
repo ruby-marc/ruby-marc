@@ -31,7 +31,6 @@ module MARC
     # A list of MARC::Subfield objects
     attr_accessor :subfields
 
-
     # Create a new field with tag, indicators and subfields.
     # Subfields are passed in as comma separated list of 
     # MARC::Subfield objects, 
@@ -47,74 +46,73 @@ module MARC
     #     ['a', 'Consilience :'],['b','the unity of knowledge '],
     #     ['c', 'by Edward O. Wilson.'] )
 
-    def initialize(tag, i1=' ', i2=' ', *subfields)
+    def initialize(tag, i1 = ' ', i2 = ' ', *subfields)
       # if the tag is less than 3 characters long and 
       # the string is all numeric then we pad with zeros
       if tag.length < 3 and /^[0-9]+$/ =~ tag
         @tag = "%03d" % tag
       else
-        @tag = tag 
+        @tag = tag
       end
       # can't allow nil to be passed in or else it'll 
       # screw us up later when we try to encode
       @indicator1 = i1 == nil ? ' ' : i1
       @indicator2 = i2 == nil ? ' ' : i2
-      
+
       @subfields = []
 
       # must use MARC::ControlField for tags < 010 or
       # those in MARC::ControlField#extra_control_fields
-      
+
       if MARC::ControlField.control_tag?(@tag)
         raise MARC::Exception.new(),
-          "MARC::DataField objects can't have ControlField tag '" + @tag + "')"
+              "MARC::DataField objects can't have ControlField tag '" + @tag + "')"
       end
 
       # allows MARC::Subfield objects to be passed directly
       # or a shorthand of ['a','Foo'], ['b','Bar']
-      subfields.each do |subfield| 
+      subfields.each do |subfield|
         case subfield
         when MARC::Subfield
           @subfields.push(subfield)
         when Array
           if subfield.length > 2
             raise MARC::Exception.new(),
-              "arrays must only have 2 elements: " + subfield.to_s 
+                  "arrays must only have 2 elements: " + subfield.to_s
           end
           @subfields.push(
-            MARC::Subfield.new(subfield[0],subfield[1]))
-        else 
-          raise MARC::Exception.new(), 
-            "invalid subfield type #{subfield.class}"
+            MARC::Subfield.new(subfield[0], subfield[1]))
+        else
+          raise MARC::Exception.new(),
+                "invalid subfield type #{subfield.class}"
         end
       end
     end
-
 
     # Returns a string representation of the field such as:
     #  245 00 $aConsilience :$bthe unity of knowledge $cby Edward O. Wilson.
 
     def to_s
       str = "#{tag} "
-      str += "#{indicator1}#{indicator2} " 
+      str += "#{indicator1}#{indicator2} "
       @subfields.each { |subfield| str += subfield.to_s }
       return str
     end
 
     # Turn into a marc-hash structure
     def to_marchash
-      return [@tag, @indicator1, @indicator2, @subfields.map {|sf| [sf.code, sf.value]} ]
+      return [@tag, @indicator1, @indicator2, @subfields.map { |sf| [sf.code, sf.value] }]
     end
-    
+
     # Turn the variable field and subfields into a hash for MARC-in-JSON
-    
+
     def to_hash
-      field_hash = {@tag=>{'ind1'=>@indicator1,'ind2'=>@indicator2,'subfields'=>[]}}
+      field_hash = { @tag => { 'ind1' => @indicator1, 'ind2' => @indicator2, 'subfields' => [] } }
       self.each do |subfield|
-        field_hash[@tag]['subfields'] << {subfield.code=>subfield.value}
+        field_hash[@tag]['subfields'] << { subfield.code => subfield.value }
       end
       field_hash
-    end    
+    end
 
     # Add a subfield (MARC::Subfield) to the field
     #    field.append(MARC::Subfield.new('a','Dave Thomas'))
@@ -122,8 +120,6 @@ module MARC
     def append(subfield)
       @subfields.push(subfield)
     end
-
-    
 
     # You can iterate through the subfields in a Field:
     #   field.each {|s| print s}
@@ -141,17 +137,16 @@ module MARC
     # You can lookup subfields with this shorthand. Note it 
     # will return a string and not a MARC::Subfield object.
     #   subfield = field['a']
-    
+
     def [](code)
-      subfield = self.find {|s| s.code == code}
+      subfield = self.find { |s| s.code == code }
       return subfield.value if subfield
       return
     end
- 
 
-    def codes(dedup=true)
+    def codes(dedup = true)
       codes = []
-      @subfields.each {|s| codes << s.code }
+      @subfields.each { |s| codes << s.code }
       dedup ? codes.uniq : codes
     end
 
@@ -160,17 +155,16 @@ module MARC
 
     def ==(other)
       if @tag != other.tag
-        return false 
+        return false
       elsif @indicator1 != other.indicator1
-        return false 
+        return false
       elsif @indicator2 != other.indicator2
-        return false 
+        return false
       elsif @subfields != other.subfields
         return false
       end
       return true
     end
-
 
     # To support regex matching with fields
     #
@@ -180,14 +174,13 @@ module MARC
       return self.to_s =~ regex
     end
 
-
     # to get the field as a string, without the tag and indicators
     # useful in situations where you want a legible version of the field
     #
     # print record['245'].value
 
     def value
-      return(@subfields.map {|s| s.value} .join '')
+      return(@subfields.map { |s| s.value }.join '')
     end
 
   end
