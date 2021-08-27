@@ -96,8 +96,6 @@ module MARC
     # Returns the value of the best available parser
     def self.best_available
       parser = nil
-      jruby = [USE_NOKOGIRI, USE_JSTAX, USE_JREXML]
-      ruby = [USE_NOKOGIRI, USE_LIBXML]
       if defined? JRUBY_VERSION
         unless parser
           begin

@@ -149,7 +149,7 @@ if "".respond_to?(:encoding)
     def test_bad_marc8_raises
       assert_raise(Encoding::InvalidByteSequenceError) do
         reader = MARC::Reader.new(@@bad_marc8_path, :external_encoding => 'MARC-8')
-        record = reader.first
+        reader.first
       end
     end
 
@@ -183,8 +183,7 @@ if "".respond_to?(:encoding)
       marc_file = File.open(@@utf_marc_path)
 
       reader = MARC::Reader.new(marc_file)
-      record = reader.first
-
+      reader.first
     end
 
     # Something that was failing in my client Blacklight code,
@@ -256,7 +255,7 @@ if "".respond_to?(:encoding)
                                 :validate_encoding => true)
 
       assert_raise Encoding::InvalidByteSequenceError do
-        record = reader.first
+        reader.first
       end
     end
 
