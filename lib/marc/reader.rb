@@ -488,7 +488,7 @@ module MARC
         begin
           record = MARC::Reader.decode(raw, @encoding_options.merge(:forgiving => true))
           yield record
-        rescue StandardError => e
+        rescue StandardError
           # caught exception just keep barrelling along
           # TODO add logging
         end

@@ -42,7 +42,7 @@ class XMLTest < Test::Unit::TestCase
     r1 = MARC::Record.new
     r1 << MARC::DataField.new('245', '0', '0', ['a', 'foo & bar & baz'])
     xml = r1.to_xml.to_s
-    assert_match /foo &amp; bar &amp; baz/, xml
+    assert_match(/foo &amp; bar &amp; baz/, xml)
 
     reader = MARC::XMLReader.new(StringIO.new(xml), :parser => parser)
     r2     = reader.entries[0]
@@ -152,8 +152,8 @@ class XMLTest < Test::Unit::TestCase
     writer.close
 
     xml = File.read('test/test.xml')
-    assert_match /<controlfield tag='007'>sdubumennmplu<\/controlfield>/, xml
-    assert_match /<\?xml-stylesheet type="text\/xsl" href="style.xsl"\?>/, xml
+    assert_match(/<controlfield tag='007'>sdubumennmplu<\/controlfield>/, xml)
+    assert_match(/<\?xml-stylesheet type="text\/xsl" href="style.xsl"\?>/, xml)
 
     reader  = MARC::XMLReader.new('test/test.xml', :parser => parser)
     record2 = reader.entries[0]
