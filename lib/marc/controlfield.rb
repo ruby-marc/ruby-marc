@@ -2,7 +2,7 @@ require 'set'
 
 module MARC
 
-  # MARC records contain control fields, each of which has a 
+  # MARC records contain control fields, each of which has a
   # tag and value. Tags for control fields must be in the
   # 001-009 range or be specially added to the @@control_tags Set
 
@@ -26,7 +26,7 @@ module MARC
     # the value of the control field
     attr_accessor :value
 
-    # The constructor which must be passed a tag value and 
+    # The constructor which must be passed a tag value and
     # an optional value for the field.
 
     def initialize(tag, value = '')
@@ -44,7 +44,7 @@ module MARC
       messages = []
 
       unless MARC::ControlField.control_tag?(@tag)
-        messages << "tag must be in 001-009 or in the MARC::ControlField.control_tags set"
+        messages << "tag #{@tag.inspect} must be in 001-009 or in the MARC::ControlField.control_tags set"
       end
 
       messages
