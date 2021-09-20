@@ -398,6 +398,8 @@ module MARC
         end
       end
 
+      raise MARC::RecordException, record unless record.valid?
+
       return record
     end
 

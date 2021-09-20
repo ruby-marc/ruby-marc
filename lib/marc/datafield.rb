@@ -1,11 +1,11 @@
 module MARC
-  # MARC records contain data fields, each of which has a tag, 
+  # MARC records contain data fields, each of which has a tag,
   # indicators and subfields. Tags for data fields must are all
   # three-character tags that are not control fields (generally,
   # any numeric tag greater than 009).
   #
   # Accessor attributes: tag, indicator1, indicator2
-  # 
+  #
   # DataField mixes in Enumerable to enable access to it's constituent
   # Subfield objects. For instance, if you have a DataField representing
   # a 856 tag, and want to find all 'z' subfields:
@@ -14,7 +14,7 @@ module MARC
   #
   # Also, the accessor 'subfields' is an array of MARC::Subfield objects
   # which can be accessed or modified by the client directly if
-  # neccesary. 
+  # neccesary.
 
   class DataField
     include Enumerable
@@ -32,42 +32,34 @@ module MARC
     attr_accessor :subfields
 
     # Create a new field with tag, indicators and subfields.
-    # Subfields are passed in as comma separated list of 
-    # MARC::Subfield objects, 
-    # 
+    # Subfields are passed in as comma separated list of
+    # MARC::Subfield objects,
+    #
     #   field = MARC::DataField.new('245','0','0',
     #     MARC::Subfield.new('a', 'Consilience :'),
     #     MARC::Subfield.new('b', 'the unity of knowledge '),
     #     MARC::Subfield.new('c', 'by Edward O. Wilson.'))
-    # 
+    #
     # or using a shorthand:
-    # 
+    #
     #   field = MARC::DataField.new('245','0','0',
     #     ['a', 'Consilience :'],['b','the unity of knowledge '],
     #     ['c', 'by Edward O. Wilson.'] )
 
     def initialize(tag, i1 = ' ', i2 = ' ', *subfields)
-      # if the tag is less than 3 characters long and 
+      # if the tag is less than 3 characters long and
       # the string is all numeric then we pad with zeros
       if tag.length < 3 and /^[0-9]+$/ =~ tag
         @tag = "%03d" % tag
       else
         @tag = tag
       end
-      # can't allow nil to be passed in or else it'll 
+      # can't allow nil to be passed in or else it'll
       # screw us up later when we try to encode
       @indicator1 = i1 == nil ? ' ' : i1
       @indicator2 = i2 == nil ? ' ' : i2
 
       @subfields = []
-
-      # must use MARC::ControlField for tags < 010 or
-      # those in MARC::ControlField#extra_control_fields
-
-      if MARC::ControlField.control_tag?(@tag)
-        raise MARC::Exception.new(),
-              "MARC::DataField objects can't have ControlField tag '" + @tag + "')"
-      end
 
       # allows MARC::Subfield objects to be passed directly
       # or a shorthand of ['a','Foo'], ['b','Bar']
@@ -87,6 +79,25 @@ module MARC
                 "invalid subfield type #{subfield.class}"
         end
       end
+    end
+
+    # Returns true if there are no error messages associated with the field
+    def valid?
+      errors.none?
+    end
+
+    # Returns an array of validation errors
+    def errors
+      messages = []
+
+      # must use MARC::ControlField for tags < 010 or
+      # those in MARC::ControlField#extra_control_fields
+
+      if MARC::ControlField.control_tag?(@tag)
+        messages << "MARC::DataField objects can't have ControlField tag '" + @tag + "'"
+      end
+
+      messages
     end
 
     # Returns a string representation of the field such as:
@@ -134,7 +145,7 @@ module MARC
     #  @subfields.each_by_code(filter)
     #end
 
-    # You can lookup subfields with this shorthand. Note it 
+    # You can lookup subfields with this shorthand. Note it
     # will return a string and not a MARC::Subfield object.
     #   subfield = field['a']
 
@@ -150,7 +161,7 @@ module MARC
       dedup ? codes.uniq : codes
     end
 
-    # Two fields are equal if their tag, indicators and 
+    # Two fields are equal if their tag, indicators and
     # subfields are all equal.
 
     def ==(other)

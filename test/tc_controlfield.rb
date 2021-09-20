@@ -9,42 +9,32 @@ class TestField < Test::Unit::TestCase
   end
 
   def test_field_as_control
-    assert_raise(MARC::Exception) do
-      # can't have a field with a tag < 010
-      MARC::DataField.new('007')
-    end
+    field = MARC::DataField.new('007')
+    assert_equal(field.valid?, false)
   end
 
   def test_alpha_control_field
-    assert_raise(MARC::Exception) do
-      # can't have a field with a tag < 010
-      MARC::ControlField.new('DDD')
-    end
+    # can't have a field with a tag < 010
+    field = MARC::ControlField.new('DDD')
+    assert_equal(field.valid?, false)
   end
 
   def test_extra_control_field
     MARC::ControlField.control_tags << 'FMT'
-    assert_nothing_raised do
-      MARC::ControlField.new('FMT')
-    end
-    assert_raise(MARC::Exception) do
-      MARC::DataField.new('FMT')
-    end
+    field = MARC::ControlField.new('FMT')
+    assert_equal(field.valid?, true)
+    field = MARC::DataField.new('FMT')
+    assert_equal(field.valid?, false)
     MARC::ControlField.control_tags.delete('FMT')
-    assert_nothing_raised do
-      MARC::DataField.new('FMT')
-    end
-    assert_raise(MARC::Exception) do
-      MARC::ControlField.new('FMT')
-    end
-
+    field = MARC::DataField.new('FMT')
+    assert_equal(field.valid?, true)
+    field = MARC::ControlField.new('FMT')
+    assert_equal(field.valid?, false)
   end
 
   def test_control_as_field
-    assert_raise(MARC::Exception) do
-      # can't have a control with a tag > 009
-      MARC::ControlField.new('245')
-    end
+    # can't have a control with a tag > 009
+    f = MARC::ControlField.new('245')
+    assert_equal(f.valid?, false)
   end
 end
-
