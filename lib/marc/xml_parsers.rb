@@ -36,6 +36,13 @@ module MARC
     #  each
 
 
+    def init
+      @record = { :record => nil, :leader => '', :field => nil, :subfield => nil }
+      @current_element = nil
+      @ns = "http://www.loc.gov/MARC21/slim"
+    end
+
+
     # Returns our MARC::Record object to the #each block.
     def yield_record
       if @record[:record].valid?
@@ -69,7 +76,7 @@ module MARC
 
     def characters text
       case @current_element
-      when :leader then @record[:record].leader = text
+      when :leader then @record[:leader] << text
       when :field then @record[:field].value << text
       when :subfield then @record[:subfield].value << text
       end
@@ -80,6 +87,10 @@ module MARC
       if uri == @ns
         case name.downcase
         when 'record' then yield_record
+        when 'leader'
+          @record[:record].leader = @record[:leader]
+          @record[:leader] = ''
+          @current_element = nil if @current_element = :leader
         when /(control|data)field/
           @record[:record] << @record[:field]
           @record[:field] = nil
@@ -107,9 +118,7 @@ module MARC
 
     # Sets our instance variables for SAX parsing in Nokogiri and parser
     def init
-      @record = { :record => nil, :field => nil, :subfield => nil }
-      @current_element = nil
-      @ns = "http://www.loc.gov/MARC21/slim"
+      super
       @parser = Nokogiri::XML::SAX::Parser.new(self)
     end
 
@@ -386,9 +395,7 @@ module MARC
       end
 
       def init
-        @record = { :record => nil, :field => nil, :subfield => nil }
-        @current_element = nil
-        @ns = "http://www.loc.gov/MARC21/slim"
+        super
         @factory = javax.xml.stream.XMLInputFactory.newInstance
         @parser = @factory.createXMLStreamReader(@handle.to_inputstream)
       end
