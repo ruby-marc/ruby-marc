@@ -4,7 +4,7 @@ module MARC
   class XMLParseError < StandardError; end
 
   # The MagicReader will try to use the best available XML Parser at the
-  # time of initialization.  
+  # time of initialization.
   # The order is currently:
   #   * Nokogiri
   #   * jrexml (JRuby only)
@@ -14,7 +14,7 @@ module MARC
   # added.  Realistically, this list should be limited to stream-based
   # parsers.  The magic should be used selectively, however.  After all,
   # one project's definition of 'best' might not apply universally.  It
-  # is arguable which is "best" on JRuby:  Nokogiri or jrexml.  
+  # is arguable which is "best" on JRuby:  Nokogiri or jrexml.
   module MagicReader
     def self.extended(receiver)
       magic = MARC::XMLReader.best_available
@@ -35,9 +35,17 @@ module MARC
     #  attributes_to_hash(attributes)
     #  each
 
+
     # Returns our MARC::Record object to the #each block.
     def yield_record
-      @block.call(@record[:record])
+      if @record[:record].valid?
+        @block.call(@record[:record])
+      elsif @error_handler
+        @error_handler.call(self, @record[:record], @block)
+      else
+        raise MARC::RecordException, @record[:record]
+      end
+    ensure
       @record[:record] = nil
     end
 
@@ -88,7 +96,7 @@ module MARC
   # NokogiriReader uses the Nokogiri SAX Parser to quickly read
   # a MARCXML document.  Because dynamically subclassing MARC::XMLReader
   # is a little ugly, we need to recreate all of the SAX event methods
-  # from Nokogiri::XML::SAX::Document here rather than subclassing.    
+  # from Nokogiri::XML::SAX::Document here rather than subclassing.
   module NokogiriReader
     include GenericPullParser
 
@@ -141,7 +149,7 @@ module MARC
   # The REXMLReader is the 'default' parser, since we can at least be
   # assured that REXML is probably there.  It uses REXML's PullParser
   # to handle larger document sizes without consuming insane amounts of
-  # memory, but it's still REXML (read: slow), so it's a good idea to 
+  # memory, but it's still REXML (read: slow), so it's a good idea to
   # use an alternative parser if available.  If you don't know the best
   # parser available, you can use the MagicReader or set:
   #
@@ -153,11 +161,11 @@ module MARC
   #
   # or
   #
-  # reader = MARC::XMLReader.new(fh, :parser=>"magic") 
+  # reader = MARC::XMLReader.new(fh, :parser=>"magic")
   # (or the constant)
   #
   # which will cascade down to REXML if nothing better is found.
-  #  
+  #
   module REXMLReader
     def self.extended(receiver)
       require 'rexml/document'
@@ -177,7 +185,7 @@ module MARC
       else
         while @parser.has_next?
           event = @parser.pull
-          # if it's the start of a record element 
+          # if it's the start of a record element
           if event.start_element? and strip_ns(event[0]) == 'record'
             yield build_record
           end
@@ -294,7 +302,7 @@ module MARC
   end
 
   # The JREXMLReader is really just here to set the load order for
-  # injecting the Java pull parser.  
+  # injecting the Java pull parser.
   module JREXMLReader
 
     def self.extended(receiver)
@@ -416,5 +424,5 @@ module MARC
         hash
       end
     end # end of module
-  end # end of if jruby  
+  end # end of if jruby
 end
