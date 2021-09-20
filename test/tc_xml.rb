@@ -176,6 +176,7 @@ class XMLTest < Test::Unit::TestCase
     assert_raises(StopIteration) { iter.next }
   end
 
+
   def test_truncated_leader_roundtripping
     record1 = MARC::Record.new
     record1.leader =  '00925njm  22002777a'

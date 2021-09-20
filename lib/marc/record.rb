@@ -123,6 +123,16 @@ module MARC
       @leader[20..23] = '4500'
     end
 
+    # Returns true if there are no error messages associated with the record
+    def valid?
+      errors.none?
+    end
+
+    # Returns an array of validation errors for all fields in the record
+    def errors
+      @fields.flat_map(&:errors)
+    end
+
     # add a field to the record
     #   record.append(MARC::DataField.new( '100', '2', '0', ['a', 'Fred']))
 
