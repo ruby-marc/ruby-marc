@@ -17,7 +17,7 @@ module MARC
   # is arguable which is "best" on JRuby:  Nokogiri or jrexml.
   module MagicReader
     def self.extended(receiver)
-      magic = MARC::XMLReader.best_available
+      magic = XMLReader.best_available
       case magic
       when 'nokogiri' then receiver.extend(NokogiriReader)
       when 'libxml' then receiver.extend(LibXMLReader)
@@ -50,7 +50,7 @@ module MARC
       elsif @error_handler
         @error_handler.call(self, @record[:record], @block)
       else
-        raise MARC::RecordException, @record[:record]
+        raise RecordException, @record[:record]
       end
     ensure
       @record[:record] = nil
@@ -60,16 +60,16 @@ module MARC
       attributes = attributes_to_hash(attributes)
       if uri == @ns
         case name.downcase
-        when 'record' then @record[:record] = MARC::Record.new
+        when 'record' then @record[:record] = Record.new
         when 'leader' then @current_element = :leader
         when 'controlfield'
           @current_element = :field
-          @record[:field] = MARC::ControlField.new(attributes["tag"])
+          @record[:field] = ControlField.new(attributes["tag"])
         when 'datafield'
-          @record[:field] = MARC::DataField.new(attributes["tag"], attributes['ind1'], attributes['ind2'])
+          @record[:field] = DataField.new(attributes["tag"], attributes['ind1'], attributes['ind2'])
         when 'subfield'
           @current_element = :subfield
-          @record[:subfield] = MARC::Subfield.new(attributes['code'])
+          @record[:subfield] = Subfield.new(attributes['code'])
         end
       end
     end
@@ -211,7 +211,7 @@ module MARC
     # will accept parse events until a record has been built up
     #
     def build_record
-      record = MARC::Record.new
+      record = Record.new
       data_field = nil
       control_field = nil
       subfield = nil
@@ -243,17 +243,17 @@ module MARC
           when "controlfield"
             record << datafield if datafield
             datafield = nil
-            control_field = MARC::ControlField.new(node.attribute('tag'))
+            control_field = ControlField.new(node.attribute('tag'))
             record << control_field
             cursor = control_field
           when "datafield"
             record << datafield if datafield
             datafield = nil
-            data_field = MARC::DataField.new(node.attribute('tag'), node.attribute('ind1'), node.attribute('ind2'))
+            data_field = DataField.new(node.attribute('tag'), node.attribute('ind1'), node.attribute('ind2'))
             datafield = data_field
           when "subfield"
             raise "No datafield to add to" unless datafield
-            subfield = MARC::Subfield.new(node.attribute('code'))
+            subfield = Subfield.new(node.attribute('code'))
             datafield.append(subfield)
             cursor = subfield
           when "record"
@@ -278,14 +278,14 @@ module MARC
             case strip_ns(event[0])
             when 'controlfield'
               text = ''
-              control_field = MARC::ControlField.new(attrs['tag'])
+              control_field = ControlField.new(attrs['tag'])
             when 'datafield'
               text = ''
-              data_field = MARC::DataField.new(attrs['tag'], attrs['ind1'],
+              data_field = DataField.new(attrs['tag'], attrs['ind1'],
                                                attrs['ind2'])
             when 'subfield'
               text = ''
-              subfield = MARC::Subfield.new(attrs['code'])
+              subfield = Subfield.new(attrs['code'])
             end
           end
 
@@ -350,7 +350,7 @@ module MARC
       # each
 
       def build_record
-        r = MARC::Record.new()
+        r = Record.new()
         until (@parser.local_name == 'record' and @parser.node_type == XML::Reader::TYPE_END_ELEMENT) do
           @parser.read
           next if @parser.node_type == XML::Reader::TYPE_END_ELEMENT
@@ -361,16 +361,16 @@ module MARC
           when 'controlfield'
             tag = @parser['tag']
             @parser.read
-            r << MARC::ControlField.new(tag, @parser.value)
+            r << ControlField.new(tag, @parser.value)
           when 'datafield'
-            data = MARC::DataField.new(@parser['tag'], @parser['ind1'], @parser['ind2'])
+            data = DataField.new(@parser['tag'], @parser['ind1'], @parser['ind2'])
             while (@parser.read and !(@parser.local_name == 'datafield' and @parser.node_type == XML::Reader::TYPE_END_ELEMENT)) do
               next if @parser.node_type == XML::Reader::TYPE_END_ELEMENT
               case @parser.local_name
               when 'subfield'
                 code = @parser['code']
                 @parser.read
-                data.append(MARC::Subfield.new(code, @parser.value))
+                data.append(Subfield.new(code, @parser.value))
               end
             end
             r << data

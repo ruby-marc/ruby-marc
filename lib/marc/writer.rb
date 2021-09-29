@@ -43,7 +43,7 @@ module MARC
     # write a record to the file or handle
 
     def write(record)
-      @fh.write(MARC::Writer.encode(record, self.allow_oversized))
+      @fh.write(Writer.encode(record, self.allow_oversized))
     end
 
     # close underlying filehandle
@@ -56,7 +56,7 @@ module MARC
     # and returns the record encoded as MARC21 in transmission format
     #
     # Second arg allow_oversized, default false, set to true
-    # to raise on MARC record that can't fit into ISO 2709. 
+    # to raise on MARC record that can't fit into ISO 2709.
     def self.encode(record, allow_oversized = false)
       directory = ''
       fields = ''
@@ -65,13 +65,13 @@ module MARC
 
         # encode the field
         field_data = ''
-        if field.class == MARC::DataField
+        if field.class == DataField
           warn("Warn:  Missing indicator") unless field.indicator1 && field.indicator2
           field_data = (field.indicator1 || " ") + (field.indicator2 || " ")
           for s in field.subfields
             field_data += SUBFIELD_INDICATOR + s.code + s.value
           end
-        elsif field.class == MARC::ControlField
+        elsif field.class == ControlField
           field_data = field.value
         end
         field_data += END_OF_FIELD
@@ -126,7 +126,7 @@ module MARC
         if allow_oversized
           formatted = sprintf("%0#{num_digits}i", 0)
         else
-          raise MARC::Exception.new("Can't write MARC record in binary format, as a length/offset value of #{number} is too long for a #{num_digits}-byte slot.")
+          raise Exception.new("Can't write MARC record in binary format, as a length/offset value of #{number} is too long for a #{num_digits}-byte slot.")
         end
       end
       return formatted

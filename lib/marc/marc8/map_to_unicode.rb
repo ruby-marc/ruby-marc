@@ -1,7 +1,7 @@
 module MARC
   module Marc8
 
-    # Data to map from marc8 bytes to unicode codepoints. 
+    # Data to map from marc8 bytes to unicode codepoints.
     #
     # Ported from pymarc python to ruby using some regexps and such. Original pymarc:
     #

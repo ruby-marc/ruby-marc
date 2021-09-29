@@ -14,7 +14,7 @@ module MARC
     # or an object that responds to a write message
     # the second argument is a hash of options, currently
     # only supporting one option, stylesheet
-    # 
+    #
     # writer = XMLWriter.new 'marc.xml', :stylesheet => 'style.xsl'
     # writer.write record
 
@@ -42,7 +42,7 @@ module MARC
     # write a record to the file or handle
 
     def write(record)
-      @writer.write(MARC::XMLWriter.encode(record), @fh)
+      @writer.write(XMLWriter.encode(record), @fh)
       @fh.write("\n")
     end
 
@@ -94,7 +94,7 @@ module MARC
       e.add_element(leader)
 
       record.each do |field|
-        if field.class == MARC::DataField
+        if field.class == DataField
           datafield_elem = REXML::Element.new("datafield")
 
           # If marc is leniently parsed, we may have some dirty data; using
@@ -131,11 +131,11 @@ module MARC
           end
 
           e.add_element datafield_elem
-        elsif field.class == MARC::ControlField
+        elsif field.class == ControlField
           control_element = REXML::Element.new("controlfield")
 
           # We need a marker for invalid tag values (we use 000)
-          unless field.tag.match(ctrlFieldTag) or MARC::ControlField.control_tag?(ctrlFieldTag)
+          unless field.tag.match(ctrlFieldTag) or ControlField.control_tag?(ctrlFieldTag)
             field.tag = "00z"
           end
 

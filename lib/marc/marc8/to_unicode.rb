@@ -27,7 +27,7 @@ module MARC
       G0_SET = ['(', ',', '$']
       G1_SET = [')', '-', '$']
 
-      CODESETS = MARC::Marc8::MapToUnicode::CODESETS
+      CODESETS = Marc8::MapToUnicode::CODESETS
 
       # These are state flags, MARC8 requires you to keep
       # track of 'current char sets' or something like that, which

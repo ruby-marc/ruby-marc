@@ -43,7 +43,7 @@ module MARC
     def errors
       messages = []
 
-      unless MARC::ControlField.control_tag?(@tag)
+      unless ControlField.control_tag?(@tag)
         messages << "tag #{@tag.inspect} must be in 001-009 or in the MARC::ControlField.control_tags set"
       end
 

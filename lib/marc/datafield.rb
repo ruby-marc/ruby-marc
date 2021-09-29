@@ -65,17 +65,17 @@ module MARC
       # or a shorthand of ['a','Foo'], ['b','Bar']
       subfields.each do |subfield|
         case subfield
-        when MARC::Subfield
+        when Subfield
           @subfields.push(subfield)
         when Array
           if subfield.length > 2
-            raise MARC::Exception.new(),
+            raise Exception.new(),
                   "arrays must only have 2 elements: " + subfield.to_s
           end
           @subfields.push(
-            MARC::Subfield.new(subfield[0], subfield[1]))
+            Subfield.new(subfield[0], subfield[1]))
         else
-          raise MARC::Exception.new(),
+          raise Exception.new(),
                 "invalid subfield type #{subfield.class}"
         end
       end
@@ -93,7 +93,7 @@ module MARC
       # must use MARC::ControlField for tags < 010 or
       # those in MARC::ControlField#extra_control_fields
 
-      if MARC::ControlField.control_tag?(@tag)
+      if ControlField.control_tag?(@tag)
         messages << "MARC::DataField objects can't have ControlField tag '" + @tag + "'"
       end
 

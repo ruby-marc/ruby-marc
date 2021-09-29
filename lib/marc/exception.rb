@@ -6,7 +6,7 @@ module MARC
   class Exception < RuntimeError
   end
 
-  class RecordException < MARC::Exception
+  class RecordException < Exception
     attr_reader :record
 
     def initialize(record)
