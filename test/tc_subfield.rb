@@ -13,6 +13,9 @@ class SubfieldTest < Test::Unit::TestCase
     s1 = MARC::Subfield.new('a', 'foo')
     s2 = MARC::Subfield.new('a', 'foo')
     assert_equal(s1, s2)
+
+    assert_not_equal(s1, 'a')
+    assert_not_equal(s1, 'foo')
   end
 
 end

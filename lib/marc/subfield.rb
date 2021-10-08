@@ -1,9 +1,9 @@
 module MARC
 
-  # A class that represents an individual  subfield within a DataField. 
-  # Accessor attributes include: code (letter subfield code) and value 
-  # (the content of the subfield). Both can be empty string, but should 
-  # not be set to nil. 
+  # A class that represents an individual  subfield within a DataField.
+  # Accessor attributes include: code (letter subfield code) and value
+  # (the content of the subfield). Both can be empty string, but should
+  # not be set to nil.
 
   class Subfield
     attr_accessor :code, :value
@@ -16,6 +16,9 @@ module MARC
     end
 
     def ==(other)
+      if !other.is_a?(Subfield)
+        return false
+      end
       if @code != other.code
         return false
       elsif @value != other.value

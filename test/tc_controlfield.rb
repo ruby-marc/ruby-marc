@@ -37,4 +37,18 @@ class TestField < Test::Unit::TestCase
     f = MARC::ControlField.new('245')
     assert_equal(f.valid?, false)
   end
+
+  def test_equal
+    f1 = MARC::ControlField.new('001', 'foobarbaz')
+    f2 = MARC::ControlField.new('001', 'foobarbaz')
+    assert_equal(f1, f2)
+
+    f3 = MARC::ControlField.new('001', 'foobarbazqux')
+    assert_not_equal(f1, f3)
+    f4 = MARC::ControlField.new('002', 'foobarbaz')
+    assert_not_equal(f1, f4)
+
+    assert_not_equal(f1, '001')
+    assert_not_equal(f2, 'foobarbaz')
+  end
 end
