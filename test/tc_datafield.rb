@@ -67,4 +67,12 @@ class TestField < Test::Unit::TestCase
     assert_equal(f['b'], 'Bar')
   end
 
+  def test_equal_other_types
+    f = MARC::DataField.new('100', '0', '1',
+                             MARC::Subfield.new('a', 'Foo'),
+                             MARC::Subfield.new('b', 'Bar'))
+    assert_not_equal(f, "100 01 $a Foo $b Bar ")
+    assert_not_equal(f, f['a'])
+  end
+
 end
