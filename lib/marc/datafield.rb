@@ -165,6 +165,9 @@ module MARC
     # subfields are all equal.
 
     def ==(other)
+      if !other.is_a?(DataField)
+        return false
+      end
       if @tag != other.tag
         return false
       elsif @indicator1 != other.indicator1

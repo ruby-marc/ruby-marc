@@ -53,6 +53,9 @@ module MARC
     # Two control fields are equal if their tags and values are equal.
 
     def ==(other)
+      if !other.is_a?(ControlField)
+        return false
+      end
       if @tag != other.tag
         return false
       elsif @value != other.value
