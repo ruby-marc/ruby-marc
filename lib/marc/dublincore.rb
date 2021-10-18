@@ -21,7 +21,7 @@ module MARC
       end
 
       # Description
-      ['500'..'599'].each do |field|
+      ('500'..'599').each do |field|
         next if ['506', '530', '540', '546'].include?(field)
         dc_hash['description'] ||= []
         dc_hash['description'] << get_field_value(record[field])
@@ -37,7 +37,7 @@ module MARC
 
       dc_hash['relation'] = []
       dc_hash['relation'] << get_field_value(record['530'])
-      ['760'..'787'].each do |field|
+      ('760'..'787').each do |field|
         dc_hash['relation'] << get_field_value(record[field]['o']['t']) rescue nil
       end
 
