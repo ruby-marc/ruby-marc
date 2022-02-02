@@ -411,13 +411,13 @@ module MARC
       end
 
       def parser_dispatch
-        while event = @parser.next and event != javax.xml.stream.XMLStreamConstants.END_DOCUMENT do
+        while event = @parser.next and event != javax.xml.stream.XMLStreamConstants::END_DOCUMENT do
           case event
-          when javax.xml.stream.XMLStreamConstants.START_ELEMENT
+          when javax.xml.stream.XMLStreamConstants::START_ELEMENT
             start_element_namespace(@parser.getLocalName, [], nil, @parser.getNamespaceURI, nil)
-          when javax.xml.stream.XMLStreamConstants.END_ELEMENT
+          when javax.xml.stream.XMLStreamConstants::END_ELEMENT
             end_element_namespace(@parser.getLocalName, @parser.getPrefix, @parser.getNamespaceURI)
-          when javax.xml.stream.XMLStreamConstants.CHARACTERS
+          when javax.xml.stream.XMLStreamConstants::CHARACTERS
             characters(@parser.getText)
           end
         end
