@@ -386,6 +386,9 @@ module MARC
   # of marc-xml. It includes most of the work from GenericPullParser
 
   if defined? JRUBY_VERSION
+    # *DEPRECATED*: JRubySTAXReader is deprecated and will be removed in a
+    # future version of ruby-marc. Please use JREXMLReader or NokogiriReader
+    # instead.
     module JRubySTAXReader
       include GenericPullParser
 
@@ -395,6 +398,8 @@ module MARC
       end
 
       def init
+        warn 'JRubySTAXReader is deprecated and will be removed in a future version of ruby-marc.'
+
         super
         @factory = javax.xml.stream.XMLInputFactory.newInstance
         @parser = @factory.createXMLStreamReader(@handle.to_inputstream)

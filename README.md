@@ -67,6 +67,19 @@ using Nokogiri as an XML parser with JRuby as your ruby implementation, XML
 syntax errors will still be ignored unless you have Nokogiri version `1.10.2`
 or later.
 
+## JRubySTAXReader caveats
+
+- Under Java 9+, MARC::JRubySTAXReader requires adding the following to `JAVA_OPTS`
+  in order to work around [Java module system](https://openjdk.java.net/jeps/261) 
+  restrictions:
+
+  ```sh
+  --add-opens java.xml/com.sun.org.apache.xerces.internal.impl=org.jruby.dist
+  ```
+
+- MARC::JRubySTAXReader is deprecated and will be removed in a future version of
+  `ruby-marc`. Please use MARC::JREXMLReader or MARC::NokogiriReader instead.
+
 ## Miscellany 
 
 Source code at: https://github.com/ruby-marc/ruby-marc/
