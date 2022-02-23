@@ -90,7 +90,7 @@ module MARC
         when 'leader'
           @record[:record].leader = @record[:leader]
           @record[:leader] = ''
-          @current_element = nil if @current_element = :leader
+          @current_element = nil if @current_element == :leader
         when /(control|data)field/
           @record[:record] << @record[:field]
           @record[:field] = nil
