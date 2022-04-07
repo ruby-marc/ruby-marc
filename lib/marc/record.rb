@@ -1,3 +1,5 @@
+require 'marc/unsafe_xml_writer'
+
 module MARC
 
   # The FieldMap is an Array of DataFields and Controlfields.
@@ -244,6 +246,16 @@ module MARC
       return MARC::XMLWriter.encode(self, :include_namespace => true)
     end
 
+    # Ditto, but actually return the xml string
+    # @return [String] marc-xml serialization
+    def to_xml_string
+      MARC::XMLWriter.encode_to_xml_string(self, include_namespaces: true)
+    end
+
+    # Ditto, but use the unsafe writer
+    def to_xml_string_unsafe
+      MARC::UnsafeXMLWriter.encode_to_xml_string(self, include_namespaces: true)
+    end
     # Handy method for returning a hash mapping this records values
     # to the Dublin Core.
     #
