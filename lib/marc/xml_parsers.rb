@@ -58,7 +58,7 @@ module MARC
 
     def start_element_namespace name, attributes = [], prefix = nil, uri = nil, ns = {}
       attributes = attributes_to_hash(attributes)
-      if uri == @ns
+      if (uri == @ns) or @ignore_namespace
         case name.downcase
         when 'record' then @record[:record] = MARC::Record.new
         when 'leader' then @current_element = :leader
@@ -84,7 +84,7 @@ module MARC
 
     def end_element_namespace name, prefix = nil, uri = nil
       @current_element = nil
-      if uri == @ns
+      if (uri == @ns) or @ignore_namespace
         case name.downcase
         when 'record' then yield_record
         when 'leader'
@@ -260,7 +260,6 @@ module MARC
             record << datafield if datafield
             return record
           end
-          #puts node.name
         end
 
       else

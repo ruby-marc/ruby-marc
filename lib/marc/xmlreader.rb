@@ -32,6 +32,13 @@ module MARC
   # or
   #   MARC::XMLReader.nokogiri!
   #
+  # By default, all XML parsers except REXML require the MARC namespace
+  # (http://www.loc.gov/MARC21/slim) to be included. Adding the option
+  # `ignore_namespace` to the call to `new` with a true value 
+  # will allow parsing to proceed,  e.g.,
+  #
+  #     reader = MARC::XMLReader.new(filename, parser: :nokogiri, ignore_namespace: true)
+  #
   # You can also pass in an error_handler option that will be called if
   # there are any validation errors found when parsing a record.
   #
@@ -58,6 +65,10 @@ module MARC
         raise ArgumentError, "must pass in path or File"
       end
       @handle = handle
+
+      if options[:ignore_namespace]
+        @ignore_namespace = options[:ignore_namespace]
+      end
 
       if options[:parser]
         parser = self.class.choose_parser(options[:parser].to_s)

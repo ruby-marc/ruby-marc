@@ -23,6 +23,13 @@ marc is a ruby library for reading and writing MAchine Readable Cataloging
     writer = MARC::Writer.new('marc.dat')
     writer.write(record)
     writer.close()
+
+    # Reader for  MARC-XML, optionally specifying the parser to use
+    reader = MARC::XMLReader.new("myfile.xml", parser: :nokogiri)
+
+    # Reader for  MARC-XML, optionally specifying the parser to use,
+    # and not requiring the correct XML namespace to be present
+    reader = MARC::XMLReader.new("myfile.xml", parser: :nokogiri, ignore_namespace: true)
   
     # writing a record as XML
     writer = MARC::XMLWriter.new('marc.xml')
