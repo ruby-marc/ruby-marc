@@ -22,16 +22,9 @@ A clear and concise description of what you expected to happen.
 If applicable, add program output and/or backtraces
 
 **Environment (please complete the following information):**
- - ruby-marc version
- - ruby runtime and version (e.g. MRI 2.7, JRuby 9.2.11.0)
- - OS
- - Version [e.g. 22]
-
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
-
+ - ruby-marc version (from `MARC::VERSION`)
+ - ruby runtime and version (best: the output of `ruby -e 'puts RUBY_DESCRIPTION'`)
+ - operating system, if not included in output of `RUBY_DESCRIPTION`
+ 
 **Additional context**
 Add any other context about the problem here.
