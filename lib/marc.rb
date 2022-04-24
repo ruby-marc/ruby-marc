@@ -1,7 +1,7 @@
-#marc is a ruby library for reading and writing MAchine Readable Cataloging
-#(MARC). More information about MARC can be found at <http://www.loc.gov/marc>.
+# marc is a ruby library for reading and writing MAchine Readable Cataloging
+# (MARC). More information about MARC can be found at <http://www.loc.gov/marc>.
 #
-#USAGE 
+# USAGE
 #
 #    require 'marc'
 #
@@ -11,7 +11,7 @@
 #      puts record['245']['a']
 #    end
 #
-#    # creating a record 
+#    # creating a record
 #    record = MARC::Record.new()
 #    record.add_field(MARC::DataField.new('100', '0',  ' ', ['a', 'John Doe']))
 #
@@ -30,16 +30,16 @@
 #    record = MARC::Record.new()
 #    record.add_field(MARC::ControlField.new('FMT', 'Book')) # doesn't raise an error
 
-require File.dirname(__FILE__) + '/marc/version'
-require File.dirname(__FILE__) + '/marc/constants'
-require File.dirname(__FILE__) + '/marc/record'
-require File.dirname(__FILE__) + '/marc/datafield'
-require File.dirname(__FILE__) + '/marc/controlfield'
-require File.dirname(__FILE__) + '/marc/subfield'
-require File.dirname(__FILE__) + '/marc/reader'
-require File.dirname(__FILE__) + '/marc/writer'
-require File.dirname(__FILE__) + '/marc/exception'
-require File.dirname(__FILE__) + '/marc/xmlwriter'
-require File.dirname(__FILE__) + '/marc/xmlreader'
-require File.dirname(__FILE__) + '/marc/dublincore'
-require File.dirname(__FILE__) + '/marc/xml_parsers'
+require File.dirname(__FILE__) + "/marc/version"
+require File.dirname(__FILE__) + "/marc/constants"
+require File.dirname(__FILE__) + "/marc/record"
+require File.dirname(__FILE__) + "/marc/datafield"
+require File.dirname(__FILE__) + "/marc/controlfield"
+require File.dirname(__FILE__) + "/marc/subfield"
+require File.dirname(__FILE__) + "/marc/reader"
+require File.dirname(__FILE__) + "/marc/writer"
+require File.dirname(__FILE__) + "/marc/exception"
+require File.dirname(__FILE__) + "/marc/xmlwriter"
+require File.dirname(__FILE__) + "/marc/xmlreader"
+require File.dirname(__FILE__) + "/marc/dublincore"
+require File.dirname(__FILE__) + "/marc/xml_parsers"

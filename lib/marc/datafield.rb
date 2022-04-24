@@ -46,18 +46,18 @@ module MARC
     #     ['a', 'Consilience :'],['b','the unity of knowledge '],
     #     ['c', 'by Edward O. Wilson.'] )
 
-    def initialize(tag, i1 = ' ', i2 = ' ', *subfields)
+    def initialize(tag, i1 = " ", i2 = " ", *subfields)
       # if the tag is less than 3 characters long and
       # the string is all numeric then we pad with zeros
-      if tag.length < 3 and /^[0-9]+$/ =~ tag
-        @tag = "%03d" % tag
+      @tag = if (tag.length < 3) && (/^[0-9]+$/ =~ tag)
+        "%03d" % tag
       else
-        @tag = tag
+        tag
       end
       # can't allow nil to be passed in or else it'll
       # screw us up later when we try to encode
-      @indicator1 = i1 == nil ? ' ' : i1
-      @indicator2 = i2 == nil ? ' ' : i2
+      @indicator1 = i1.nil? ? " " : i1
+      @indicator2 = i2.nil? ? " " : i2
 
       @subfields = []
 
@@ -69,14 +69,15 @@ module MARC
           @subfields.push(subfield)
         when Array
           if subfield.length > 2
-            raise MARC::Exception.new(),
-                  "arrays must only have 2 elements: " + subfield.to_s
+            raise MARC::Exception.new,
+              "arrays must only have 2 elements: " + subfield.to_s
           end
           @subfields.push(
-            MARC::Subfield.new(subfield[0], subfield[1]))
+            MARC::Subfield.new(subfield[0], subfield[1])
+          )
         else
-          raise MARC::Exception.new(),
-                "invalid subfield type #{subfield.class}"
+          raise MARC::Exception.new,
+            "invalid subfield type #{subfield.class}"
         end
       end
     end
@@ -107,20 +108,20 @@ module MARC
       str = "#{tag} "
       str += "#{indicator1}#{indicator2} "
       @subfields.each { |subfield| str += subfield.to_s }
-      return str
+      str
     end
 
     # Turn into a marc-hash structure
     def to_marchash
-      return [@tag, @indicator1, @indicator2, @subfields.map { |sf| [sf.code, sf.value] }]
+      [@tag, @indicator1, @indicator2, @subfields.map { |sf| [sf.code, sf.value] }]
     end
 
     # Turn the variable field and subfields into a hash for MARC-in-JSON
 
     def to_hash
-      field_hash = { @tag => { 'ind1' => @indicator1, 'ind2' => @indicator2, 'subfields' => [] } }
-      self.each do |subfield|
-        field_hash[@tag]['subfields'] << { subfield.code => subfield.value }
+      field_hash = {@tag => {"ind1" => @indicator1, "ind2" => @indicator2, "subfields" => []}}
+      each do |subfield|
+        field_hash[@tag]["subfields"] << {subfield.code => subfield.value}
       end
       field_hash
     end
@@ -136,23 +137,23 @@ module MARC
     #   field.each {|s| print s}
 
     def each
-      for subfield in subfields
+      subfields.each do |subfield|
         yield subfield
       end
     end
 
-    #def each_by_code(filter)
+    # def each_by_code(filter)
     #  @subfields.each_by_code(filter)
-    #end
+    # end
 
     # You can lookup subfields with this shorthand. Note it
     # will return a string and not a MARC::Subfield object.
     #   subfield = field['a']
 
     def [](code)
-      subfield = self.find { |s| s.code == code }
+      subfield = find { |s| s.code == code }
       return subfield.value if subfield
-      return
+      nil
     end
 
     def codes(dedup = true)
@@ -177,7 +178,7 @@ module MARC
       elsif @subfields != other.subfields
         return false
       end
-      return true
+      true
     end
 
     # To support regex matching with fields
@@ -185,7 +186,7 @@ module MARC
     #   if field =~ /Huckleberry/ ...
 
     def =~(regex)
-      return self.to_s =~ regex
+      to_s =~ regex
     end
 
     # to get the field as a string, without the tag and indicators
@@ -194,8 +195,7 @@ module MARC
     # print record['245'].value
 
     def value
-      return(@subfields.map { |s| s.value }.join '')
+      (@subfields.map { |s| s.value }.join "")
     end
-
   end
 end

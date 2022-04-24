@@ -1,11 +1,9 @@
-# encoding: UTF-8
+require "test/unit"
+require "marc"
 
-require 'test/unit'
-require 'marc'
+require "marc/marc8/to_unicode"
 
-require 'marc/marc8/to_unicode'
-
-require 'unf'
+require "unf"
 
 if "".respond_to?(:encoding)
 
@@ -34,17 +32,17 @@ if "".respond_to?(:encoding)
       # two data files, marc8 and utf8, with line-by-line correspondences.
       #
       # For now, we have NOT included proprietary III encodings in our test data!
-      utf8_file  = File.open(File.expand_path("../data/test_utf8.txt", __FILE__), "r:UTF-8")
+      utf8_file = File.open(File.expand_path("../data/test_utf8.txt", __FILE__), "r:UTF-8")
       marc8_file = File.open(File.expand_path("../data/test_marc8.txt", __FILE__), "r:binary")
 
-      i         = 0
+      i = 0
       converter = MARC::Marc8::ToUnicode.new
 
       begin
-        while true do
+        loop do
           i += 1
 
-          utf8  = utf8_file.readline.chomp
+          utf8 = utf8_file.readline.chomp
           marc8 = marc8_file.readline.chomp
 
           converted = converter.transcode(marc8)
@@ -57,8 +55,8 @@ if "".respond_to?(:encoding)
       rescue EOFError
         # just means the file was over, no biggie
         assert i > 1500, "Read as many lines as we expected to, at least 1500"
-      rescue Exception => e
-        $stderr.puts "Error at test data line #{i}"
+      rescue => e
+        warn "Error at test data line #{i}"
         raise e
       end
     end
@@ -66,23 +64,23 @@ if "".respond_to?(:encoding)
     def test_explicit_normalization
       # \xC1 is Marc8 "script small letter l", which under unicode
       # COMPAT normalization will turn into ordinary 'l'
-      marc8   = "Conversa\xF0c\xE4ao \xC1"
+      marc8 = "Conversa\xF0c\xE4ao \xC1"
       unicode = "Conversação \u2113"
 
-      unicode_c  = UNF::Normalizer.normalize(unicode, :nfc)
+      unicode_c = UNF::Normalizer.normalize(unicode, :nfc)
       unicode_kc = UNF::Normalizer.normalize(unicode, :nfkc)
-      unicode_d  = UNF::Normalizer.normalize(unicode, :nfd)
+      unicode_d = UNF::Normalizer.normalize(unicode, :nfd)
       unicode_kd = UNF::Normalizer.normalize(unicode, :nfkd)
 
       converter = MARC::Marc8::ToUnicode.new
 
-      assert_equal unicode_c, converter.transcode(marc8, :normalization => :nfc)
-      assert_equal unicode_kc, converter.transcode(marc8, :normalization => :nfkc)
-      assert_equal unicode_d, converter.transcode(marc8, :normalization => :nfd)
-      assert_equal unicode_kd, converter.transcode(marc8, :normalization => :nfkd)
+      assert_equal unicode_c, converter.transcode(marc8, normalization: :nfc)
+      assert_equal unicode_kc, converter.transcode(marc8, normalization: :nfkc)
+      assert_equal unicode_d, converter.transcode(marc8, normalization: :nfd)
+      assert_equal unicode_kd, converter.transcode(marc8, normalization: :nfkd)
 
       # disable normalization for performance or something, we won't end up with NFC.
-      refute_equal unicode_c, converter.transcode(marc8, :normalization => nil)
+      refute_equal unicode_c, converter.transcode(marc8, normalization: nil)
     end
 
     def test_expand_ncr
@@ -90,7 +88,7 @@ if "".respond_to?(:encoding)
 
       marc8_ncr = "Weird &#x200F; &#xFFFD; but these aren't changed #x2000; &#200F etc."
       assert_equal "Weird \u200F \uFFFD but these aren't changed #x2000; &#200F etc.", converter.transcode(marc8_ncr)
-      assert_equal marc8_ncr, converter.transcode(marc8_ncr, :expand_ncr => false), "should not expand NCR if disabled"
+      assert_equal marc8_ncr, converter.transcode(marc8_ncr, expand_ncr: false), "should not expand NCR if disabled"
     end
 
     def test_bad_byte
@@ -129,7 +127,7 @@ if "".respond_to?(:encoding)
       converter = MARC::Marc8::ToUnicode.new
 
       bad_marc8 = "\e$1!PVK7oi$N!Q1!G4i$N!0p!Q+{6924f6}\e(B"
-      value     = converter.transcode(bad_marc8, :invalid => :replace)
+      value = converter.transcode(bad_marc8, invalid: :replace)
 
       assert_equal "UTF-8", value.encoding.name
       assert value.valid_encoding?
@@ -144,7 +142,7 @@ if "".respond_to?(:encoding)
       converter = MARC::Marc8::ToUnicode.new
 
       bad_marc8 = "\e$1!PVK7oi$N!Q1!G4i$N!0p!Q+{6924f6}\e(B"
-      value     = converter.transcode(bad_marc8, :invalid => :replace, :replace => "")
+      value = converter.transcode(bad_marc8, invalid: :replace, replace: "")
 
       assert_equal "UTF-8", value.encoding.name
       assert value.valid_encoding?
@@ -161,16 +159,15 @@ if "".respond_to?(:encoding)
       # https://github.com/edsu/pymarc/blob/master/test/marc8.py?source=cc#L34
 
       bad_escape_data = "La Soci\xE2et\e,"
-      value           = converter.transcode(bad_escape_data)
+      value = converter.transcode(bad_escape_data)
 
       assert_equal "UTF-8", value.encoding.name
       assert value.valid_encoding?, "Valid encoding"
 
       assert_equal "La Soci\u00E9t\x1B,", value
     end
-
   end
 else
-  require 'pathname'
-  $stderr.puts "\nTests not being run in ruby 1.9.x, skipping #{Pathname.new(__FILE__).basename}\n\n"
+  require "pathname"
+  warn "\nTests not being run in ruby 1.9.x, skipping #{Pathname.new(__FILE__).basename}\n\n"
 end
