@@ -1,8 +1,6 @@
-# encoding: UTF-8
-
-require 'marc'
-require 'marc/marc8/map_to_unicode'
-require 'unf/normalizer'
+require "marc"
+require "marc/marc8/map_to_unicode"
+require "unf/normalizer"
 
 module MARC
   module Marc8
@@ -24,8 +22,8 @@ module MARC
       BASIC_LATIN = 0x42
       ANSEL = 0x45
 
-      G0_SET = ['(', ',', '$']
-      G1_SET = [')', '-', '$']
+      G0_SET = ["(", ",", "$"]
+      G1_SET = [")", "-", "$"]
 
       CODESETS = MARC::Marc8::MapToUnicode::CODESETS
 
@@ -85,27 +83,25 @@ module MARC
             next_byte = marc8_string[pos + 1]
             if G0_SET.include? next_byte
               if marc8_string.length >= pos + 3
-                if marc8_string[pos + 2] == ',' and next_byte == '$'
+                if (marc8_string[pos + 2] == ",") && (next_byte == "$")
                   pos += 1
                 end
                 self.g0 = marc8_string[pos + 2].ord
-                pos = pos + 3
-                next
+                pos += 3
               else
                 # if there aren't enough remaining characters, readd
                 # the escape character so it doesn't get lost; may
                 # help users diagnose problem records
                 uni_list.push marc8_string[pos]
                 pos += 1
-                next
               end
-
+              next
             elsif G1_SET.include? next_byte
-              if marc8_string[pos + 2] == '-' and next_byte == '$'
+              if (marc8_string[pos + 2] == "-") && (next_byte == "$")
                 pos += 1
               end
               self.g1 = marc8_string[pos + 2].ord
-              pos = pos + 3
+              pos += 3
               next
             else
               charset = next_byte.ord
@@ -122,7 +118,7 @@ module MARC
             end
           end
 
-          mb_flag = is_multibyte(self.g0)
+          mb_flag = is_multibyte(g0)
 
           if mb_flag
             code_point = (marc8_string[pos].ord * 65536 +
@@ -134,14 +130,14 @@ module MARC
             pos += 1
           end
 
-          if (code_point < 0x20 or
-            (code_point > 0x80 and code_point < 0xa0))
+          if (code_point < 0x20) ||
+              ((code_point > 0x80) && (code_point < 0xa0))
             uni = unichr(code_point)
             next
           end
 
           begin
-            code_set = (code_point > 0x80 and not mb_flag) ? self.g1 : self.g0
+            code_set = (code_point > 0x80) && !mb_flag ? g1 : g0
             (uni, cflag) = CODESETS.fetch(code_set).fetch(code_point)
 
             if cflag
@@ -159,13 +155,13 @@ module MARC
               uni_list.push invalid_replacement unless uni_list.last == invalid_replacement
               pos += 1
             else
-              raise Encoding::InvalidByteSequenceError.new("MARC8, input byte offset #{pos}, code set: 0x#{code_set.to_s(16)}, code point: 0x#{code_point.to_s(16)}, value: #{transcode(marc8_string, :invalid => :replace, :replace => "�")}")
+              raise Encoding::InvalidByteSequenceError.new("MARC8, input byte offset #{pos}, code set: 0x#{code_set.to_s(16)}, code point: 0x#{code_point.to_s(16)}, value: #{transcode(marc8_string, invalid: :replace, replace: "�")}")
             end
           end
         end
 
         # what to do if combining chars left over?
-        uni_str = uni_list.join('')
+        uni_str = uni_list.join("")
 
         if expand_ncr
           uni_str.gsub!(/&#x([0-9A-F]{4,6});/) do
@@ -177,7 +173,7 @@ module MARC
           uni_str = UNF::Normalizer.normalize(uni_str, normalization)
         end
 
-        return uni_str
+        uni_str
       end
 
       # from the original python, yeah, apparently
@@ -191,7 +187,6 @@ module MARC
       def unichr(code_point)
         [code_point].pack("U")
       end
-
     end
   end
 end
