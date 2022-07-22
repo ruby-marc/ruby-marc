@@ -1,12 +1,10 @@
 module MARC
-
   # A class for mapping MARC records to Dublin Core
 
   class DublinCore
-
     def self.map(record)
-      dc_hash = Hash.new
-      dc_hash['title'] = get_field_value(record['245']['a'])
+      dc_hash = {}
+      dc_hash["title"] = get_field_value(record["245"]["a"])
 
       # Creator
       ['100', '110', '111', '700', '710', '711', '720'].each do |field|
@@ -27,13 +25,33 @@ module MARC
         dc_hash['description'] << get_field_value(record[field])
       end
 
-      dc_hash['publisher'] = get_field_value(record['260']['a']['b']) rescue nil
-      dc_hash['date'] = get_field_value(record['260']['c']) rescue nil
-      dc_hash['type'] = get_field_value(record['655'])
-      dc_hash['format'] = get_field_value(record['856']['q']) rescue nil
-      dc_hash['identifier'] = get_field_value(record['856']['u']) rescue nil
-      dc_hash['source'] = get_field_value(record['786']['o']['t']) rescue nil
-      dc_hash['language'] = get_field_value(record['546'])
+      dc_hash["publisher"] = begin
+        get_field_value(record["260"]["a"]["b"])
+      rescue
+        nil
+      end
+      dc_hash["date"] = begin
+        get_field_value(record["260"]["c"])
+      rescue
+        nil
+      end
+      dc_hash["type"] = get_field_value(record["655"])
+      dc_hash["format"] = begin
+        get_field_value(record["856"]["q"])
+      rescue
+        nil
+      end
+      dc_hash["identifier"] = begin
+        get_field_value(record["856"]["u"])
+      rescue
+        nil
+      end
+      dc_hash["source"] = begin
+        get_field_value(record["786"]["o"]["t"])
+      rescue
+        nil
+      end
+      dc_hash["language"] = get_field_value(record["546"])
 
       dc_hash['relation'] = []
       dc_hash['relation'] << get_field_value(record['530'])
@@ -62,18 +80,16 @@ module MARC
     def self.get_field_value(field)
       return if field.nil?
 
-      if !field.kind_of?(String) && field.respond_to?(:each)
+      if !field.is_a?(String) && field.respond_to?(:each)
         values = []
         field.each do |element|
           values << get_field_value(element)
         end
         values
       else
-        return field if field.kind_of?(String)
+        return field if field.is_a?(String)
         return field.value if field.respond_to?(:value)
       end
     end
-
   end
 end
-

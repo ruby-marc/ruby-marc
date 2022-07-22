@@ -1,3 +1,10 @@
+v1.1.2 (next)
+- Fix JRubySTAXReader to use :: syntax for constant access as required by
+  JRuby 9.3+.
+- Document JAVA_OPTS workaround for JRubySTAXReader module encapsulation
+  issue under Java 9+.
+- Deprecate JRubySTAXReader.
+
 v1.1.1 June 2021
 - Fix a regression when normalizing indicator values when serializing marcxml
 

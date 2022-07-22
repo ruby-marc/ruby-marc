@@ -1,5 +1,4 @@
 module MARC
-
   # basic exception class for exceptions that
   # can occur during MARC processing.
 
@@ -11,7 +10,7 @@ module MARC
 
     def initialize(record)
       @record = record
-      id = @record['001'] || '<record with no 001>'
+      id = @record["001"] || "<record with no 001>"
       super("Record #{id}: #{@record.errors.join("\n....")}")
     end
   end
