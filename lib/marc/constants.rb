@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module MARC
   # constants used in MARC21 reading/writing
   LEADER_LENGTH = 24
