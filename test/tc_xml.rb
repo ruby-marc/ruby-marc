@@ -191,6 +191,7 @@ class XMLTest < Test::Unit::TestCase
     assert_equal('00925njm  22002777a 4500', record2.leader)
   ensure
     File.unlink('test/test.xml')
+  end
 
   def test_xml_weird_leader
     @parsers.each do |parser|
