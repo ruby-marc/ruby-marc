@@ -79,54 +79,54 @@ module MARC
       e.add_namespace(MARC_NS) if opts[:include_namespace]
 
       # MARCXML only allows alphanumerics or spaces in the leader
-      record.leader.gsub!(/[^\w|^\s]/, "Z")
+      leader = record.leader.gsub(/[^\w|^\s]/, 'Z')
+
+      # The leader must have at least 24 characters
+      leader = leader.ljust(24) if leader.length < 24
 
       # MARCXML is particular about last four characters; ILSes aren't
-      if record.leader[20..23] != "4500"
-        record.leader[20..23] = "4500"
+      if (leader[20..23] != "4500")
+        leader[20..23] = "4500"
       end
 
       # MARCXML doesn't like a space here so we need a filler character: Z
-      if record.leader[6..6] == " "
-        record.leader[6..6] = "Z"
+      if (leader[6..6] == " ")
+        leader[6..6] = "Z"
       end
 
-      leader = REXML::Element.new("leader")
-      leader.add_text(record.leader)
-      e.add_element(leader)
+      leader_element = REXML::Element.new("leader")
+      leader_element.add_text(leader)
+      e.add_element(leader_element)
 
       record.each do |field|
         if field.instance_of?(MARC::DataField)
           datafield_elem = REXML::Element.new("datafield")
 
+          ind1 = field.indicator1
           # If marc is leniently parsed, we may have some dirty data; using
           # the 'z' ind1 value should help us locate these later to fix
-          if field.indicator1.nil? || field.indicator1.match(single_char).nil?
-            field.indicator1 = "z"
-          end
-
+          ind1 = 'z' if ind1.nil? || !ind1.match?(single_char)
+          ind2 = field.indicator2
           # If marc is leniently parsed, we may have some dirty data; using
           # the 'z' ind2 value should help us locate these later to fix
-          if field.indicator2.nil? || field.indicator2.match(single_char).nil?
-            field.indicator2 = "z"
-          end
+
+          ind2 = 'z' if field.indicator2.nil? || !ind2.match?(single_char)
 
           datafield_elem.add_attributes({
-            "tag" => field.tag,
-            "ind1" => field.indicator1,
-            "ind2" => field.indicator2
+            "tag"=>field.tag,
+            "ind1"=>ind1,
+            "ind2"=>ind2
           })
 
           field.subfields.each do |subfield|
             subfield_element = REXML::Element.new("subfield")
 
+            code = subfield.code
             # If marc is leniently parsed, we may have some dirty data; using
             # the blank subfield code should help us locate these later to fix
-            if subfield.code.match(subfield_char).nil?
-              subfield.code = " "
-            end
+            code = ' ' if (subfield.code.match(subfield_char) == nil)
 
-            subfield_element.add_attribute("code", subfield.code)
+            subfield_element.add_attribute("code", code)
             text = subfield.value
             subfield_element.add_text(text)
             datafield_elem.add_element(subfield_element)
@@ -136,12 +136,11 @@ module MARC
         elsif field.instance_of?(MARC::ControlField)
           control_element = REXML::Element.new("controlfield")
 
+          tag = field.tag
           # We need a marker for invalid tag values (we use 000)
-          unless field.tag.match(control_field_tag) || MARC::ControlField.control_tag?(control_field_tag)
-            field.tag = "00z"
-          end
+          tag = '00z' unless tag.match(control_field_tag) or MARC::ControlField.control_tag?(tag)
 
-          control_element.add_attribute("tag", field.tag)
+          control_element.add_attribute("tag", tag)
           text = field.value
           control_element.add_text(text)
           e.add_element(control_element)

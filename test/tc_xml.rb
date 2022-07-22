@@ -144,11 +144,8 @@ class XMLTest < Test::Unit::TestCase
     record1.append MARC::DataField.new("998", " ", " ",
       ["^", "Valid local subfield"])
 
-    # MARC::XMLWriter mutates records
-    dup_record = MARC::Record.new_from_hash(record1.to_hash)
-
-    writer = MARC::XMLWriter.new("test/test.xml", stylesheet: "style.xsl")
-    writer.write(dup_record)
+    writer = MARC::XMLWriter.new('test/test.xml', :stylesheet => 'style.xsl')
+    writer.write(record1)
     writer.close
 
     xml = File.read("test/test.xml")
@@ -177,6 +174,23 @@ class XMLTest < Test::Unit::TestCase
     assert_instance_of(MARC::Record, r)
     iter.next # total of two records
     assert_raises(StopIteration) { iter.next }
+  end
+
+
+  def test_truncated_leader_roundtripping
+    record1 = MARC::Record.new
+    record1.leader =  '00925njm  22002777a'
+
+    writer = MARC::XMLWriter.new('test/test.xml', :stylesheet => 'style.xsl')
+    writer.write(record1)
+    writer.close
+
+    reader = MARC::XMLReader.new('test/test.xml')
+    record2 = reader.entries[0]
+
+    assert_equal('00925njm  22002777a 4500', record2.leader)
+  ensure
+    File.unlink('test/test.xml')
   end
 
   def test_xml_weird_leader
