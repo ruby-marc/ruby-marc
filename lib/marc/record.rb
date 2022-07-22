@@ -1,5 +1,4 @@
 module MARC
-
   # The FieldMap is an Array of DataFields and Controlfields.
   # It also contains a Hash representation
   # of the fields for faster lookups (under certain conditions)
@@ -16,7 +15,7 @@ module MARC
     # values of the fields Array
     def reindex
       @tags = {}
-      self.each_with_index do |field, i|
+      each_with_index do |field, i|
         @tags[field.tag] ||= []
         @tags[field.tag] << i
       end
@@ -57,7 +56,7 @@ module MARC
     # A frozen FieldMap is safe for concurrent access, and also
     # can more easily avoid accidental reindexing on even read-only use.
     def freeze
-      self.reindex unless @clean
+      reindex unless @clean
       super
     end
   end
@@ -108,7 +107,7 @@ module MARC
     include Enumerable
 
     # the record fields
-    #attr_reader :fields
+    # attr_reader :fields
 
     # the record leader
     attr_accessor :leader
@@ -116,11 +115,11 @@ module MARC
     def initialize
       @fields = FieldMap.new
       # leader is 24 bytes
-      @leader = ' ' * 24
+      @leader = " " * 24
       # leader defaults:
       # http://www.loc.gov/marc/bibliographic/ecbdldrd.html
-      @leader[10..11] = '22'
-      @leader[20..23] = '4500'
+      @leader[10..11] = "22"
+      @leader[20..23] = "4500"
     end
 
     # Returns true if there are no error messages associated with the record
@@ -160,7 +159,7 @@ module MARC
     #   subjects = record.find_all {|f| ('600'..'699') === f.tag}
 
     def each
-      for field in @fields
+      @fields.each do |field|
         yield field
       end
     end
@@ -175,7 +174,7 @@ module MARC
     #   title = record['245']
 
     def [](tag)
-      return self.find { |f| f.tag == tag }
+      find { |f| f.tag == tag }
     end
 
     # Provides a backwards compatible means to access the FieldMap.
@@ -206,7 +205,7 @@ module MARC
 
     # Returns an array of all of the tags that appear in the record (not necessarily in the order they appear).
     def tags
-      return @fields.tag_list
+      @fields.tag_list
     end
 
     # Factory method for creating a MARC::Record from MARC21 in
@@ -222,7 +221,7 @@ module MARC
     #  record = MARC::Record.new_from_marc(marc21, :forgiving => true)
 
     def self.new_from_marc(raw, params = {})
-      return MARC::Reader.decode(raw, params)
+      MARC::Reader.decode(raw, params)
     end
 
     # Returns a record in MARC21 transmission format (ANSI Z39.2).
@@ -231,7 +230,7 @@ module MARC
     #   marc = record.to_marc()
 
     def to_marc
-      return MARC::Writer.encode(self)
+      MARC::Writer.encode(self)
     end
 
     # Handy method for returning the MARCXML serialization for a
@@ -241,7 +240,7 @@ module MARC
     #   xml_doc = record.to_xml()
 
     def to_xml
-      return MARC::XMLWriter.encode(self, :include_namespace => true)
+      MARC::XMLWriter.encode(self, include_namespace: true)
     end
 
     # Handy method for returning a hash mapping this records values
@@ -251,20 +250,15 @@ module MARC
     #   print dc['title']
 
     def to_dublin_core
-      return MARC::DublinCore.map(self)
+      MARC::DublinCore.map(self)
     end
 
     # Return a marc-hash version of the record
     def to_marchash
-      return {
-        'type' => 'marc-hash',
-        'version' => [MARCHASH_MAJOR_VERSION, MARCHASH_MINOR_VERSION],
-        'leader' => self.leader,
-        'fields' => self.map { |f| f.to_marchash }
-      }
+      {"type" => "marc-hash", "version" => [MARCHASH_MAJOR_VERSION, MARCHASH_MINOR_VERSION], "leader" => leader, "fields" => map { |f| f.to_marchash }}
     end
 
-    #to_hash
+    # to_hash
 
     # Factory method for creating a new MARC::Record from
     # a marchash object
@@ -272,71 +266,68 @@ module MARC
     # record = MARC::Record->new_from_marchash(mh)
 
     def self.new_from_marchash(mh)
-      r = self.new()
-      r.leader = mh['leader']
-      mh['fields'].each do |f|
-        if (f.length == 2)
+      r = new
+      r.leader = mh["leader"]
+      mh["fields"].each do |f|
+        if f.length == 2
           r << MARC::ControlField.new(f[0], f[1])
         elsif r << MARC::DataField.new(f[0], f[1], f[2], *f[3])
         end
       end
-      return r
+      r
     end
 
     # Returns a (roundtrippable) hash representation for MARC-in-JSON
     def to_hash
-      record_hash = { 'leader' => @leader, 'fields' => [] }
+      record_hash = {"leader" => @leader, "fields" => []}
       @fields.each do |field|
-        record_hash['fields'] << field.to_hash
+        record_hash["fields"] << field.to_hash
       end
       record_hash
     end
 
     def self.new_from_hash(h)
-      r = self.new
-      r.leader = h['leader']
-      if h['fields']
-        h['fields'].each do |position|
-          position.each_pair do |tag, field|
-            if field.is_a?(Hash)
-              f = MARC::DataField.new(tag, field['ind1'], field['ind2'])
-              field['subfields'].each do |pos|
-                pos.each_pair do |code, value|
-                  f.append MARC::Subfield.new(code, value)
-                end
+      r = new
+      r.leader = h["leader"]
+      h["fields"]&.each do |position|
+        position.each_pair do |tag, field|
+          if field.is_a?(Hash)
+            f = MARC::DataField.new(tag, field["ind1"], field["ind2"])
+            field["subfields"].each do |pos|
+              pos.each_pair do |code, value|
+                f.append MARC::Subfield.new(code, value)
               end
-              r << f
-            else
-              r << MARC::ControlField.new(tag, field)
             end
+            r << f
+          else
+            r << MARC::ControlField.new(tag, field)
           end
         end
       end
-      return r
+      r
     end
 
     # Returns a string version of the record, suitable for printing
 
     def to_s
       str = "LEADER #{leader}\n"
-      self.each do |field|
-        str += field.to_s() + "\n"
+      each do |field|
+        str += field.to_s + "\n"
       end
-      return str
+      str
     end
 
     # For testing if two records can be considered equal.
 
     def ==(other)
-      return self.to_s == other.to_s
+      to_s == other.to_s
     end
 
     # Handy for using a record in a regex:
     #   if record =~ /Gravity's Rainbow/ then print "Slothrop" end
 
     def =~(regex)
-      return self.to_s =~ regex
+      to_s =~ regex
     end
-
   end
 end
