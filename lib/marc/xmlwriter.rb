@@ -79,18 +79,18 @@ module MARC
       e.add_namespace(MARC_NS) if opts[:include_namespace]
 
       # MARCXML only allows alphanumerics or spaces in the leader
-      leader = record.leader.gsub(/[^\w|^\s]/, 'Z')
+      leader = record.leader.gsub(/[^\w|^\s]/, "Z")
 
       # The leader must have at least 24 characters
       leader = leader.ljust(24) if leader.length < 24
 
       # MARCXML is particular about last four characters; ILSes aren't
-      if (leader[20..23] != "4500")
+      if leader[20..23] != "4500"
         leader[20..23] = "4500"
       end
 
       # MARCXML doesn't like a space here so we need a filler character: Z
-      if (leader[6..6] == " ")
+      if leader[6..6] == " "
         leader[6..6] = "Z"
       end
 
@@ -105,17 +105,17 @@ module MARC
           ind1 = field.indicator1
           # If marc is leniently parsed, we may have some dirty data; using
           # the 'z' ind1 value should help us locate these later to fix
-          ind1 = 'z' if ind1.nil? || !ind1.match?(single_char)
+          ind1 = "z" if ind1.nil? || !ind1.match?(single_char)
           ind2 = field.indicator2
           # If marc is leniently parsed, we may have some dirty data; using
           # the 'z' ind2 value should help us locate these later to fix
 
-          ind2 = 'z' if field.indicator2.nil? || !ind2.match?(single_char)
+          ind2 = "z" if field.indicator2.nil? || !ind2.match?(single_char)
 
           datafield_elem.add_attributes({
-            "tag"=>field.tag,
-            "ind1"=>ind1,
-            "ind2"=>ind2
+            "tag" => field.tag,
+            "ind1" => ind1,
+            "ind2" => ind2
           })
 
           field.subfields.each do |subfield|
@@ -124,7 +124,7 @@ module MARC
             code = subfield.code
             # If marc is leniently parsed, we may have some dirty data; using
             # the blank subfield code should help us locate these later to fix
-            code = ' ' if (subfield.code.match(subfield_char) == nil)
+            code = " " if subfield.code.match(subfield_char).nil?
 
             subfield_element.add_attribute("code", code)
             text = subfield.value
@@ -138,7 +138,7 @@ module MARC
 
           tag = field.tag
           # We need a marker for invalid tag values (we use 000)
-          tag = '00z' unless tag.match(control_field_tag) or MARC::ControlField.control_tag?(tag)
+          tag = "00z" unless tag.match(control_field_tag) || MARC::ControlField.control_tag?(tag)
 
           control_element.add_attribute("tag", tag)
           text = field.value

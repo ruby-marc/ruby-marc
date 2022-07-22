@@ -7,22 +7,22 @@ module MARC
       dc_hash["title"] = get_field_value(record["245"]["a"])
 
       # Creator
-      ['100', '110', '111', '700', '710', '711', '720'].each do |field|
-        dc_hash['creator'] ||= []
-        dc_hash['creator'] << get_field_value(record[field])
+      ["100", "110", "111", "700", "710", "711", "720"].each do |field|
+        dc_hash["creator"] ||= []
+        dc_hash["creator"] << get_field_value(record[field])
       end
 
       # Subject
-      ['600', '610', '611', '630', '650', '653'].each do |field|
-        dc_hash['subject'] ||= []
-        dc_hash['subject'] << get_field_value(record[field])
+      ["600", "610", "611", "630", "650", "653"].each do |field|
+        dc_hash["subject"] ||= []
+        dc_hash["subject"] << get_field_value(record[field])
       end
 
       # Description
-      ('500'..'599').each do |field|
-        next if ['506', '530', '540', '546'].include?(field)
-        dc_hash['description'] ||= []
-        dc_hash['description'] << get_field_value(record[field])
+      ("500".."599").each do |field|
+        next if ["506", "530", "540", "546"].include?(field)
+        dc_hash["description"] ||= []
+        dc_hash["description"] << get_field_value(record[field])
       end
 
       dc_hash["publisher"] = begin
@@ -53,20 +53,22 @@ module MARC
       end
       dc_hash["language"] = get_field_value(record["546"])
 
-      dc_hash['relation'] = []
-      dc_hash['relation'] << get_field_value(record['530'])
-      ('760'..'787').each do |field|
-        dc_hash['relation'] << get_field_value(record[field]['o']['t']) rescue nil
+      dc_hash["relation"] = []
+      dc_hash["relation"] << get_field_value(record["530"])
+      ("760".."787").each do |field|
+        dc_hash["relation"] << get_field_value(record[field]["o"]["t"])
+      rescue
+        nil
       end
 
-      ['651', '752'].each do |field|
-        dc_hash['coverage'] ||= []
-        dc_hash['coverage'] << get_field_value(record[field])
+      ["651", "752"].each do |field|
+        dc_hash["coverage"] ||= []
+        dc_hash["coverage"] << get_field_value(record[field])
       end
 
-      ['506', '540'].each do |field|
-        dc_hash['rights'] ||= []
-        dc_hash['rights'] << get_field_value(record[field])
+      ["506", "540"].each do |field|
+        dc_hash["rights"] ||= []
+        dc_hash["rights"] << get_field_value(record[field])
       end
 
       dc_hash.keys.each do |key|

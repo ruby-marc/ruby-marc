@@ -60,7 +60,8 @@ module MARC
         handle = File.new(file)
       elsif file.respond_to?(:read, 5)
         handle = file
-      else raise ArgumentError, "must pass in path or File"
+      else
+        raise ArgumentError, "must pass in path or File"
       end
       @handle = handle
 
@@ -69,9 +70,10 @@ module MARC
       end
 
       parser = if options[:parser]
-                 parser = self.class.choose_parser(options[:parser].to_s)
-               else @@parser
-               end
+        self.class.choose_parser(options[:parser].to_s)
+      else
+        @@parser
+      end
 
       case parser
       when "magic" then extend MagicReader
@@ -84,7 +86,7 @@ module MARC
         raise ArgumentError, "jstax only available under jruby" unless defined? JRUBY_VERSION
         extend JRubySTAXReader
       when "libxml" then extend LibXMLReader
-      raise ArgumentError, "libxml not available under jruby" if defined? JRUBY_VERSION
+                         raise ArgumentError, "libxml not available under jruby" if defined? JRUBY_VERSION
       end
 
       @error_handler = options[:error_handler]
@@ -137,20 +139,21 @@ module MARC
             rescue LoadError
             end
           end
-        else begin
-               require "nokogiri"
-               parser = USE_NOKOGIRI
-             rescue LoadError
-             end
-        unless defined? JRUBY_VERSION
-          unless parser
-            begin
-              require "xml"
-              parser = USE_LIBXML
-            rescue LoadError
+        else
+          begin
+            require "nokogiri"
+            parser = USE_NOKOGIRI
+          rescue LoadError
+          end
+          unless defined? JRUBY_VERSION
+            unless parser
+              begin
+                require "xml"
+                parser = USE_LIBXML
+              rescue LoadError
+              end
             end
           end
-        end
         end
         parser ||= USE_REXML
         parser
