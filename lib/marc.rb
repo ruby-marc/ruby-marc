@@ -43,3 +43,6 @@ require File.dirname(__FILE__) + "/marc/xmlwriter"
 require File.dirname(__FILE__) + "/marc/xmlreader"
 require File.dirname(__FILE__) + "/marc/dublincore"
 require File.dirname(__FILE__) + "/marc/xml_parsers"
+
+require_relative "marc/jsonl_reader"
+require_relative "marc/jsonl_writer"

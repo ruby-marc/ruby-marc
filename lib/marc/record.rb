@@ -258,8 +258,6 @@ module MARC
       {"type" => "marc-hash", "version" => [MARCHASH_MAJOR_VERSION, MARCHASH_MINOR_VERSION], "leader" => leader, "fields" => map { |f| f.to_marchash }}
     end
 
-    # to_hash
-
     # Factory method for creating a new MARC::Record from
     # a marchash object
     #
@@ -284,6 +282,11 @@ module MARC
         record_hash["fields"] << field.to_hash
       end
       record_hash
+    end
+
+    # Return an actual json-encoded string.
+    def to_json_document
+      MARC::JSONLWriter.encode(self)
     end
 
     def self.new_from_hash(h)
