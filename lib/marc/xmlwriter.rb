@@ -1,28 +1,31 @@
-require 'rexml/document'
-require 'rexml/text'
-require 'rexml/formatters/default'
+require "rexml/document"
+require "rexml/text"
+require "rexml/formatters/default"
 
 module MARC
-
   # A class for writing MARC records as MARCXML.
   # BIG CAVEAT! XMLWriter will *not* convert your MARC8 to UTF8
   # bug the authors to do this if you need it
 
   class XMLWriter
-
     # the constructor which you must pass a file path
     # or an object that responds to a write message
     # the second argument is a hash of options, currently
     # only supporting one option, stylesheet
-    # 
+    #
     # writer = XMLWriter.new 'marc.xml', :stylesheet => 'style.xsl'
     # writer.write record
+    #
+
+    COLLECTION_TAG = %(<collection xmlns='#{MARC_NS}'
+      xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+      xsi:schemaLocation='#{MARC_NS} #{MARC_XSD}'>).freeze
 
     def initialize(file, opts = {})
       @writer = REXML::Formatters::Default.new
-      if file.class == String
+      if file.instance_of?(String)
         @fh = File.new(file, "w")
-      elsif file.respond_to?('write')
+      elsif file.respond_to?(:write)
         @fh = file
       else
         raise ArgumentError, "must pass in file name or handle"
@@ -31,11 +34,10 @@ module MARC
       @fh.write("<?xml version='1.0'?>\n")
       if opts[:stylesheet]
         @fh.write(
-          %Q{<?xml-stylesheet type="text/xsl" href="#{opts[:stylesheet]}"?>\n})
+          %(<?xml-stylesheet type="text/xsl" href="#{opts[:stylesheet]}"?>\n)
+        )
       end
-      @fh.write("<collection xmlns='" + MARC_NS + "' " +
-                  "xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' " +
-                  "xsi:schemaLocation='" + MARC_NS + " " + MARC_XSD + "'>")
+      @fh.write(COLLECTION_TAG)
       @fh.write("\n")
     end
 
@@ -57,9 +59,9 @@ module MARC
     # and returns a REXML::Document for the XML serialization.
 
     def self.encode(record, opts = {})
-      singleChar = Regexp.new('[\da-z ]{1}')
-      subfieldChar = Regexp.new('[\dA-Za-z!"#$%&\'()*+,-./:;<=>?{}_^`~\[\]\\\]{1}')
-      ctrlFieldTag = Regexp.new('00[1-9A-Za-z]{1}')
+      single_char = Regexp.new('[\da-z ]{1}')
+      subfield_char = Regexp.new('[\dA-Za-z!"#$%&\'()*+,-./:;<=>?{}_^`~\[\]\\\]{1}')
+      control_field_tag = Regexp.new("00[1-9A-Za-z]{1}")
 
       # Right now, this writer handles input from the strict and
       # lenient MARC readers. Because it can get 'loose' MARC in, it
@@ -73,19 +75,19 @@ module MARC
       # TODO: At the very least there should be some logging
       # to record our attempts to account for less than perfect MARC.
 
-      e = REXML::Element.new('record')
+      e = REXML::Element.new("record")
       e.add_namespace(MARC_NS) if opts[:include_namespace]
 
       # MARCXML only allows alphanumerics or spaces in the leader
-      record.leader.gsub!(/[^\w|^\s]/, 'Z')
+      record.leader.gsub!(/[^\w|^\s]/, "Z")
 
       # MARCXML is particular about last four characters; ILSes aren't
-      if (record.leader[20..23] != "4500")
+      if record.leader[20..23] != "4500"
         record.leader[20..23] = "4500"
       end
 
       # MARCXML doesn't like a space here so we need a filler character: Z
-      if (record.leader[6..6] == " ")
+      if record.leader[6..6] == " "
         record.leader[6..6] = "Z"
       end
 
@@ -94,34 +96,34 @@ module MARC
       e.add_element(leader)
 
       record.each do |field|
-        if field.class == MARC::DataField
+        if field.instance_of?(MARC::DataField)
           datafield_elem = REXML::Element.new("datafield")
 
           # If marc is leniently parsed, we may have some dirty data; using
           # the 'z' ind1 value should help us locate these later to fix
-          if field.indicator1.nil? || (field.indicator1.match(singleChar) == nil)
-            field.indicator1 = 'z'
+          if field.indicator1.nil? || field.indicator1.match(single_char).nil?
+            field.indicator1 = "z"
           end
 
           # If marc is leniently parsed, we may have some dirty data; using
           # the 'z' ind2 value should help us locate these later to fix
-          if field.indicator2.nil? || (field.indicator2.match(singleChar) == nil)
-            field.indicator2 = 'z'
+          if field.indicator2.nil? || field.indicator2.match(single_char).nil?
+            field.indicator2 = "z"
           end
 
           datafield_elem.add_attributes({
-                                          "tag" => field.tag,
-                                          "ind1" => field.indicator1,
-                                          "ind2" => field.indicator2
-                                        })
+            "tag" => field.tag,
+            "ind1" => field.indicator1,
+            "ind2" => field.indicator2
+          })
 
-          for subfield in field.subfields
+          field.subfields.each do |subfield|
             subfield_element = REXML::Element.new("subfield")
 
             # If marc is leniently parsed, we may have some dirty data; using
             # the blank subfield code should help us locate these later to fix
-            if (subfield.code.match(subfieldChar) == nil)
-              subfield.code = ' '
+            if subfield.code.match(subfield_char).nil?
+              subfield.code = " "
             end
 
             subfield_element.add_attribute("code", subfield.code)
@@ -131,11 +133,11 @@ module MARC
           end
 
           e.add_element datafield_elem
-        elsif field.class == MARC::ControlField
+        elsif field.instance_of?(MARC::ControlField)
           control_element = REXML::Element.new("controlfield")
 
           # We need a marker for invalid tag values (we use 000)
-          unless field.tag.match(ctrlFieldTag) or MARC::ControlField.control_tag?(ctrlFieldTag)
+          unless field.tag.match(control_field_tag) || MARC::ControlField.control_tag?(control_field_tag)
             field.tag = "00z"
           end
 
@@ -147,7 +149,7 @@ module MARC
       end
 
       # return xml
-      return e
+      e
     end
   end
 end
