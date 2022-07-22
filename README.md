@@ -23,6 +23,13 @@ marc is a ruby library for reading and writing MAchine Readable Cataloging
     writer = MARC::Writer.new('marc.dat')
     writer.write(record)
     writer.close()
+
+    # Reader for  MARC-XML, optionally specifying the parser to use
+    reader = MARC::XMLReader.new("myfile.xml", parser: :nokogiri)
+
+    # Reader for  MARC-XML, optionally specifying the parser to use,
+    # and not requiring the correct XML namespace to be present
+    reader = MARC::XMLReader.new("myfile.xml", parser: :nokogiri, ignore_namespace: true)
   
     # writing a record as XML
     writer = MARC::XMLWriter.new('marc.xml')
@@ -66,6 +73,19 @@ for this).  *JRuby users*: If you are using a version later than `1.0.2` and
 using Nokogiri as an XML parser with JRuby as your ruby implementation, XML
 syntax errors will still be ignored unless you have Nokogiri version `1.10.2`
 or later.
+
+## JRubySTAXReader caveats
+
+- Under Java 9+, MARC::JRubySTAXReader requires adding the following to `JAVA_OPTS`
+  in order to work around [Java module system](https://openjdk.java.net/jeps/261) 
+  restrictions:
+
+  ```sh
+  --add-opens java.xml/com.sun.org.apache.xerces.internal.impl=org.jruby.dist
+  ```
+
+- MARC::JRubySTAXReader is deprecated and will be removed in a future version of
+  `ruby-marc`. Please use MARC::JREXMLReader or MARC::NokogiriReader instead.
 
 ## Miscellany 
 

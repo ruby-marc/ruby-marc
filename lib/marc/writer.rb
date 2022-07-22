@@ -1,5 +1,4 @@
 module MARC
-
   # A class for writing MARC records as binary MARC (ISO 2709)
   #
   # == Too-long records
@@ -30,9 +29,9 @@ module MARC
     # or an object that responds to a write message
 
     def initialize(file)
-      if file.class == String
+      if file.instance_of?(String)
         @fh = File.new(file, "w")
-      elsif file.respond_to?('write')
+      elsif file.respond_to?(:write)
         @fh = file
       else
         raise ArgumentError, "must pass in file name or handle"
@@ -43,7 +42,7 @@ module MARC
     # write a record to the file or handle
 
     def write(record)
-      @fh.write(MARC::Writer.encode(record, self.allow_oversized))
+      @fh.write(MARC::Writer.encode(record, allow_oversized))
     end
 
     # close underlying filehandle
@@ -56,30 +55,29 @@ module MARC
     # and returns the record encoded as MARC21 in transmission format
     #
     # Second arg allow_oversized, default false, set to true
-    # to raise on MARC record that can't fit into ISO 2709. 
+    # to raise on MARC record that can't fit into ISO 2709.
     def self.encode(record, allow_oversized = false)
-      directory = ''
-      fields = ''
+      directory = ""
+      fields = ""
       offset = 0
       record.each do |field|
-
         # encode the field
-        field_data = ''
-        if field.class == MARC::DataField
+        field_data = ""
+        if field.instance_of?(MARC::DataField)
           warn("Warn:  Missing indicator") unless field.indicator1 && field.indicator2
           field_data = (field.indicator1 || " ") + (field.indicator2 || " ")
-          for s in field.subfields
+          field.subfields.each do |s|
             field_data += SUBFIELD_INDICATOR + s.code + s.value
           end
-        elsif field.class == MARC::ControlField
+        elsif field.instance_of?(MARC::ControlField)
           field_data = field.value
         end
         field_data += END_OF_FIELD
 
         # calculate directory entry for the field
         field_length = (field_data.respond_to?(:bytesize) ?
-                          field_data.bytesize() :
-                          field_data.length())
+                          field_data.bytesize :
+                          field_data.length)
         directory += sprintf("%03s", field.tag) + format_byte_count(field_length, allow_oversized, 4) + format_byte_count(offset, allow_oversized)
 
         # add field to data for other fields
@@ -96,18 +94,18 @@ module MARC
       marc = base + fields + END_OF_RECORD
 
       # update leader with the byte offest to the end of the directory
-      bytesize = base.respond_to?(:bytesize) ? base.bytesize() : base.length()
+      bytesize = base.respond_to?(:bytesize) ? base.bytesize() : base.length
       marc[12..16] = format_byte_count(bytesize, allow_oversized)
 
       # update the record length
-      bytesize = marc.respond_to?(:bytesize) ? marc.bytesize() : marc.length()
+      bytesize = marc.respond_to?(:bytesize) ? marc.bytesize() : marc.length
       marc[0..4] = format_byte_count(bytesize, allow_oversized)
 
       # store updated leader in the record that was passed in
       record.leader = marc[0..LEADER_LENGTH - 1]
 
       # return encoded marc
-      return marc
+      marc
     end
 
     # Formats numbers for insertion into marc binary slots.
@@ -129,8 +127,7 @@ module MARC
           raise MARC::Exception.new("Can't write MARC record in binary format, as a length/offset value of #{number} is too long for a #{num_digits}-byte slot.")
         end
       end
-      return formatted
+      formatted
     end
-
   end
 end

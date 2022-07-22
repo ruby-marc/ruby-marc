@@ -2,6 +2,10 @@ name: CI
 
 on: [push, pull_request]
 
+env:
+  # See https://github.com/jruby/jruby/issues/5509
+  JAVA_OPTS: "--add-opens java.xml/com.sun.org.apache.xerces.internal.impl=org.jruby.dist"
+
 jobs:
   tests:
     runs-on: ubuntu-latest

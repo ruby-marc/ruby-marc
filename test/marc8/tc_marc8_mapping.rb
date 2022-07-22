@@ -1,6 +1,6 @@
-require 'test/unit'
-require 'marc'
-require 'marc/marc8/map_to_unicode'
+require "test/unit"
+require "marc"
+require "marc/marc8/map_to_unicode"
 
 class TestMarc8Mapping < Test::Unit::TestCase
   def test_codesets_just_exist
