@@ -19,7 +19,7 @@ module MARC
 
     COLLECTION_TAG = %(<collection xmlns='#{MARC_NS}'
       xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
-      xsi:schemaLocation='#{MARC_NS} #{MARC_XSD}'>).freeze
+      xsi:schemaLocation="#{MARC_NS} #{MARC_XSD}">).freeze
 
     def initialize(file, opts = {})
       @writer = REXML::Formatters::Default.new
@@ -121,10 +121,10 @@ module MARC
           ind2 = "z" if field.indicator2.nil? || !ind2.match?(single_char)
 
           datafield_elem.add_attributes({
-                                          "tag" => field.tag,
-                                          "ind1" => ind1,
-                                          "ind2" => ind2
-                                        })
+            "tag" => field.tag,
+            "ind1" => ind1,
+            "ind2" => ind2
+          })
 
           field.subfields.each do |subfield|
             subfield_element = REXML::Element.new("subfield")
