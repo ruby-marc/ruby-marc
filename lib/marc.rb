@@ -30,7 +30,6 @@
 #    record = MARC::Record.new()
 #    record.add_field(MARC::ControlField.new('FMT', 'Book')) # doesn't raise an error
 
-<<<<<<< HEAD
 require_relative "marc/version"
 require_relative "marc/constants"
 require_relative "marc/record"
