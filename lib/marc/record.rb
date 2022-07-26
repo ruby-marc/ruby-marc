@@ -243,6 +243,18 @@ module MARC
       MARC::XMLWriter.encode(self, include_namespace: true)
     end
 
+    # Create the actual XML string (as opposed to #to_xml which, for historic reasons,
+    # returns an REXML document)
+    # @param [Boolean] fast_but_unsafe Use the fast MARC::UnsafeXMLWriter code
+    # @return [String] MARC-XML encoding of the record
+    def to_xml_string(fast_but_unsafe: false)
+      if fast_but_unsafe
+        MARC::UnsafeXMLWriter.encode(self)
+      else
+        to_xml.to_s
+      end
+    end
+
     # Handy method for returning a hash mapping this records values
     # to the Dublin Core.
     #

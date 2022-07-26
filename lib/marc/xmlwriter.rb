@@ -19,7 +19,7 @@ module MARC
 
     COLLECTION_TAG = %(<collection xmlns='#{MARC_NS}'
       xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
-      xsi:schemaLocation='#{MARC_NS} #{MARC_XSD}'>).freeze
+      xsi:schemaLocation="#{MARC_NS} #{MARC_XSD}">).freeze
 
     def initialize(file, opts = {})
       @writer = REXML::Formatters::Default.new
@@ -31,14 +31,20 @@ module MARC
         raise ArgumentError, "must pass in file name or handle"
       end
 
+      @stylesheet = opts[:stylesheet]
+
       @fh.write("<?xml version='1.0'?>\n")
-      if opts[:stylesheet]
-        @fh.write(
-          %(<?xml-stylesheet type="text/xsl" href="#{opts[:stylesheet]}"?>\n)
-        )
-      end
+      @fh.write(stylesheet_tag)
       @fh.write(COLLECTION_TAG)
       @fh.write("\n")
+    end
+
+    def stylesheet_tag
+      if @stylesheet
+        %(<?xml-stylesheet type="text/xsl" href="#{@stylesheet}"?>\n)
+      else
+        ""
+      end
     end
 
     # write a record to the file or handle
@@ -55,9 +61,27 @@ module MARC
       @fh.close
     end
 
+    def self.fix_leader(leader)
+      fixed_leader = leader.gsub(/[^\w|^\s]/, "Z")
+
+      # The leader must have at least 24 characters
+      fixed_leader = fixed_leader.ljust(24) if fixed_leader.length < 24
+
+      # MARCXML is particular about last four characters; ILSes aren't
+      if fixed_leader[20..23] != "4500"
+        fixed_leader[20..23] = "4500"
+      end
+
+      # MARCXML doesn't like a space here so we need a filler character: Z
+      if fixed_leader[6..6] == " "
+        fixed_leader[6..6] = "Z"
+      end
+
+      fixed_leader
+    end
+
     # a static method that accepts a MARC::Record object
     # and returns a REXML::Document for the XML serialization.
-
     def self.encode(record, opts = {})
       single_char = Regexp.new('[\da-z ]{1}')
       subfield_char = Regexp.new('[\dA-Za-z!"#$%&\'()*+,-./:;<=>?{}_^`~\[\]\\\]{1}')
@@ -78,24 +102,8 @@ module MARC
       e = REXML::Element.new("record")
       e.add_namespace(MARC_NS) if opts[:include_namespace]
 
-      # MARCXML only allows alphanumerics or spaces in the leader
-      leader = record.leader.gsub(/[^\w|^\s]/, "Z")
-
-      # The leader must have at least 24 characters
-      leader = leader.ljust(24) if leader.length < 24
-
-      # MARCXML is particular about last four characters; ILSes aren't
-      if leader[20..23] != "4500"
-        leader[20..23] = "4500"
-      end
-
-      # MARCXML doesn't like a space here so we need a filler character: Z
-      if leader[6..6] == " "
-        leader[6..6] = "Z"
-      end
-
       leader_element = REXML::Element.new("leader")
-      leader_element.add_text(leader)
+      leader_element.add_text(fix_leader(record.leader))
       e.add_element(leader_element)
 
       record.each do |field|
