@@ -30,6 +30,7 @@
 #    record = MARC::Record.new()
 #    record.add_field(MARC::ControlField.new('FMT', 'Book')) # doesn't raise an error
 
+<<<<<<< HEAD
 require_relative "marc/version"
 require_relative "marc/constants"
 require_relative "marc/record"
@@ -44,3 +45,5 @@ require_relative "marc/unsafe_xmlwriter"
 require_relative "marc/xmlreader"
 require_relative "marc/dublincore"
 require_relative "marc/xml_parsers"
+require_relative "marc/jsonl_reader"
+require_relative "marc/jsonl_writer"
