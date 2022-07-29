@@ -6,6 +6,26 @@ marc is a ruby library for reading and writing MAchine Readable Cataloging
 
 ## Usage 
 
+
+### Reading MARC
+
+```ruby
+require 'marc'
+
+# marc21 binary format is read with MARC::Reader
+
+reader = MARC::Reader.new('marc.dat')
+reader.each do |record|
+  title = record["245"].value
+  puts title
+end
+
+# If you know you have another encoding, you can specify it
+reader = MARC::Reader.new("marc.dat", external_encoding: "MARC-8" )
+
+```
+
+
     require 'marc'
   
     # reading records from a batch file
