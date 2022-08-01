@@ -19,10 +19,17 @@ module MARC
     def self.extended(receiver)
       magic = MARC::XMLReader.best_available
       case magic
-      when "nokogiri" then receiver.extend(NokogiriReader)
-      when "libxml" then receiver.extend(LibXMLReader)
-      when "jstax" then receiver.extend(JRubySTAXReader)
-      when "jrexml" then receiver.extend(JREXMLReader)
+      when "nokogiri"
+        receiver.extend(NokogiriReader)
+      when "libxml"
+        warn "libxml support will be removed in version 1.3. Use nokogiri instead"
+        receiver.extend(LibXMLReader)
+      when "jstax"
+        warn "jstax support will be removed in version 1.3. Use nokogiri instead"
+        receiver.extend(JRubySTAXReader)
+      when "jrexml"
+        warn "jrexml support will be removed in version 1.3 and fall back to just rexml"
+        receiver.extend(JREXMLReader)
       else receiver.extend(REXMLReader)
       end
     end
