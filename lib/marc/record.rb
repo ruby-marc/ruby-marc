@@ -238,20 +238,20 @@ module MARC
     # Really this is just a wrapper around MARC::XMLWriter::encode
     #
     #   xml_doc = record.to_xml()
-
-    def to_xml
-      MARC::XMLWriter.encode(self, include_namespace: true)
+    def to_xml(include_namespace: true)
+      MARC::XMLWriter.encode(self, include_namespace: include_namespace)
     end
 
     # Create the actual XML string (as opposed to #to_xml which, for historic reasons,
     # returns an REXML document)
     # @param [Boolean] fast_but_unsafe Use the fast MARC::UnsafeXMLWriter code
+    # @param [Boolean] include_namespace Include namespaces on the <record> tag?
     # @return [String] MARC-XML encoding of the record
-    def to_xml_string(fast_but_unsafe: false)
+    def to_xml_string(fast_but_unsafe: false, include_namespace: true)
       if fast_but_unsafe
-        MARC::UnsafeXMLWriter.encode(self)
+        MARC::UnsafeXMLWriter.encode(self, include_namespace: include_namespace)
       else
-        to_xml.to_s
+        MARC::XMLWriter.encode(self, include_namespace: include_namespace).to_s
       end
     end
 

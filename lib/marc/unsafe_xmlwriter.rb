@@ -8,6 +8,12 @@ module MARC
   # and 15-20 times faster than the REXML version.
   class UnsafeXMLWriter < MARC::XMLWriter
     XML_HEADER = '<?xml version="1.0" encoding="UTF-8"?>'
+    NS_ATTRS = %(xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.loc.gov/MARC21/slim" xsi:schemaLocation="http://www.loc.gov/MARC21/slim http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd")
+
+    NS_COLLECTION = "<collection #{NS_ATTRS}>".freeze
+    COLLECTION = "<collection>".freeze
+    NS_RECORD = "<record #{NS_ATTRS}>".freeze
+    RECORD = "<record>".freeze
 
     # Write the record to the target
     # @param [MARC::Record] record
@@ -16,14 +22,31 @@ module MARC
     end
 
     class << self
+      # Open `collection` tag, w or w/o namespace
+      def open_collection(include_namespace: true)
+        if include_namespace
+          NS_COLLECTION
+        else
+          COLLECTION
+        end
+      end
+
+      def open_record(include_namespace: true)
+        if include_namespace
+          NS_RECORD
+        else
+          RECORD
+        end
+      end
+
       # Produce an XML string with a single document in a collection
       # @param [MARC::Record] record
-      # @param [Boolean] use_namespace Whether to namespace the resulting XML
-      def single_record_document(record, use_namespace: true)
+      # @param [Boolean] include_namespace Whether to namespace the resulting XML
+      def single_record_document(record, include_namespace: true)
         xml = XML_HEADER.dup
-        xml << MARC::XMLWriter::COLLECTION_TAG
-        xml << encode(record)
-        xml << "</collection>"
+        xml << open_collection(include_namespace: include_namespace)
+        xml << encode(record, include_namespace: false)
+        xml << "</collection>".freeze
         xml
       end
 
@@ -32,8 +55,8 @@ module MARC
       # enclosure.
       # @param [MARC::Record] record The record to encode to XML
       # @return [String] The XML snippet of the record in MARC-XML
-      def encode(record)
-        xml = "<record>"
+      def encode(record, include_namespace: true)
+        xml = open_record(include_namespace: include_namespace).dup
 
         # MARCXML only allows alphanumerics or spaces in the leader
         lead = fix_leader(record.leader)
