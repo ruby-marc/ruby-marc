@@ -1,7 +1,35 @@
 require "test/unit"
 require "marc"
+require 'warning'
 
 class ParsersTest < Test::Unit::TestCase
+
+  LOADABLE_PARSERS = {
+    libxml: "xml",
+    nokogiri: "nokogiri",
+    jrexml: "jrexml"
+  }
+
+  @@parsers = LOADABLE_PARSERS.keys.each_with_object({}) do |label, h|
+    begin
+      require LOADABLE_PARSERS[label]
+      h[label] = true
+    rescue LoadError
+      warn "#{label} unavailable: skipping its tests"
+    end
+  end
+
+  def self.jstax_available?
+    require "java"
+    java.lang.Class.forName("javax.xml.stream.XMLInputFactory")
+    true
+  rescue LoadError, java.lang.ClassNotFoundException
+    warn "jstax unavailable: skipping its tests"
+    false
+  end
+
+  @@parsers[:jstax] = self.jstax_available?
+
   def test_parser_default
     assert_equal("rexml", MARC::XMLReader.parser)
     reader = MARC::XMLReader.new("test/one.xml")
@@ -9,7 +37,7 @@ class ParsersTest < Test::Unit::TestCase
   end
 
   def test_set_nokogiri
-    require "nokogiri"
+    return unless @@parsers[:nokogiri]
     assert_equal("rexml", MARC::XMLReader.parser)
     reader = MARC::XMLReader.new("test/one.xml")
     assert_kind_of(REXML::Parsers::PullParser, reader.parser)
@@ -27,63 +55,46 @@ class ParsersTest < Test::Unit::TestCase
     assert_equal("nokogiri", MARC::XMLReader.parser)
     reader = MARC::XMLReader.new("test/one.xml")
     assert_kind_of(Nokogiri::XML::SAX::Parser, reader.parser)
-  rescue LoadError
-    puts "\nNokogiri not available, skipping 'test_set_nokogiri'.\n"
   end
 
   def test_set_jrexml
-    if defined? JRUBY_VERSION
-      begin
-        require "jrexml"
-        reader = MARC::XMLReader.new("test/one.xml", parser: MARC::XMLReader::USE_JREXML)
-        assert_kind_of(REXML::Parsers::PullParser, reader.parser)
-        assert_equal("rexml", MARC::XMLReader.parser)
-        reader = MARC::XMLReader.new("test/one.xml", parser: "jrexml")
-        assert_kind_of(REXML::Parsers::PullParser, reader.parser)
-        assert_equal("rexml", MARC::XMLReader.parser)
-        MARC::XMLReader.parser = MARC::XMLReader::USE_JREXML
-        assert_equal("jrexml", MARC::XMLReader.parser)
-        reader = MARC::XMLReader.new("test/one.xml")
-        assert_kind_of(REXML::Parsers::PullParser, reader.parser)
-        MARC::XMLReader.parser = "jrexml"
-        assert_equal("jrexml", MARC::XMLReader.parser)
-        reader = MARC::XMLReader.new("test/one.xml")
-        assert_kind_of(REXML::Parsers::PullParser, reader.parser)
-      rescue LoadError
-        puts "\njrexml not available, skipping 'test_set_jrexml'.\n"
-      end
-    else
-      puts "\nTest not being run from JRuby, skipping 'test_set_jrexml'.\n"
-    end
+    return unless @@parsers[:jrexml]
+    reader = MARC::XMLReader.new("test/one.xml", parser: MARC::XMLReader::USE_JREXML)
+    assert_kind_of(REXML::Parsers::PullParser, reader.parser)
+    assert_equal("rexml", MARC::XMLReader.parser)
+    reader = MARC::XMLReader.new("test/one.xml", parser: "jrexml")
+    assert_kind_of(REXML::Parsers::PullParser, reader.parser)
+    assert_equal("rexml", MARC::XMLReader.parser)
+    MARC::XMLReader.parser = MARC::XMLReader::USE_JREXML
+    assert_equal("jrexml", MARC::XMLReader.parser)
+    reader = MARC::XMLReader.new("test/one.xml")
+    assert_kind_of(REXML::Parsers::PullParser, reader.parser)
+    MARC::XMLReader.parser = "jrexml"
+    assert_equal("jrexml", MARC::XMLReader.parser)
+    reader = MARC::XMLReader.new("test/one.xml")
+    assert_kind_of(REXML::Parsers::PullParser, reader.parser)
   end
 
   def test_set_jstax
-    if defined? JRUBY_VERSION
-      begin
-        assert_equal("rexml", MARC::XMLReader.parser)
-        reader = MARC::XMLReader.new("test/one.xml")
-        assert_kind_of(REXML::Parsers::PullParser, reader.parser)
+    return unless @@parsers[:jstax]
+    assert_equal("rexml", MARC::XMLReader.parser)
+    reader = MARC::XMLReader.new("test/one.xml")
+    assert_kind_of(REXML::Parsers::PullParser, reader.parser)
 
-        reader = MARC::XMLReader.new("test/one.xml", parser: MARC::XMLReader::USE_JSTAX)
-        assert_kind_of(Java::ComSunOrgApacheXercesInternalImpl::XMLStreamReaderImpl, reader.parser)
-        assert_equal("rexml", MARC::XMLReader.parser)
-        reader = MARC::XMLReader.new("test/one.xml", parser: "jstax")
-        assert_kind_of(Java::ComSunOrgApacheXercesInternalImpl::XMLStreamReaderImpl, reader.parser)
-        assert_equal("rexml", MARC::XMLReader.parser)
-        MARC::XMLReader.parser = MARC::XMLReader::USE_JSTAX
-        assert_equal("jstax", MARC::XMLReader.parser)
-        reader = MARC::XMLReader.new("test/one.xml")
-        assert_kind_of(Java::ComSunOrgApacheXercesInternalImpl::XMLStreamReaderImpl, reader.parser)
-        MARC::XMLReader.parser = "jstax"
-        assert_equal("jstax", MARC::XMLReader.parser)
-        reader = MARC::XMLReader.new("test/one.xml")
-        assert_kind_of(Java::ComSunOrgApacheXercesInternalImpl::XMLStreamReaderImpl, reader.parser)
-      rescue java.lang.ClassNotFoundException
-        puts "\njavax.xml.stream not available, skipping 'test_set_jstax'.\n"
-      end
-    else
-      puts "\nTest not being run from JRuby, skipping 'test_set_jstax'.\n"
-    end
+    reader = MARC::XMLReader.new("test/one.xml", parser: MARC::XMLReader::USE_JSTAX)
+    assert_kind_of(Java::ComSunOrgApacheXercesInternalImpl::XMLStreamReaderImpl, reader.parser)
+    assert_equal("rexml", MARC::XMLReader.parser)
+    reader = MARC::XMLReader.new("test/one.xml", parser: "jstax")
+    assert_kind_of(Java::ComSunOrgApacheXercesInternalImpl::XMLStreamReaderImpl, reader.parser)
+    assert_equal("rexml", MARC::XMLReader.parser)
+    MARC::XMLReader.parser = MARC::XMLReader::USE_JSTAX
+    assert_equal("jstax", MARC::XMLReader.parser)
+    reader = MARC::XMLReader.new("test/one.xml")
+    assert_kind_of(Java::ComSunOrgApacheXercesInternalImpl::XMLStreamReaderImpl, reader.parser)
+    MARC::XMLReader.parser = "jstax"
+    assert_equal("jstax", MARC::XMLReader.parser)
+    reader = MARC::XMLReader.new("test/one.xml")
+    assert_kind_of(Java::ComSunOrgApacheXercesInternalImpl::XMLStreamReaderImpl, reader.parser)
   end
 
   def test_set_rexml
@@ -106,7 +117,6 @@ class ParsersTest < Test::Unit::TestCase
   def test_set_magic
     best = choose_best_available_parser
     magic_parser = best[:parser]
-    puts "\nTesting 'test_set_magic' for parser: #{magic_parser}"
     reader = MARC::XMLReader.new("test/one.xml", parser: MARC::XMLReader::USE_BEST_AVAILABLE)
     assert_kind_of(magic_parser, reader.parser)
     assert_equal("rexml", MARC::XMLReader.parser)
@@ -138,20 +148,11 @@ class ParsersTest < Test::Unit::TestCase
       MARC::XMLReader.nokogiri!
       reader = MARC::XMLReader.new("test/one.xml")
       assert_kind_of(Nokogiri::XML::SAX::Parser, reader.parser)
-    else
-      puts "\nNokogiri not loaded, skipping convenience method test.\n"
     end
-    if defined? JRUBY_VERSION
-      begin
-        require "jrexml"
-        MARC::XMLReader.jrexml!
-        reader = MARC::XMLReader.new("test/one.xml")
-        assert_kind_of(REXML::Parsers::PullParser, reader.parser)
-      rescue LoadError
-        puts "\njrexml not available, skipping convenience method test.\n"
-      end
-    else
-      puts "\nTest not being run from JRuby, skipping jrexml convenience method test.\n"
+    if (@@parsers[:jrexml])
+      MARC::XMLReader.jrexml!
+      reader = MARC::XMLReader.new("test/one.xml")
+      assert_kind_of(REXML::Parsers::PullParser, reader.parser)
     end
   end
 
