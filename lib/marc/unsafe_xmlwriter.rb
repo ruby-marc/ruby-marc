@@ -1,4 +1,4 @@
-require "marc"
+require "marc/xmlwriter"
 
 module MARC
   # UnsafeXMLWriter bypasses real xml handlers like REXML or Nokogiri and just concatenates strings
