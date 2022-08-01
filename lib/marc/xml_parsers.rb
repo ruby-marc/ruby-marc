@@ -1,7 +1,13 @@
 module MARC
   # Exception class to be thrown when an XML parser
   # encounters an unrecoverable error.
-  class XMLParseError < StandardError; end
+  class XMLParseError < StandardError
+  end
+
+  IND1 = "ind1".freeze
+  IND2 = "ind2".freeze
+  TAG  = "tag".freeze
+  CODE = "code".freeze
 
   # The MagicReader will try to use the best available XML Parser at the
   # time of initialization.
@@ -42,6 +48,12 @@ module MARC
     #  attributes_to_hash(attributes)
     #  each
 
+    REC_TAG = "record".freeze
+    LEAD_TAG = "leader".freeze
+    CF_TAG = "controlfield".freeze
+    DF_TAG = "datafield".freeze
+    SF_TAG = "subfield".freeze
+
     def init
       @record = {record: nil, leader: "", field: nil, subfield: nil}
       @current_element = nil
@@ -65,45 +77,45 @@ module MARC
       attributes = attributes_to_hash(attributes)
       if (uri == @ns) || @ignore_namespace
         case name.downcase
-        when "record" then @record[:record] = MARC::Record.new
-        when "leader" then @current_element = :leader
-        when "controlfield"
-          @current_element = :field
-          @record[:field] = MARC::ControlField.new(attributes["tag"])
-        when "datafield"
-          @record[:field] = MARC::DataField.new(attributes["tag"], attributes["ind1"], attributes["ind2"])
-        when "subfield"
+        when SF_TAG
           @current_element = :subfield
-          @record[:subfield] = MARC::Subfield.new(attributes["code"])
+          @record[:subfield] = MARC::Subfield.new(attributes[CODE])
+        when DF_TAG
+          @record[:field] = MARC::DataField.new(attributes[TAG], attributes[IND1], attributes[IND2])
+        when CF_TAG
+          @current_element = :field
+          @record[:field] = MARC::ControlField.new(attributes[TAG])
+        when LEAD_TAG then @current_element = :leader
+        when REC_TAG then @record[:record] = MARC::Record.new
         end
       end
     end
 
-    def characters text
+    def characters(text)
       case @current_element
-      when :leader then @record[:leader] << text
-      when :field then @record[:field].value << text
       when :subfield then @record[:subfield].value << text
+      when :field then @record[:field].value << text
+      when :leader then @record[:leader] << text
       end
     end
 
-    def end_element_namespace name, prefix = nil, uri = nil
+    def end_element_namespace(name, prefix = nil, uri = nil)
       @current_element = nil
       if (uri == @ns) || @ignore_namespace
         case name.downcase
-        when "record" then yield_record
-        when "leader"
-          @record[:record].leader = @record[:leader]
-          @record[:leader] = ""
-          @current_element = nil if @current_element == :leader
-        when /(control|data)field/
-          @record[:record] << @record[:field]
-          @record[:field] = nil
-          @current_element = nil if @current_element == :field
-        when "subfield"
+        when SF_TAG
           @record[:field].append(@record[:subfield])
           @record[:subfield] = nil
           @current_element = nil if @current_element == :subfield
+        when DF_TAG, CF_TAG
+          @record[:record] << @record[:field]
+          @record[:field] = nil
+          @current_element = nil if @current_element == :field
+        when REC_TAG then yield_record
+        when LEAD_TAG
+          @record[:record].leader = @record[:leader]
+          @record[:leader] = ""
+          @current_element = nil if @current_element == :leader
         end
       end
     end
@@ -142,7 +154,7 @@ module MARC
     end
 
     SAX_METHODS = [:xmldecl, :start_document, :end_document, :start_element,
-      :end_element, :comment, :warning, :error, :cdata_block, :processing_instruction]
+                   :end_element, :comment, :warning, :error, :cdata_block, :processing_instruction]
 
     def method_missing(method_name, *args)
       unless SAX_METHODS.include?(method_name)
@@ -259,11 +271,11 @@ module MARC
           when "datafield"
             record << datafield if datafield
             datafield = nil
-            data_field = MARC::DataField.new(node.attribute("tag"), node.attribute("ind1"), node.attribute("ind2"))
+            data_field = MARC::DataField.new(node.attribute("tag"), node.attribute(IND1), node.attribute(IND2))
             datafield = data_field
           when "subfield"
             raise "No datafield to add to" unless datafield
-            subfield = MARC::Subfield.new(node.attribute("code"))
+            subfield = MARC::Subfield.new(node.attribute(CODE))
             datafield.append(subfield)
             cursor = subfield
           when "record"
@@ -287,14 +299,14 @@ module MARC
             case strip_ns(event[0])
             when "controlfield"
               text = ""
-              control_field = MARC::ControlField.new(attrs["tag"])
+              control_field = MARC::ControlField.new(attrs[TAG])
             when "datafield"
               text = ""
-              data_field = MARC::DataField.new(attrs["tag"], attrs["ind1"],
-                attrs["ind2"])
+              data_field = MARC::DataField.new(attrs[TAG], attrs[IND1],
+                                               attrs[IND2])
             when "subfield"
               text = ""
-              subfield = MARC::Subfield.new(attrs["code"])
+              subfield = MARC::Subfield.new(attrs[CODE])
             end
           end
 
@@ -366,16 +378,16 @@ module MARC
             @parser.read
             r.leader = @parser.value
           when "controlfield"
-            tag = @parser["tag"]
+            tag = @parser[TAG]
             @parser.read
             r << MARC::ControlField.new(tag, @parser.value)
           when "datafield"
-            data = MARC::DataField.new(@parser["tag"], @parser["ind1"], @parser["ind2"])
+            data = MARC::DataField.new(@parser[TAG], @parser[IND1], @parser[IND2])
             while @parser.read && !((@parser.local_name == "datafield") && (@parser.node_type == XML::Reader::TYPE_END_ELEMENT))
               next if @parser.node_type == XML::Reader::TYPE_END_ELEMENT
               case @parser.local_name
               when "subfield"
-                code = @parser["code"]
+                code = @parser[CODE]
                 @parser.read
                 data.append(MARC::Subfield.new(code, @parser.value))
               end
