@@ -297,7 +297,7 @@ module MARC
     end
 
     # Return an actual json-encoded string.
-    def to_json_document
+    def to_json_string
       MARC::JSONLWriter.encode(self)
     end
 

@@ -1,47 +1,54 @@
 # Changelog
 
-# Changelog
-
 All notable changes to this project will be documented in this file.
 
-## [1.2] - 2022-07-30
+## [1.2] - 2022-08-01
 
 ### Added
-  * New XML writer `MARC::UnsafeXMLWriter` which is 15-20 times faster 
-    than the default (rexml-based) writer. It mirrors code from 
-    the old
-    [`MARC::FastXMLWriter` gem](https://github.com/billdueber/marc-fastxmlwriter) 
-    in a way that integrates better with the existing writer framework. It can
-    be used like any other writer, e.g., `writer = MARC::UnsafeXMLWriter.
-    new(filename)`. Note that while it is "unsafe" in that it doesn't do
-    checks for valid XML going out (it's speed comes from the fact that it's
-    just concatenating strings together), the `FastXMLWriter` gem has been
-    used "in the wild" for years and doesn't seem to cause anyone any 
-    problems.
-  * Added a new method, `MARC::Record.to_xml_string` which produces a 
-    valid (non-namespaced) `<record>...</record>` XML snippet. It takes
-    an optional keyword argument to use the new unsafe generator as
-    `record.to_xml_string(fast_but_unsafe: true)`. 
-  * Added first-class support for `.jsonl` (aka "newline-delimited json")
-    files via `MARC::JSONLReader` and `MARC::JSONLWriter` which read
-    and write marc-in-json. `ruby-marc` has supported `#to_hash` and
-    `#from_hash` to deal with this format at the individual record level 
-    for a long time.
-  * New option to xml readers `reader = MARC::XMLReader.new(filename, 
-    ignore_namespace: true)`. While the REXML MARC-XML reader can't handle 
-    (and thus has always ignored XML namespaces), the Nokogiri-based 
-    version does not. Useful only when you have poorly-generated files where 
-    the XML namespaces are wonky.
+
+* New XML writer `MARC::UnsafeXMLWriter` which is 15-20 times faster than the
+  default (rexml-based) writer. It mirrors code from the old
+  [`MARC::FastXMLWriter` gem](https://github.com/billdueber/marc-fastxmlwriter)
+  in a way that integrates better with the existing writer framework. It can
+  be used like any other writer,
+  e.g., `writer = MARC::UnsafeXMLWriter. new(filename)`. Note that while it
+  is "unsafe" in that it doesn't do checks for valid XML going out (it's speed
+  comes from the fact that it's just concatenating strings together),
+  the `FastXMLWriter` gem has been used "in the wild" for years and doesn't
+  seem to cause anyone any problems.
+* Added a new method, `MARC::Record.to_xml_string` which produces a
+  valid `<record>...</record>` XML snippet. It takes an optional keyword
+  argument to include namespace attributes on the
+  `<record>` tag, and another to use the new unsafe generator as
+  `record.to_xml_string(fast_but_unsafe: true)`.
+* Added first-class support for `.jsonl` (aka "newline-delimited json")
+  files using the marc-in-json format via `MARC::JSONLReader` and
+  `MARC::JSONLWriter` which read and write marc-in-json. `ruby-marc` has
+  supported `#to_hash` and `#from_hash` to deal with this format at the
+  individual record level for a long time; this just provides the
+  reader/writer scaffolding.
+* Also added `MARC::Record.to_json_string` to get a marc-in-json string 
+  representation.
+* New option to xml readers to ignore any namespaces
+  via `reader = MARC::XMLReader.new(filename, ignore_namespace: true)`. While
+  the REXML MARC-XML reader can't handle
+  (and thus has always ignored XML namespaces), the Nokogiri-based version
+  will enforce namespaces if present. Useful only when you have
+  poorly-generated files where the XML namespace attributes are wonky.
 
 ### Changed
-  * Added deprecation warnings when using the `libxml`, `jstax`, or `jrexml`
+* 10-15% speed improvement when parsing MARC-XML with nokogiri (PR #97,
+  billdueber)
+* Added deprecation warnings when using the `libxml`, `jstax`, or `jrexml`
     xml parsers. When introduced, Nokogiri under JRuby was iffy. It's now
     stable on both MRI and JRuby and faster than any of the other 
     included options and should be preferred. (PR #98, billdueber)
-  * MARC fields are now validated in their own post-creation stage (PR #66,
+* MARC fields are now validated in their own post-creation stage (PR #66,
   cbeer)
-  * 10-15% speed improvement when parsing MARC-XML with nokogiri (PR #97, 
-    billdueber)
+* Reduce the noise when running tests (billdueber)
+* Reformatted this CHANGELOG.md file and added examples/structure to 
+  README.md.
+
 
 ### Fixed
   * MARC-XML has requirements on the leader that are applied when writing out
