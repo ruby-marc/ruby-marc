@@ -80,8 +80,15 @@ class UnsafeXMLTest < Test::Unit::TestCase
 
   def test_to_xml_string
     rex_xml = basic_rec.to_xml_string
-    unsafe_xml = basic_rec.to_xml_string(fast_but_unsafe: true)
+    unsafe_xml = basic_rec.to_xml_string(fast_but_unsafe: true, include_namespace: false)
     rex = MARC::XMLReader.new(StringIO.new(rex_xml)).first
+    unsafe = MARC::XMLReader.new(StringIO.new(unsafe_xml)).first
+    assert_equal(rex, unsafe)
+  end
+
+  def test_to_xml_string_with_namespaces
+    unsafe_xml = basic_rec.to_xml_string(fast_but_unsafe: true, include_namespace: true)
+    rex = MARC::XMLReader.new(StringIO.new(unsafe_xml)).first
     unsafe = MARC::XMLReader.new(StringIO.new(unsafe_xml)).first
     assert_equal(rex, unsafe)
   end
