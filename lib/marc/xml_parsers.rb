@@ -6,7 +6,7 @@ module MARC
 
   IND1 = "ind1".freeze
   IND2 = "ind2".freeze
-  TAG  = "tag".freeze
+  TAG = "tag".freeze
   CODE = "code".freeze
 
   # The MagicReader will try to use the best available XML Parser at the
@@ -154,7 +154,7 @@ module MARC
     end
 
     SAX_METHODS = [:xmldecl, :start_document, :end_document, :start_element,
-                   :end_element, :comment, :warning, :error, :cdata_block, :processing_instruction]
+      :end_element, :comment, :warning, :error, :cdata_block, :processing_instruction]
 
     def method_missing(method_name, *args)
       unless SAX_METHODS.include?(method_name)
@@ -303,7 +303,7 @@ module MARC
             when "datafield"
               text = ""
               data_field = MARC::DataField.new(attrs[TAG], attrs[IND1],
-                                               attrs[IND2])
+                attrs[IND2])
             when "subfield"
               text = ""
               subfield = MARC::Subfield.new(attrs[CODE])

@@ -1,7 +1,7 @@
 require "test/unit"
 require "marc"
 require "stringio"
-require 'warning'
+require "warning"
 
 class XMLTest < Test::Unit::TestCase
   Warning.ignore(/is deprecated and will be removed in a future version of ruby-marc/)
@@ -107,8 +107,7 @@ class XMLTest < Test::Unit::TestCase
   def read_no_leading_zero_write_leading_zero_test(parser)
     reader = MARC::XMLReader.new("test/no-leading-zero.xml", parser: parser)
     record = reader.to_a[0]
-    assert_equal("042 zz $a dc ", record["042"].to_s, "Failed with parser '#{parser}'"
-    )
+    assert_equal("042 zz $a dc ", record["042"].to_s, "Failed with parser '#{parser}'")
   end
 
   def test_leader_from_xml
@@ -125,7 +124,6 @@ class XMLTest < Test::Unit::TestCase
     # serializing as MARC should populate the record length and directory offset
     record = MARC::Record.new_from_marc(record.to_marc)
     assert_equal "00734njm a2200217uu 4500", record.leader, "Failed with parser '#{parser}'"
-
   end
 
   def test_read_write
@@ -139,24 +137,21 @@ class XMLTest < Test::Unit::TestCase
     record1.leader = "00925njm  22002777a 4500"
     record1.append MARC::ControlField.new("007", "sdubumennmplu")
     record1.append MARC::DataField.new("245", "0", "4",
-                                       ["a", "The Great Ray Charles"], ["h", "[sound recording]."])
+      ["a", "The Great Ray Charles"], ["h", "[sound recording]."])
     record1.append MARC::DataField.new("998", " ", " ",
-                                       ["^", "Valid local subfield"])
+      ["^", "Valid local subfield"])
 
     writer = MARC::XMLWriter.new("test/test.xml", stylesheet: "style.xsl")
     writer.write(record1)
     writer.close
 
     xml = File.read("test/test.xml")
-    assert_match(/<controlfield tag='007'>sdubumennmplu<\/controlfield>/, xml, "Failed with parser '#{parser}'"
-    )
-    assert_match(/<\?xml-stylesheet type="text\/xsl" href="style.xsl"\?>/, xml, "Failed with parser '#{parser}'"
-    )
+    assert_match(/<controlfield tag='007'>sdubumennmplu<\/controlfield>/, xml, "Failed with parser '#{parser}'")
+    assert_match(/<\?xml-stylesheet type="text\/xsl" href="style.xsl"\?>/, xml, "Failed with parser '#{parser}'")
 
     reader = MARC::XMLReader.new("test/test.xml", parser: parser)
     record2 = reader.entries[0]
-    assert_equal(record1, record2, "Failed with parser '#{parser}'"
-    )
+    assert_equal(record1, record2, "Failed with parser '#{parser}'")
   ensure
     File.unlink("test/test.xml")
   end
@@ -172,8 +167,7 @@ class XMLTest < Test::Unit::TestCase
     reader = MARC::XMLReader.new("test/batch.xml", parser: parser)
     iter = reader.each
     r = iter.next
-    assert_instance_of(MARC::Record, r, "Failed with parser '#{parser}'"
-    )
+    assert_instance_of(MARC::Record, r, "Failed with parser '#{parser}'")
     iter.next # total of two records
     assert_raise(StopIteration, "Failed with parser '#{parser}'") { iter.next }
   end

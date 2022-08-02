@@ -126,17 +126,43 @@ The `parser` argument works as follows:
 reader = MARC::XMLReader.new("my_file.xml", parser: "magic")
 ```
 
+### "Self-closing" writers
+
+Much like one can [open a file and have it automatically close at the end 
+of a block](https://ruby-doc.org/core-2.5.0/File.html#method-c-open) in 
+standard ruby, the various writers will do the same.
+
+```ruby
+
+# separate writer and #close
+reader = MARC::Reader.new("my_marc.mrc")
+writer = MARC::UnsafeXMLWriter.new("my_marc.xml")
+reader.each do |record|
+  writer.write(record)
+end
+writer.close
+
+# "self-closing" equivalent
+reader = MARC::Reader.new("my_marc.mrc")
+MARC::UnsafeXMLWriter.new("my_marc.xml") do |w|
+  reader.each do |record|
+    w.write(record)
+  end
+end
+# no need to close the writer here
+```
+
 ### Serializing a single record
 
 The `MARC::Record` class has utility functions to serialize to the various 
-formats.
+formats. These are generally thin wrappers around the `encode` class
+methods (e.g., `MARC::Writer.encode`, `MARC::XMLWriter.encode`, etc.)
 
 * `record.to_marc` will production a marc21 binary string
-* `record.to_hash` returns a hash compatible with the marc-in-json format.
-* `record.to_json_string` returns a string containing the JSON document 
+* `record.to_json_string` returns a string containing the JSON document
   for the marc-in-json serialization
-* `record.to_xml`, for historical reasons, returns an REXML document of 
-  the XML serialization
+  * This just json-ifies `record.to_hash`, which returns a hash compatible 
+    with the marc-in-json format.
 * `record.to_xml_string` returns the actual XML string, with the following 
   options:
   * `include_namespace: true` (default: `true`) will include the MARC namespace 
@@ -144,8 +170,12 @@ formats.
   * `fast_but_unsafe: true` (default: `false`) will use the much faster 
     `MARC::UnsafeXMLWriter` code, which produces the XML by string 
     concatenation. See that class for more information, but in general, if 
-    your MARC isn't wildly invalid, it works fine and roughly 15x faster. 
+    your MARC isn't wildly invalid, it works fine and is roughly 15x faster. 
     The default (REXML) simply does `record.to_xml.to_s`
+
+Note that * `record.to_xml`, for historical reasons, returns an REXML document of
+the XML serialization and _not_ an XML string as one might expect. 
+
 
 ## Benchmarking reading MARC in various formats
 

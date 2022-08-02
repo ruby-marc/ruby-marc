@@ -1,9 +1,8 @@
 require "test/unit"
 require "marc"
-require 'warning'
+require "warning"
 
 class ParsersTest < Test::Unit::TestCase
-
   LOADABLE_PARSERS = {
     libxml: "xml",
     nokogiri: "nokogiri",
@@ -28,7 +27,7 @@ class ParsersTest < Test::Unit::TestCase
     false
   end
 
-  @@parsers[:jstax] = self.jstax_available?
+  @@parsers[:jstax] = jstax_available?
 
   def test_parser_default
     assert_equal("rexml", MARC::XMLReader.parser)
@@ -149,7 +148,7 @@ class ParsersTest < Test::Unit::TestCase
       reader = MARC::XMLReader.new("test/one.xml")
       assert_kind_of(Nokogiri::XML::SAX::Parser, reader.parser)
     end
-    if (@@parsers[:jrexml])
+    if @@parsers[:jrexml]
       MARC::XMLReader.jrexml!
       reader = MARC::XMLReader.new("test/one.xml")
       assert_kind_of(REXML::Parsers::PullParser, reader.parser)
