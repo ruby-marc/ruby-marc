@@ -28,7 +28,7 @@ module MARC
     # the constructor which you must pass a file path
     # or an object that responds to a write message
 
-    def initialize(file)
+    def initialize(file, &blk)
       if file.instance_of?(String)
         @fh = File.new(file, "w")
       elsif file.respond_to?(:write)
@@ -37,6 +37,11 @@ module MARC
         raise ArgumentError, "must pass in file name or handle"
       end
       self.allow_oversized = false
+
+      if block_given?
+        blk.call(self)
+        self.close
+      end
     end
 
     # write a record to the file or handle

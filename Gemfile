@@ -8,7 +8,7 @@ group :test do
   gem "rdoc"
   gem "xml-simple"
   gem "test-unit"
-  gem 'warning'
+  gem "warning"
 end
 
 # Specify your gem's dependencies in ..gemspec
