@@ -6,14 +6,15 @@ module MARC
 
   IND1 = "ind1".freeze
   IND2 = "ind2".freeze
-  TAG  = "tag".freeze
+  TAG = "tag".freeze
   CODE = "code".freeze
 
   # The MagicReader will try to use the best available XML Parser at the
   # time of initialization.
   # The order is currently:
   #   * Nokogiri
-  #   * jrexml (JRuby only)
+  #   * libxml-ruby (MRI only) ** DEPRECATED **
+  #   * jstax (JRuby only) ** DEPRECATED **
   #   * rexml
   #
   # With the idea that other parsers could be added as their modules are
@@ -28,14 +29,14 @@ module MARC
       when "nokogiri"
         receiver.extend(NokogiriReader)
       when "libxml"
-        warn "libxml support will be removed in version 1.3. Use nokogiri instead"
+        warn "libxml support will be removed in version 1.3. Prefer nokogiri instead"
         receiver.extend(LibXMLReader)
       when "jstax"
-        warn "jstax support will be removed in version 1.3. Use nokogiri instead"
+        warn "jstax support will be removed in version 1.3. Prefer nokogiri instead"
         receiver.extend(JRubySTAXReader)
       when "jrexml"
-        warn "jrexml support will be removed in version 1.3 and fall back to just rexml"
-        receiver.extend(JREXMLReader)
+        warn "jrexml support is broken upstream; falling back to just rexml. Prefer nokogiri instead"
+        receiver.extend(REXMLReader)
       else receiver.extend(REXMLReader)
       end
     end
@@ -154,7 +155,7 @@ module MARC
     end
 
     SAX_METHODS = [:xmldecl, :start_document, :end_document, :start_element,
-                   :end_element, :comment, :warning, :error, :cdata_block, :processing_instruction]
+      :end_element, :comment, :warning, :error, :cdata_block, :processing_instruction]
 
     def method_missing(method_name, *args)
       unless SAX_METHODS.include?(method_name)
@@ -303,7 +304,7 @@ module MARC
             when "datafield"
               text = ""
               data_field = MARC::DataField.new(attrs[TAG], attrs[IND1],
-                                               attrs[IND2])
+                attrs[IND2])
             when "subfield"
               text = ""
               subfield = MARC::Subfield.new(attrs[CODE])
@@ -328,17 +329,6 @@ module MARC
           end
         end
       end
-    end
-  end
-
-  # The JREXMLReader is really just here to set the load order for
-  # injecting the Java pull parser.
-  module JREXMLReader
-    def self.extended(receiver)
-      require "rexml/document"
-      require "rexml/parsers/pullparser"
-      require "jrexml"
-      receiver.extend(REXMLReader)
     end
   end
 
@@ -406,7 +396,7 @@ module MARC
 
   if defined? JRUBY_VERSION
     # *DEPRECATED*: JRubySTAXReader is deprecated and will be removed in a
-    # future version of ruby-marc. Please use JREXMLReader or NokogiriReader
+    # future version of ruby-marc. Please use NokogiriReader
     # instead.
     module JRubySTAXReader
       include GenericPullParser

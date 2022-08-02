@@ -238,9 +238,21 @@ module MARC
     # Really this is just a wrapper around MARC::XMLWriter::encode
     #
     #   xml_doc = record.to_xml()
+    def to_xml(include_namespace: true)
+      MARC::XMLWriter.encode(self, include_namespace: include_namespace)
+    end
 
-    def to_xml
-      MARC::XMLWriter.encode(self, include_namespace: true)
+    # Create the actual XML string (as opposed to #to_xml which, for historic reasons,
+    # returns an REXML document)
+    # @param [Boolean] fast_but_unsafe Use the fast MARC::UnsafeXMLWriter code
+    # @param [Boolean] include_namespace Include namespaces on the <record> tag?
+    # @return [String] MARC-XML encoding of the record
+    def to_xml_string(fast_but_unsafe: false, include_namespace: true)
+      if fast_but_unsafe
+        MARC::UnsafeXMLWriter.encode(self, include_namespace: include_namespace)
+      else
+        MARC::XMLWriter.encode(self, include_namespace: include_namespace).to_s
+      end
     end
 
     # Handy method for returning a hash mapping this records values
@@ -285,7 +297,7 @@ module MARC
     end
 
     # Return an actual json-encoded string.
-    def to_json_document
+    def to_json_string
       MARC::JSONLWriter.encode(self)
     end
 
