@@ -38,6 +38,8 @@ All notable changes to this project will be documented in this file.
 * All writers will now self-close if used with a block (e.g., 
   `MARC::Writer.new(filename) {|w| w.write(record)}`), parallel to the way 
   `File.open` works in regular ruby. 
+* XML writers will now take an optional keyword argument, 
+  `include_namespace`, on both `#new` and `.encode`. 
 
 ### Changed
 * 10-15% speed improvement when parsing MARC-XML with nokogiri (PR #97,
