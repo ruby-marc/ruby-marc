@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.2] - 2022-08-01
+## [1.2] - 2022-08-02
 
 ### Added
 
@@ -28,13 +28,16 @@ All notable changes to this project will be documented in this file.
   individual record level for a long time; this just provides the
   reader/writer scaffolding.
 * Also added `MARC::Record.to_json_string` to get a marc-in-json string 
-  representation.
+  representation (parallel to the new `#to_xml_string`)
 * New option to xml readers to ignore any namespaces
   via `reader = MARC::XMLReader.new(filename, ignore_namespace: true)`. While
   the REXML MARC-XML reader can't handle
   (and thus has always ignored XML namespaces), the Nokogiri-based version
   will enforce namespaces if present. Useful only when you have
   poorly-generated files where the XML namespace attributes are wonky.
+* All writers will now self-close if used with a block (e.g., 
+  `MARC::Writer.new(filename) {|w| w.write(record)}`), parallel to the way 
+  `File.open` works in regular ruby. 
 
 ### Changed
 * 10-15% speed improvement when parsing MARC-XML with nokogiri (PR #97,
