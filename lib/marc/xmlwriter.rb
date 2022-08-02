@@ -21,7 +21,7 @@ module MARC
       xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
       xsi:schemaLocation="#{MARC_NS} #{MARC_XSD}">).freeze
 
-    def initialize(file, opts = {})
+    def initialize(file, opts = {}, &blk)
       @writer = REXML::Formatters::Default.new
       if file.instance_of?(String)
         @fh = File.new(file, "w")
@@ -37,6 +37,11 @@ module MARC
       @fh.write(stylesheet_tag)
       @fh.write(COLLECTION_TAG)
       @fh.write("\n")
+
+      if block_given?
+        blk.call(self)
+        self.close
+      end
     end
 
     def stylesheet_tag

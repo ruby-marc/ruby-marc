@@ -6,13 +6,18 @@ require "marc/writer"
 module MARC
   class JSONLWriter < MARC::Writer
     # @param [String, IO] file A filename, or open File/IO type object, from which to read
-    def initialize(file)
+    def initialize(file, &blk)
       if file.instance_of?(String)
         @fh = File.new(file, "w:utf-8")
       elsif file.respond_to?(:write)
         @fh = file
       else
         raise ArgumentError, "must pass in file name or handle"
+      end
+
+      if blk
+        blk.call(self)
+        close
       end
     end
 
