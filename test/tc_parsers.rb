@@ -6,7 +6,6 @@ class ParsersTest < Test::Unit::TestCase
   LOADABLE_PARSERS = {
     libxml: "xml",
     nokogiri: "nokogiri",
-    jrexml: "jrexml"
   }
 
   @@parsers = LOADABLE_PARSERS.keys.each_with_object({}) do |label, h|
@@ -54,24 +53,6 @@ class ParsersTest < Test::Unit::TestCase
     assert_equal("nokogiri", MARC::XMLReader.parser)
     reader = MARC::XMLReader.new("test/one.xml")
     assert_kind_of(Nokogiri::XML::SAX::Parser, reader.parser)
-  end
-
-  def test_set_jrexml
-    return unless @@parsers[:jrexml]
-    reader = MARC::XMLReader.new("test/one.xml", parser: MARC::XMLReader::USE_JREXML)
-    assert_kind_of(REXML::Parsers::PullParser, reader.parser)
-    assert_equal("rexml", MARC::XMLReader.parser)
-    reader = MARC::XMLReader.new("test/one.xml", parser: "jrexml")
-    assert_kind_of(REXML::Parsers::PullParser, reader.parser)
-    assert_equal("rexml", MARC::XMLReader.parser)
-    MARC::XMLReader.parser = MARC::XMLReader::USE_JREXML
-    assert_equal("jrexml", MARC::XMLReader.parser)
-    reader = MARC::XMLReader.new("test/one.xml")
-    assert_kind_of(REXML::Parsers::PullParser, reader.parser)
-    MARC::XMLReader.parser = "jrexml"
-    assert_equal("jrexml", MARC::XMLReader.parser)
-    reader = MARC::XMLReader.new("test/one.xml")
-    assert_kind_of(REXML::Parsers::PullParser, reader.parser)
   end
 
   def test_set_jstax
@@ -148,11 +129,6 @@ class ParsersTest < Test::Unit::TestCase
       reader = MARC::XMLReader.new("test/one.xml")
       assert_kind_of(Nokogiri::XML::SAX::Parser, reader.parser)
     end
-    if @@parsers[:jrexml]
-      MARC::XMLReader.jrexml!
-      reader = MARC::XMLReader.new("test/one.xml")
-      assert_kind_of(REXML::Parsers::PullParser, reader.parser)
-    end
   end
 
   def teardown
@@ -187,13 +163,6 @@ class ParsersTest < Test::Unit::TestCase
           require "xml"
           parser_name = "libxml"
           parser = LibXML::XML::Reader
-        rescue LoadError
-        end
-      elsif defined? JRUBY_VERSION
-        begin
-          require "jrexml"
-          parser_name = "jrexml"
-          parser = REXML::Parsers::PullParser
         rescue LoadError
         end
       end

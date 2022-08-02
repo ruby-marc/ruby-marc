@@ -42,6 +42,10 @@ All notable changes to this project will be documented in this file.
   `include_namespace`, on both `#new` and `.encode`. 
 
 ### Changed
+* Remove the `JREXML` parser, which apparently hasn't worked for years yet 
+  also wasn't running in CI because the test are running under bundler, 
+  which didn't load `jrexml`. Set to emit a warning to use nokogiri 
+  instead and fall back to REXML.
 * 10-15% speed improvement when parsing MARC-XML with nokogiri (PR #97,
   billdueber)
 * Added deprecation warnings when using the `libxml`, `jstax`, or `jrexml`

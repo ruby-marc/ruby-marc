@@ -22,11 +22,6 @@ class XMLTest < Test::Unit::TestCase
     end
     if defined? JRUBY_VERSION
       begin
-        require "jrexml"
-        @parsers << :jrexml
-      rescue LoadError
-      end
-      begin
         java.lang.Class.forName("javax.xml.stream.XMLInputFactory")
         @parsers << :jstax
       rescue java.lang.ClassNotFoundException

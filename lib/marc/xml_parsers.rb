@@ -13,7 +13,8 @@ module MARC
   # time of initialization.
   # The order is currently:
   #   * Nokogiri
-  #   * jrexml (JRuby only)
+  #   * libxml-ruby (MRI only) ** DEPRECATED **
+  #   * jstax (JRuby only) ** DEPRECATED **
   #   * rexml
   #
   # With the idea that other parsers could be added as their modules are
@@ -28,14 +29,14 @@ module MARC
       when "nokogiri"
         receiver.extend(NokogiriReader)
       when "libxml"
-        warn "libxml support will be removed in version 1.3. Use nokogiri instead"
+        warn "libxml support will be removed in version 1.3. Prefer nokogiri instead"
         receiver.extend(LibXMLReader)
       when "jstax"
-        warn "jstax support will be removed in version 1.3. Use nokogiri instead"
+        warn "jstax support will be removed in version 1.3. Prefer nokogiri instead"
         receiver.extend(JRubySTAXReader)
       when "jrexml"
-        warn "jrexml support will be removed in version 1.3 and fall back to just rexml"
-        receiver.extend(JREXMLReader)
+        warn "jrexml support is broken upstream; falling back to just rexml. Prefer nokogiri instead"
+        receiver.extend(REXMLReader)
       else receiver.extend(REXMLReader)
       end
     end
@@ -331,17 +332,6 @@ module MARC
     end
   end
 
-  # The JREXMLReader is really just here to set the load order for
-  # injecting the Java pull parser.
-  module JREXMLReader
-    def self.extended(receiver)
-      require "rexml/document"
-      require "rexml/parsers/pullparser"
-      require "jrexml"
-      receiver.extend(REXMLReader)
-    end
-  end
-
   unless defined? JRUBY_VERSION
     module LibXMLReader
       def self.extended(receiver)
@@ -406,7 +396,7 @@ module MARC
 
   if defined? JRUBY_VERSION
     # *DEPRECATED*: JRubySTAXReader is deprecated and will be removed in a
-    # future version of ruby-marc. Please use JREXMLReader or NokogiriReader
+    # future version of ruby-marc. Please use NokogiriReader
     # instead.
     module JRubySTAXReader
       include GenericPullParser
