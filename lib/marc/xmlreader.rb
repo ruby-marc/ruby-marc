@@ -1,4 +1,6 @@
-require File.dirname(__FILE__) + "/xml_parsers"
+require_relative "xml_parsers"
+require_relative "generic_reader"
+
 module MARC
   # the constructor which you can pass either a filename:
   #
@@ -44,7 +46,7 @@ module MARC
   #  reader = MARC::XMLReader.new(fh, error_handler: ->(reader, record, block) { ... })
   #
   # By default, a MARC::RecordException is raised halting all future parsing.
-  class XMLReader
+  class XMLReader < GenericReader
     include Enumerable
     USE_BEST_AVAILABLE = "magic"
     USE_REXML = "rexml"
@@ -55,27 +57,19 @@ module MARC
     @@parser = USE_REXML
     attr_reader :parser, :error_handler
 
-    def initialize(file, options = {})
-      if file.is_a?(String)
-        handle = File.new(file)
-      elsif file.respond_to?(:read, 5)
-        handle = file
-      else
-        raise ArgumentError, "must pass in path or File"
-      end
-      @handle = handle
-
-      if options[:ignore_namespace]
-        @ignore_namespace = options[:ignore_namespace]
+    def initialize(file, ignore_namespace: nil, parser: nil, error_handler: nil, record_class: MARC::Record)
+      super(file, record_class: record_class)
+      if ignore_namespace
+        @ignore_namespace = ignore_namespace
       end
 
-      parser = if options[:parser]
-        self.class.choose_parser(options[:parser].to_s)
+      chosen_parser = if parser
+        self.class.choose_parser(parser.to_s)
       else
         @@parser
       end
 
-      case parser
+      case chosen_parser
       when "magic" then extend MagicReader
       when "rexml" then extend REXMLReader
       when "jrexml"
@@ -89,7 +83,7 @@ module MARC
                          raise ArgumentError, "libxml not available under jruby" if defined? JRUBY_VERSION
       end
 
-      @error_handler = options[:error_handler]
+      @error_handler = error_handler
     end
 
     class << self
