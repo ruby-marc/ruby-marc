@@ -1,4 +1,5 @@
 require "scrub_rb"
+require_relative "generic_reader"
 
 # Note: requiring 'marc/marc8/to_unicode' below, in #initialize,
 # only when necessary
@@ -157,29 +158,9 @@ module MARC
   #
   # We recommend using the latest version of jruby, especially
   # at least jruby 1.7.6.
-  class Reader
-    include Enumerable
+  class Reader < GenericReader
 
-    # The constructor which you may pass either a path
-    #
-    #   reader = MARC::Reader.new('marc.dat')
-    #
-    # or, if it's more convenient a File object:
-    #
-    #   fh = File.new('marc.dat')
-    #   reader = MARC::Reader.new(fh)
-    #
-    # or really any object that responds to read(n)
-    #
-    #   # marc is a string with a bunch of records in it
-    #   reader = MARC::Reader.new(StringIO.new(marc))
-    #
-    # If your data have non-standard control fields in them
-    # (e.g., Aleph's 'FMT') you need to add them specifically
-    # to the MARC::ControlField.control_tags Set object
-    #
-    #   MARC::ControlField.control_tags << 'FMT'
-    #
+    # @see MARC::GenericReader#initialize
     # Also, if your data encoded with non ascii/utf-8 encoding
     # (for ex. when reading RUSMARC data) and you use ruby 1.9
     # you can specify source data encoding with an option.
@@ -189,20 +170,20 @@ module MARC
     # or, you can pass IO, opened in the corresponding encoding
     #
     #   reader = MARC::Reader.new(File.new('marc.dat', 'r:cp866'))
-    def initialize(file, options = {})
-      @encoding_options = {}
-      # all can be nil
-      [:internal_encoding, :external_encoding, :invalid, :replace, :validate_encoding].each do |key|
-        @encoding_options[key] = options[key] if options.has_key?(key)
-      end
-
-      if file.is_a?(String)
-        @handle = File.new(file)
-      elsif file.respond_to?(:read, 5)
-        @handle = file
-      else
-        raise ArgumentError, "must pass in path or file"
-      end
+    def initialize(file,
+                   internal_encoding: nil,
+                   external_encoding: nil,
+                   invalid: nil,
+                   replace: nil,
+                   validate_encoding: nil,
+                   record_class: MARC::Record)
+      super(file, record_class: record_class)
+      @encoding_options = {
+        internal_encoding: internal_encoding,
+        external_encoding: external_encoding,
+        invalid: invalid,
+        replace: replace,
+        validate_encoding: validate_encoding}.reject { |_k, v| v.nil? }
 
       if (!@encoding_options[:external_encoding]) && @handle.respond_to?(:external_encoding)
         # use file encoding only if we didn't already have an explicit one,
@@ -227,8 +208,7 @@ module MARC
     def each
       if block_given?
         each_raw do |raw|
-          record = decode(raw)
-          yield record
+          yield decode(raw)
         end
       else
         enum_for(:each)
@@ -279,7 +259,7 @@ module MARC
     # Wraps the class method MARC::Reader::decode, using the encoding options of
     # the MARC::Reader instance.
     def decode(marc)
-      MARC::Reader.decode(marc, @encoding_options)
+      MARC::Reader.decode(marc, record_class: @record_class, **@encoding_options)
     end
 
     # A static method for turning raw MARC data in transission
@@ -289,11 +269,10 @@ module MARC
     #   [:external_encoding]  encoding of MARC record data values
     #   [:forgiving]          needs more docs, true is some kind of forgiving
     #                         of certain kinds of bad MARC.
-    def self.decode(marc, params = {})
-      if params.has_key?(:encoding)
-        warn "DEPRECATION WARNING: MARC::Reader.decode :encoding option deprecated, please use :external_encoding"
-        params[:external_encoding] = params.delete(:encoding)
-      end
+    def self.decode(marc, forgiving: false, record_class: MARC::Record, **params)
+      control_class = record_class.control_class
+      data_class = record_class.data_class
+      subfield_class = data_class.subfield_class
 
       if (!params.has_key? :external_encoding) && marc.respond_to?(:encoding)
         # If no forced external_encoding giving, respect the encoding
@@ -305,7 +284,7 @@ module MARC
       # and want to avoid byte-vs-char confusion.
       marc.force_encoding("binary") if marc.respond_to?(:force_encoding)
 
-      record = Record.new
+      record = record_class.new
       record.leader = marc[0..LEADER_LENGTH - 1]
 
       # where the field data starts
@@ -323,7 +302,7 @@ module MARC
       # when operating in forgiving mode we just split on end of
       # field instead of using calculated byte offsets from the
       # directory
-      if params[:forgiving]
+      if forgiving
         marc_field_data = marc[base_address..-1]
         # It won't let us do the split on bad utf8 data, but
         # we haven't yet set the 'proper' encoding or used
@@ -349,7 +328,7 @@ module MARC
         # next available chuck of field data that we
         # split apart based on the END_OF_FIELD
         field_data = ""
-        if params[:forgiving]
+        if forgiving
           field_data = all_fields.shift
 
           # otherwise we actually use the byte offsets in
@@ -366,11 +345,11 @@ module MARC
         field_data.delete!(END_OF_FIELD)
 
         # add a control field or data field
-        if MARC::ControlField.control_tag?(tag)
-          field_data = MARC::Reader.set_encoding(field_data, params)
-          record.append(MARC::ControlField.new(tag, field_data))
+        if control_class.control_tag?(tag)
+          field_data = set_encoding(field_data, **params)
+          record.append(control_class.new(tag, field_data))
         else
-          field = MARC::DataField.new(tag)
+          field = data_class.new(tag)
 
           # get all subfields
           subfields = field_data.split(SUBFIELD_INDICATOR)
@@ -380,14 +359,14 @@ module MARC
           next if subfields.length < 2
 
           # get indicators
-          indicators = MARC::Reader.set_encoding(subfields.shift, params)
+          indicators = set_encoding(subfields.shift, **params)
           field.indicator1 = indicators[0, 1]
           field.indicator2 = indicators[1, 1]
 
           # add each subfield to the field
           subfields.each do |data|
-            data = MARC::Reader.set_encoding(data, params)
-            subfield = MARC::Subfield.new(data[0, 1], data[1..-1])
+            data = set_encoding(data, **params)
+            subfield = subfield_class.new(data[0, 1], data[1..-1])
             field.append(subfield)
           end
 
@@ -421,14 +400,14 @@ module MARC
     #              chars instead of raising.
     #  * replace: Set replacement char for use with 'invalid', otherwise defaults
     #             to unicode replacement char, or question mark.
-    def self.set_encoding(str, params)
+    def self.set_encoding(str, **encoding_params)
       if str.respond_to?(:force_encoding)
-        if params[:external_encoding]
-          if params[:external_encoding] == "MARC-8"
-            transcode_params = [:invalid, :replace].each_with_object({}) { |k, hash| hash[k] = params[k] if params.has_key?(k) }
+        if encoding_params[:external_encoding]
+          if encoding_params[:external_encoding] == "MARC-8"
+            transcode_params = [:invalid, :replace].each_with_object({}) { |k, hash| hash[k] = encoding_params[k] if encoding_params.has_key?(k) }
             str = MARC::Marc8::ToUnicode.new.transcode(str, transcode_params)
           else
-            str = str.force_encoding(params[:external_encoding])
+            str = str.force_encoding(encoding_params[:external_encoding])
           end
         end
 
@@ -442,19 +421,19 @@ module MARC
         # for performance we won't check, and you may or may not
         # get an exception from inside ruby-marc, and it may change
         # in future implementations.
-        if params[:internal_encoding]
+        if encoding_params[:internal_encoding]
           str = if RUBY_VERSION >= "3.0"
-            str.encode(params[:internal_encoding], **params)
+            str.encode(encoding_params[:internal_encoding], **encoding_params)
           else
-            str.encode(params[:internal_encoding], params)
+            str.encode(encoding_params[:internal_encoding], encoding_params)
           end
-        elsif params[:invalid] || params[:replace] || (params[:validate_encoding] == true)
+        elsif encoding_params[:invalid] || encoding_params[:replace] || (encoding_params[:validate_encoding] == true)
 
-          if params[:validate_encoding] == true && !str.valid_encoding?
+          if encoding_params[:validate_encoding] == true && !str.valid_encoding?
             raise Encoding::InvalidByteSequenceError.new("invalid byte in string for source encoding #{str.encoding.name}")
           end
-          if params[:invalid] == :replace
-            str = str.scrub(params[:replace])
+          if encoding_params[:invalid] == :replace
+            str = str.scrub(encoding_params[:replace])
           end
 
         end
@@ -484,7 +463,7 @@ module MARC
   class ForgivingReader < Reader
     def each
       @handle.each_line(END_OF_RECORD) do |raw|
-        record = MARC::Reader.decode(raw, @encoding_options.merge(forgiving: true))
+        record = MARC::Reader.decode(raw, forgiving: true, record_class: record_class, **@encoding_options)
         yield record
       rescue
         # caught exception just keep barrelling along

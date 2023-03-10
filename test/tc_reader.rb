@@ -11,9 +11,7 @@ class ReaderTest < Test::Unit::TestCase
 
   def test_loose
     reader = MARC::ForgivingReader.new("test/batch.dat")
-    count = 0
-    reader.each { count += 1 }
-    assert_equal(10, count)
+    assert_equal(10, reader.count)
   end
 
   def test_loose_utf8

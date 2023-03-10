@@ -19,6 +19,11 @@ module MARC
   class DataField
     include Enumerable
 
+    # The subfield class
+    def self.subfield_class
+      MARC::Subfield
+    end
+
     # The tag for the field
     attr_accessor :tag
 
