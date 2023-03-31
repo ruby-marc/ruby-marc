@@ -72,6 +72,8 @@ end
 writer.close
 ```
 
+NOTE: This feature is for reading and writing the [ISO 2709](https://en.wikipedia.org/wiki/ISO_2709) binary MARC exchange format used by an ILS/LSP (usually `.mrc`, `.dat`, or `.bin`). This gem does *not* support reading or writing MarcEdit's human-readable "mnemonic" format (`.mrk`).
+
 ### Reading/Writing marc-in-json
 
 [marc-in-json](https://rossfsinger.com/blog/2010/09/a-proposal-to-serialize-marc-in-json/)
