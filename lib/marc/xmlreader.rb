@@ -70,23 +70,25 @@ module MARC
       end
 
       parser = if options[:parser]
-        self.class.choose_parser(options[:parser].to_s)
-      else
-        @@parser
-      end
+                 self.class.choose_parser(options[:parser].to_s)
+               else
+                 @@parser
+               end
+
+      @factory = options[:factory] || Factory
 
       case parser
-      when "magic" then extend MagicReader
-      when "rexml" then extend REXMLReader
-      when "jrexml"
-        raise ArgumentError, "jrexml only available under jruby" unless defined? JRUBY_VERSION
-        extend JREXMLReader
-      when "nokogiri" then extend NokogiriReader
-      when "jstax"
-        raise ArgumentError, "jstax only available under jruby" unless defined? JRUBY_VERSION
-        extend JRubySTAXReader
-      when "libxml" then extend LibXMLReader
-                         raise ArgumentError, "libxml not available under jruby" if defined? JRUBY_VERSION
+        when "magic" then extend MagicReader
+        when "rexml" then extend REXMLReader
+        when "jrexml"
+          raise ArgumentError, "jrexml only available under jruby" unless defined? JRUBY_VERSION
+          extend JREXMLReader
+        when "nokogiri" then extend NokogiriReader
+        when "jstax"
+          raise ArgumentError, "jstax only available under jruby" unless defined? JRUBY_VERSION
+          extend JRubySTAXReader
+        when "libxml" then extend LibXMLReader
+        raise ArgumentError, "libxml not available under jruby" if defined? JRUBY_VERSION
       end
 
       @error_handler = options[:error_handler]

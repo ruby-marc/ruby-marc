@@ -1,4 +1,5 @@
 require "scrub_rb"
+require "marc/factory"
 
 # Note: requiring 'marc/marc8/to_unicode' below, in #initialize,
 # only when necessary
@@ -190,6 +191,7 @@ module MARC
     #
     #   reader = MARC::Reader.new(File.new('marc.dat', 'r:cp866'))
     def initialize(file, options = {})
+      @factory = options[:factory] || Factory
       @encoding_options = {}
       # all can be nil
       [:internal_encoding, :external_encoding, :invalid, :replace, :validate_encoding].each do |key|
@@ -279,7 +281,7 @@ module MARC
     # Wraps the class method MARC::Reader::decode, using the encoding options of
     # the MARC::Reader instance.
     def decode(marc)
-      MARC::Reader.decode(marc, @encoding_options)
+      MARC::Reader.decode(marc, @encoding_options.merge(factory: @factory))
     end
 
     # A static method for turning raw MARC data in transission
@@ -300,13 +302,15 @@ module MARC
         # declared on the string passed in.
         params[:external_encoding] = marc.encoding
       end
+
+      factory = params[:factory] || Factory
       # And now that we've recorded the current encoding, we force
       # to binary encoding, because we're going to be doing byte arithmetic,
       # and want to avoid byte-vs-char confusion.
       marc.force_encoding("binary") if marc.respond_to?(:force_encoding)
 
-      record = Record.new
-      record.leader = marc[0..LEADER_LENGTH - 1]
+      record = factory.record.new
+      record.leader = factory.leader.new(marc[0..LEADER_LENGTH - 1])
 
       # where the field data starts
       base_address = record.leader[12..16].to_i
@@ -366,11 +370,11 @@ module MARC
         field_data.delete!(END_OF_FIELD)
 
         # add a control field or data field
-        if MARC::ControlField.control_tag?(tag)
+        if factory.control_field.control_tag?(tag)
           field_data = MARC::Reader.set_encoding(field_data, params)
-          record.append(MARC::ControlField.new(tag, field_data))
+          record.append(factory.control_field.new(tag, field_data))
         else
-          field = MARC::DataField.new(tag)
+          field = factory.data_field.new(tag)
 
           # get all subfields
           subfields = field_data.split(SUBFIELD_INDICATOR)
@@ -387,7 +391,7 @@ module MARC
           # add each subfield to the field
           subfields.each do |data|
             data = MARC::Reader.set_encoding(data, params)
-            subfield = MARC::Subfield.new(data[0, 1], data[1..-1])
+            subfield = factory.subfield.new(data[0, 1], data[1..-1])
             field.append(subfield)
           end
 

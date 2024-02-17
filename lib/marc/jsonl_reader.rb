@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "json"
+require "marc/factory"
 
 module MARC
   # Read marc-in-json documents from a `.jsonl` file -- also called
@@ -9,7 +10,7 @@ module MARC
     include Enumerable
 
     # @param [String, IO] file A filename, or open File/IO type object, from which to read
-    def initialize(file)
+    def initialize(file, factory: Factory)
       if file.is_a?(String)
         raise ArgumentError.new("File '#{file}' can't be found") unless File.exist?(file)
         raise ArgumentError.new("File '#{file}' can't be opened for reading") unless File.readable?(file)
@@ -19,6 +20,7 @@ module MARC
       else
         raise ArgumentError, "must pass in path or file"
       end
+      @factory = factory
     end
 
     # Turn marc-in-json lines into actual marc records and yield them
@@ -26,7 +28,7 @@ module MARC
     def each
       return enum_for(:each) unless block_given?
       @handle.each do |line|
-        yield MARC::Record.new_from_hash(JSON.parse(line))
+        yield MARC::Record.new_from_hash(JSON.parse(line), factory: @factory)
       end
     end
   end

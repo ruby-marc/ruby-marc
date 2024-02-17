@@ -61,14 +61,14 @@ module MARC
       @ns = "http://www.loc.gov/MARC21/slim"
     end
 
-    # Returns our MARC::Record object to the #each block.
+    # Returns our @factory.record object to the #each block.
     def yield_record
       if @record[:record].valid?
         @block.call(@record[:record])
       elsif @error_handler
         @error_handler.call(self, @record[:record], @block)
       else
-        raise MARC::RecordException, @record[:record]
+        raise @factory.recordException, @record[:record]
       end
     ensure
       @record[:record] = nil
@@ -80,14 +80,14 @@ module MARC
         case name.downcase
         when SF_TAG
           @current_element = :subfield
-          @record[:subfield] = MARC::Subfield.new(attributes[CODE])
+          @record[:subfield] = @factory.subfield.new(attributes[CODE])
         when DF_TAG
-          @record[:field] = MARC::DataField.new(attributes[TAG], attributes[IND1], attributes[IND2])
+          @record[:field] = @factory.data_field.new(attributes[TAG], attributes[IND1], attributes[IND2])
         when CF_TAG
           @current_element = :field
-          @record[:field] = MARC::ControlField.new(attributes[TAG])
+          @record[:field] = @factory.control_field.new(attributes[TAG])
         when LEAD_TAG then @current_element = :leader
-        when REC_TAG then @record[:record] = MARC::Record.new
+        when REC_TAG then @record[:record] = @factory.record.new
         end
       end
     end
@@ -96,7 +96,7 @@ module MARC
       case @current_element
       when :subfield then @record[:subfield].value << text
       when :field then @record[:field].value << text
-      when :leader then @record[:leader] << text
+      when :leader then @record[:leader] = @factory.leader.new(text)
       end
     end
 
@@ -114,7 +114,7 @@ module MARC
           @current_element = nil if @current_element == :field
         when REC_TAG then yield_record
         when LEAD_TAG
-          @record[:record].leader = @record[:leader]
+          @record[:record].leader = @factory.leader.new(@record[:leader])
           @record[:leader] = ""
           @current_element = nil if @current_element == :leader
         end
@@ -234,7 +234,7 @@ module MARC
     # will accept parse events until a record has been built up
     #
     def build_record
-      record = MARC::Record.new
+      record = @factory.record.new
       data_field = nil
       control_field = nil
       subfield = nil
@@ -266,17 +266,17 @@ module MARC
           when "controlfield"
             record << datafield if datafield
             datafield = nil
-            control_field = MARC::ControlField.new(node.attribute("tag"))
+            control_field = @factory.control_field.new(node.attribute("tag"))
             record << control_field
             cursor = control_field
           when "datafield"
             record << datafield if datafield
             datafield = nil
-            data_field = MARC::DataField.new(node.attribute("tag"), node.attribute(IND1), node.attribute(IND2))
+            data_field = @factory.data_field.new(node.attribute("tag"), node.attribute(IND1), node.attribute(IND2))
             datafield = data_field
           when "subfield"
             raise "No datafield to add to" unless datafield
-            subfield = MARC::Subfield.new(node.attribute(CODE))
+            subfield = @factory.subfield.new(node.attribute(CODE))
             datafield.append(subfield)
             cursor = subfield
           when "record"
@@ -300,14 +300,14 @@ module MARC
             case strip_ns(event[0])
             when "controlfield"
               text = ""
-              control_field = MARC::ControlField.new(attrs[TAG])
+              control_field = @factory.control_field.new(attrs[TAG])
             when "datafield"
               text = ""
-              data_field = MARC::DataField.new(attrs[TAG], attrs[IND1],
+              data_field = @factory.data_field.new(attrs[TAG], attrs[IND1],
                 attrs[IND2])
             when "subfield"
               text = ""
-              subfield = MARC::Subfield.new(attrs[CODE])
+              subfield = @factory.subfield.new(attrs[CODE])
             end
           end
 
@@ -359,7 +359,7 @@ module MARC
       # each
 
       def build_record
-        r = MARC::Record.new
+        r = @factory.record.new
         until (@parser.local_name == "record") && (@parser.node_type == XML::Reader::TYPE_END_ELEMENT)
           @parser.read
           next if @parser.node_type == XML::Reader::TYPE_END_ELEMENT
@@ -370,16 +370,16 @@ module MARC
           when "controlfield"
             tag = @parser[TAG]
             @parser.read
-            r << MARC::ControlField.new(tag, @parser.value)
+            r << @factory.control_field.new(tag, @parser.value)
           when "datafield"
-            data = MARC::DataField.new(@parser[TAG], @parser[IND1], @parser[IND2])
+            data = @factory.data_field.new(@parser[TAG], @parser[IND1], @parser[IND2])
             while @parser.read && !((@parser.local_name == "datafield") && (@parser.node_type == XML::Reader::TYPE_END_ELEMENT))
               next if @parser.node_type == XML::Reader::TYPE_END_ELEMENT
               case @parser.local_name
               when "subfield"
                 code = @parser[CODE]
                 @parser.read
-                data.append(MARC::Subfield.new(code, @parser.value))
+                data.append(@factory.subfield.new(code, @parser.value))
               end
             end
             r << data

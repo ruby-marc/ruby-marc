@@ -1,3 +1,5 @@
+require "marc/factory"
+
 module MARC
   # The FieldMap is an Array of DataFields and Controlfields.
   # It also contains a Hash representation
@@ -275,13 +277,13 @@ module MARC
     #
     # record = MARC::Record->new_from_marchash(mh)
 
-    def self.new_from_marchash(mh)
+    def self.new_from_marchash(mh, factory: Factory)
       r = new
-      r.leader = mh["leader"]
+      r.leader = factory.leader.new(mh["leader"])
       mh["fields"].each do |f|
         if f.length == 2
-          r << MARC::ControlField.new(f[0], f[1])
-        elsif r << MARC::DataField.new(f[0], f[1], f[2], *f[3])
+          r << factory.control_field.new(f[0], f[1])
+        elsif r << factory.data_field.new(f[0], f[1], f[2], *f[3])
         end
       end
       r
@@ -301,21 +303,21 @@ module MARC
       MARC::JSONLWriter.encode(self)
     end
 
-    def self.new_from_hash(h)
+    def self.new_from_hash(h, factory: Factory)
       r = new
-      r.leader = h["leader"]
+      r.leader = factory.leader.new(h["leader"])
       h["fields"]&.each do |position|
         position.each_pair do |tag, field|
           if field.is_a?(Hash)
-            f = MARC::DataField.new(tag, field["ind1"], field["ind2"])
+            f = factory.data_field.new(tag, field["ind1"], field["ind2"])
             field["subfields"].each do |pos|
               pos.each_pair do |code, value|
-                f.append MARC::Subfield.new(code, value)
+                f.append factory.subfield.new(code, value)
               end
             end
             r << f
           else
-            r << MARC::ControlField.new(tag, field)
+            r << factory.control_field.new(tag, field)
           end
         end
       end
