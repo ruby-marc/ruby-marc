@@ -106,4 +106,16 @@ class ReaderTest < Test::Unit::TestCase
     9.times { enum.next } # total of ten records
     assert_raises(StopIteration) { enum.next }
   end
+
+  class MyRecord < MARC::Record
+    def hello
+      "hello"
+    end
+  end
+  def test_different_record_class
+    reader = MARC::Reader.new("test/batch.dat", record_class: MyRecord)
+    r = reader.first
+    assert_instance_of(MyRecord, r)
+    assert_equal("hello", r.hello)
+  end
 end

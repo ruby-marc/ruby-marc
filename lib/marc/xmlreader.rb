@@ -65,6 +65,8 @@ module MARC
       end
       @handle = handle
 
+      @record_class = options[:record_class] || MARC::Record
+
       if options[:ignore_namespace]
         @ignore_namespace = options[:ignore_namespace]
       end

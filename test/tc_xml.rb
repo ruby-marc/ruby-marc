@@ -190,4 +190,16 @@ class XMLTest < Test::Unit::TestCase
       assert_equal(record.leader, "01301nam a22003618< 4500", "Failed with parser '#{parser}'")
     end
   end
+
+  class MyRecord < MARC::Record
+    def hello
+      "hello"
+    end
+  end
+  def test_different_record_class
+    reader = MARC::XMLReader.new("test/batch.xml", parser: :nokogiri, record_class: MyRecord)
+    r = reader.first
+    assert_instance_of(MyRecord, r)
+    assert_equal("hello", r.hello)
+  end
 end

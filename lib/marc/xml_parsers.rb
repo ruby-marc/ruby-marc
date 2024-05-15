@@ -37,7 +37,8 @@ module MARC
       when "jrexml"
         warn "jrexml support is broken upstream; falling back to just rexml. Prefer nokogiri instead"
         receiver.extend(REXMLReader)
-      else receiver.extend(REXMLReader)
+      else
+        receiver.extend(REXMLReader)
       end
     end
   end
@@ -49,6 +50,39 @@ module MARC
     #  attributes_to_hash(attributes)
     #  each
 
+    class BuildingMARCHash
+      attr_accessor :marc_hash, :stack
+
+      def initialize(mh = empty_marc_hash, stack = [])
+        @marc_hash = mh
+        @stack = stack
+      end
+
+      def top
+        @stack.last
+      end
+
+      def pop
+        @stack.pop
+      end
+
+      def push(e)
+        @stack.push(e)
+      end
+
+      def append(e)
+        top.push e
+      end
+
+      def append_text(str)
+        top.last << str
+      end
+
+      def empty_marc_hash
+        { "type" => "marc-hash", "version" => [MARCHASH_MAJOR_VERSION, MARCHASH_MINOR_VERSION], "leader" => "", "fields" => [] }
+      end
+    end
+
     REC_TAG = "record".freeze
     LEAD_TAG = "leader".freeze
     CF_TAG = "controlfield".freeze
@@ -56,22 +90,20 @@ module MARC
     SF_TAG = "subfield".freeze
 
     def init
-      @record = {record: nil, leader: "", field: nil, subfield: nil}
-      @current_element = nil
+      @builder = BuildingMARCHash.new
       @ns = "http://www.loc.gov/MARC21/slim"
     end
 
     # Returns our MARC::Record object to the #each block.
     def yield_record
-      if @record[:record].valid?
-        @block.call(@record[:record])
+      record = @record_class.new_from_marchash(@builder.marc_hash)
+      if record.valid?
+        @block.call(record)
       elsif @error_handler
-        @error_handler.call(self, @record[:record], @block)
+        @error_handler.call(self, record, @block)
       else
-        raise MARC::RecordException, @record[:record]
+        raise MARC::RecordException, record
       end
-    ensure
-      @record[:record] = nil
     end
 
     def start_element_namespace name, attributes = [], prefix = nil, uri = nil, ns = {}
@@ -79,24 +111,29 @@ module MARC
       if (uri == @ns) || @ignore_namespace
         case name.downcase
         when SF_TAG
+          @builder.push [attributes[CODE], ""]
           @current_element = :subfield
-          @record[:subfield] = MARC::Subfield.new(attributes[CODE])
         when DF_TAG
-          @record[:field] = MARC::DataField.new(attributes[TAG], attributes[IND1], attributes[IND2])
+          @builder.push [attributes[TAG], attributes[IND1], attributes[IND2], []]
+          @current_element = :data_field
         when CF_TAG
-          @current_element = :field
-          @record[:field] = MARC::ControlField.new(attributes[TAG])
+          @builder.push [attributes[TAG], ""]
+          @current_element = :control_field
         when LEAD_TAG then @current_element = :leader
-        when REC_TAG then @record[:record] = MARC::Record.new
+        when REC_TAG
+          @builder = BuildingMARCHash.new
         end
       end
     end
 
     def characters(text)
       case @current_element
-      when :subfield then @record[:subfield].value << text
-      when :field then @record[:field].value << text
-      when :leader then @record[:leader] << text
+      when :subfield
+        @builder.append_text text
+      when :control_field
+        @builder.append_text text
+      when :leader
+        @builder.marc_hash["leader"] << text
       end
     end
 
@@ -105,18 +142,12 @@ module MARC
       if (uri == @ns) || @ignore_namespace
         case name.downcase
         when SF_TAG
-          @record[:field].append(@record[:subfield])
-          @record[:subfield] = nil
-          @current_element = nil if @current_element == :subfield
+          sf = @builder.pop
+          @builder.top.last.push sf
         when DF_TAG, CF_TAG
-          @record[:record] << @record[:field]
-          @record[:field] = nil
-          @current_element = nil if @current_element == :field
+          @builder.marc_hash["fields"].push @builder.pop
         when REC_TAG then yield_record
-        when LEAD_TAG
-          @record[:record].leader = @record[:leader]
-          @record[:leader] = ""
-          @current_element = nil if @current_element == :leader
+        # when LEAD_TAG
         end
       end
     end
@@ -155,7 +186,7 @@ module MARC
     end
 
     SAX_METHODS = [:xmldecl, :start_document, :end_document, :start_element,
-      :end_element, :comment, :warning, :error, :cdata_block, :processing_instruction]
+                   :end_element, :comment, :warning, :error, :cdata_block, :processing_instruction]
 
     def method_missing(method_name, *args)
       unless SAX_METHODS.include?(method_name)
@@ -304,7 +335,7 @@ module MARC
             when "datafield"
               text = ""
               data_field = MARC::DataField.new(attrs[TAG], attrs[IND1],
-                attrs[IND2])
+                                               attrs[IND2])
             when "subfield"
               text = ""
               subfield = MARC::Subfield.new(attrs[CODE])
