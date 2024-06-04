@@ -292,6 +292,7 @@ module MARC
     #                         of certain kinds of bad MARC.
     def self.decode(marc, params = {})
       record_class = params[:record_class] || MARC::Record
+      puts "Class is #{record_class}"
       if params.has_key?(:encoding)
         warn "DEPRECATION WARNING: MARC::Reader.decode :encoding option deprecated, please use :external_encoding"
         params[:external_encoding] = params.delete(:encoding)

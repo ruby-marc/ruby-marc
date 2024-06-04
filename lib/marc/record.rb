@@ -239,6 +239,7 @@ module MARC
     #  record = MARC::Record.new_from_marc(marc21, :forgiving => true)
 
     def self.new_from_marc(raw, params = {})
+      params[:record_class] ||= self
       MARC::Reader.decode(raw, params)
     end
 
