@@ -1,9 +1,7 @@
 source "https://rubygems.org"
 
 group :test do
-  if RUBY_VERSION != "1.8.7"
-    gem "nokogiri"
-  end
+  gem "nokogiri"
   gem "rake"
   gem "rdoc"
   gem "xml-simple"
