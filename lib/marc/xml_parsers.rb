@@ -56,7 +56,7 @@ module MARC
     SF_TAG = "subfield".freeze
 
     def init
-      @record = {record: nil, leader: "", field: nil, subfield: nil}
+      @record = {record: nil, leader: String.new, field: nil, subfield: nil}
       @current_element = nil
       @ns = "http://www.loc.gov/MARC21/slim"
     end
@@ -115,7 +115,7 @@ module MARC
         when REC_TAG then yield_record
         when LEAD_TAG
           @record[:record].leader = @record[:leader]
-          @record[:leader] = ""
+          @record[:leader] = String.new
           @current_element = nil if @current_element == :leader
         end
       end

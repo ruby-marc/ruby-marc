@@ -115,7 +115,7 @@ module MARC
     def initialize
       @fields = FieldMap.new
       # leader is 24 bytes
-      @leader = " " * 24
+      @leader = String.new(" ") * 24
       # leader defaults:
       # http://www.loc.gov/marc/bibliographic/ecbdldrd.html
       @leader[10..11] = "22"

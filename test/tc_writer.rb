@@ -32,14 +32,14 @@ class WriterTest < Test::Unit::TestCase
 
       record = MARC::Record.new
 
-      record.append MARC::DataField.new("700", "0", " ", ["a", "Nhouy Abhay,".force_encoding("BINARY")], ["c", "Th\xE5ao,".force_encoding("BINARY")], ["d", "1909-"])
-      record.append MARC::DataField.new("700", "0", " ", ["a", "Somchin P\xF8\xE5o. Ngin,".force_encoding("BINARY")])
+      record.append MARC::DataField.new("700", "0", " ", ["a", String.new("Nhouy Abhay,").force_encoding("BINARY")], ["c", String.new("Th\xE5ao,").force_encoding("BINARY")], ["d", String.new("1909-")])
+      record.append MARC::DataField.new("700", "0", " ", ["a", String.new("Somchin P\xF8\xE5o. Ngin,").force_encoding("BINARY")])
 
-      record.append MARC::DataField.new("100", "0", "0", ["a", "\xE5angkham. ".force_encoding("BINARY")])
-      record.append MARC::DataField.new("245", "1", "0", ["b", "chef-d'oeuvre de la litt\xE2erature lao".force_encoding("BINARY")])
+      record.append MARC::DataField.new("100", "0", "0", ["a", String.new("\xE5angkham. ").force_encoding("BINARY")])
+      record.append MARC::DataField.new("245", "1", "0", ["b", String.new("chef-d'oeuvre de la litt\xE2erature lao").force_encoding("BINARY")])
 
       # One in UTF8 and marked
-      record.append MARC::DataField.new("999", "0", "1", ["a", "chef-d'ocuvre de la littU+FFC3\U+FFA9rature".force_encoding("UTF-8")])
+      record.append MARC::DataField.new("999", "0", "1", ["a", String.new("chef-d'ocuvre de la littU+FFC3\U+FFA9rature").force_encoding("UTF-8")])
 
       writer.write(record)
       writer.close
@@ -54,7 +54,7 @@ class WriterTest < Test::Unit::TestCase
       too_long_record.append MARC::DataField.new("500", " ", " ", ["a", "A really long record.1234567890123456789012345678901234567890123456789012345678901234567890123456789"])
     end
 
-    wbuffer = StringIO.new("", "w")
+    wbuffer = StringIO.new(String.new, "w")
     writer = MARC::Writer.new(wbuffer)
     writer.allow_oversized = true
 
@@ -78,7 +78,7 @@ class WriterTest < Test::Unit::TestCase
     # Test in the middle of a MARC file
     good_record = MARC::Record.new
     good_record.append MARC::DataField.new("500", " ", " ", ["a", "A short record"])
-    wbuffer = StringIO.new("", "w")
+    wbuffer = StringIO.new(String.new, "w")
     writer = MARC::Writer.new(wbuffer)
     writer.allow_oversized = true
 
@@ -102,7 +102,7 @@ class WriterTest < Test::Unit::TestCase
       too_long_record.append MARC::DataField.new("500", " ", " ", ["a", "A really long record.1234567890123456789012345678901234567890123456789012345678901234567890123456789"])
     end
 
-    wbuffer = StringIO.new("", "w")
+    wbuffer = StringIO.new(String.new, "w")
     writer = MARC::Writer.new(wbuffer)
 
     assert_raise(MARC::Exception) do

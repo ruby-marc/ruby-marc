@@ -7,11 +7,11 @@ module MARC
   class Subfield
     attr_accessor :code, :value
 
-    def initialize(code = "", value = "")
+    def initialize(code = "", value = String.new)
       # can't allow code of value to be nil
       # or else it'll screw us up later on
       @code = code.nil? ? "" : code
-      @value = value.nil? ? "" : value
+      @value = value.nil? ? String.new : value
     end
 
     def ==(other)
