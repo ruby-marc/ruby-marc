@@ -16,6 +16,13 @@ Gem::Specification.new do |s|
   s.test_files = s.files.grep(%r{^(test|spec|features)/})
   s.require_paths = ["lib"]
 
+  s.add_dependency "nokogiri", "~>1.0"
+
+  s.add_development_dependency "rake", "~>13.0"
+  s.add_development_dependency "test-unit", "~>3.0"
   s.add_development_dependency "standard", "~>1.0"
+  s.add_development_dependency "warning", "~>1.5"
+  s.add_development_dependency "xml-simple"
+
   s.add_dependency "rexml" # rexml was unbundled from the stdlib in ruby 3
 end
