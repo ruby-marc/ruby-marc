@@ -6,8 +6,10 @@ All notable changes to this project will be documented in this file.
 
 ### Breaking Change
 
-**ruby >= 2.2 is now required**. Removed no-longer-necessary `unf` gem in 
-favor of built-in string methods for dealing with encodings. 
+**ruby >= 2.2 is now required**. 
+
+- Removed no-longer-necessary `unf` gem in favor of built-in string 
+  methods for dealing with encodings. (Aaron Elkiss)
 
 ### Non-user-facing changes
 
