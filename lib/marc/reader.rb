@@ -1,5 +1,3 @@
-require "scrub_rb"
-
 # Note: requiring 'marc/marc8/to_unicode' below, in #initialize,
 # only when necessary
 

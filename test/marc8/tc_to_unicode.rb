@@ -3,8 +3,6 @@ require "marc"
 
 require "marc/marc8/to_unicode"
 
-require "unf"
-
 if "".respond_to?(:encoding)
 
   class TestMarc8ToUnicode < Test::Unit::TestCase
@@ -22,7 +20,7 @@ if "".respond_to?(:encoding)
       value = MARC::Marc8::ToUnicode.new.transcode("Conversa\xF0c\xE4ao")
       assert_equal "UTF-8", value.encoding.name
 
-      expected = UNF::Normalizer.normalize("Conversação", :nfc)
+      expected = "Conversação".unicode_normalize(:nfc)
 
       assert_equal expected, value
     end
@@ -67,10 +65,10 @@ if "".respond_to?(:encoding)
       marc8 = "Conversa\xF0c\xE4ao \xC1"
       unicode = "Conversação \u2113"
 
-      unicode_c = UNF::Normalizer.normalize(unicode, :nfc)
-      unicode_kc = UNF::Normalizer.normalize(unicode, :nfkc)
-      unicode_d = UNF::Normalizer.normalize(unicode, :nfd)
-      unicode_kd = UNF::Normalizer.normalize(unicode, :nfkd)
+      unicode_c = unicode.unicode_normalize(:nfc)
+      unicode_kc = unicode.unicode_normalize(:nfkc)
+      unicode_d = unicode.unicode_normalize(:nfd)
+      unicode_kd = unicode.unicode_normalize(:nfkd)
 
       converter = MARC::Marc8::ToUnicode.new
 

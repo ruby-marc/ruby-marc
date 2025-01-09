@@ -1,6 +1,5 @@
 require "marc"
 require "marc/marc8/map_to_unicode"
-require "unf/normalizer"
 
 module MARC
   module Marc8
@@ -170,7 +169,7 @@ module MARC
         end
 
         if normalization
-          uni_str = UNF::Normalizer.normalize(uni_str, normalization)
+          uni_str = uni_str.unicode_normalize(normalization)
         end
 
         uni_str
