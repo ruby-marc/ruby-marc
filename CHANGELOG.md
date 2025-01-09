@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3] - 2025-01-0-9
+
+### Breaking Change
+
+**ruby >= 2.2 is now required**. Removed no-longer-necessary `unf` gem in 
+favor of built-in string methods for dealing with encodings. 
+
+### Non-user-facing changes
+
+- Pulled everything into the gemspec instead of having some stuff 
+  hanging out in the Gemfile
+- Changed tested rubies to only include 2.7, 3.[0,1,2,3,4], latest 
+  jruby, and latest truffleruby (with and without graalvm)
+
 ## [1.2] - 2022-08-02
 
 ### Added
