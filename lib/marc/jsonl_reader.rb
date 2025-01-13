@@ -9,7 +9,11 @@ module MARC
     include Enumerable
 
     # @param [String, IO] file A filename, or open File/IO type object, from which to read
-    def initialize(file)
+    def initialize(file, record_class: MARC::Record)
+      @record_class = record_class
+      if file.is_a? Pathname
+        file = file.to_s
+      end
       if file.is_a?(String)
         raise ArgumentError.new("File '#{file}' can't be found") unless File.exist?(file)
         raise ArgumentError.new("File '#{file}' can't be opened for reading") unless File.readable?(file)
@@ -26,7 +30,7 @@ module MARC
     def each
       return enum_for(:each) unless block_given?
       @handle.each do |line|
-        yield MARC::Record.new_from_hash(JSON.parse(line))
+        yield @record_class.new_from_hash(JSON.parse(line))
       end
     end
   end

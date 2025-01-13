@@ -132,6 +132,24 @@ module MARC
       @fields.flat_map(&:errors)
     end
 
+    def self.create_data_field(tag, ind1, ind2, subfields)
+      DataField.new(tag, ind1, ind2, *subfields)
+    end
+
+    def self.create_control_field(tag, value)
+      ControlField.new(tag, value)
+    end
+
+    def append_data_field(tag, ind1, ind2, subfields)
+      append(self.class.create_data_field(tag, ind1, ind2, subfields))
+      @fields.clean = false
+    end
+
+    def append_control_field(tag, data)
+      append(self.class.create_control_field(tag, data))
+      @fields.clean = false
+    end
+
     # add a field to the record
     #   record.append(MARC::DataField.new( '100', '2', '0', ['a', 'Fred']))
 
@@ -221,6 +239,7 @@ module MARC
     #  record = MARC::Record.new_from_marc(marc21, :forgiving => true)
 
     def self.new_from_marc(raw, params = {})
+      params[:record_class] ||= self
       MARC::Reader.decode(raw, params)
     end
 
@@ -267,7 +286,7 @@ module MARC
 
     # Return a marc-hash version of the record
     def to_marchash
-      {"type" => "marc-hash", "version" => [MARCHASH_MAJOR_VERSION, MARCHASH_MINOR_VERSION], "leader" => leader, "fields" => map { |f| f.to_marchash }}
+      { "type" => "marc-hash", "version" => [MARCHASH_MAJOR_VERSION, MARCHASH_MINOR_VERSION], "leader" => leader, "fields" => map { |f| f.to_marchash } }
     end
 
     # Factory method for creating a new MARC::Record from
@@ -279,9 +298,13 @@ module MARC
       r = new
       r.leader = mh["leader"]
       mh["fields"].each do |f|
-        if f.length == 2
-          r << MARC::ControlField.new(f[0], f[1])
-        elsif r << MARC::DataField.new(f[0], f[1], f[2], *f[3])
+        case f.length
+        when 2
+          r.append_control_field(f.first, f.last)
+        when 4
+          r.append_data_field(f[0], f[1], f[2], f[3])
+        else
+          raise MARC::Exception.new("Illegal field array: #{f}")
         end
       end
       r
@@ -289,7 +312,7 @@ module MARC
 
     # Returns a (roundtrippable) hash representation for MARC-in-JSON
     def to_hash
-      record_hash = {"leader" => @leader, "fields" => []}
+      record_hash = { "leader" => @leader, "fields" => [] }
       @fields.each do |field|
         record_hash["fields"] << field.to_hash
       end
@@ -307,15 +330,10 @@ module MARC
       h["fields"]&.each do |position|
         position.each_pair do |tag, field|
           if field.is_a?(Hash)
-            f = MARC::DataField.new(tag, field["ind1"], field["ind2"])
-            field["subfields"].each do |pos|
-              pos.each_pair do |code, value|
-                f.append MARC::Subfield.new(code, value)
-              end
-            end
-            r << f
+            subfields = field["subfields"].map{|sf| sf.to_a.first}
+            r.append_data_field(tag, field["ind1"], field["ind2"], subfields)
           else
-            r << MARC::ControlField.new(tag, field)
+            r.append_control_field(tag, field)
           end
         end
       end

@@ -188,7 +188,8 @@ module MARC
     #
     #   reader = MARC::Reader.new(File.new('marc.dat', 'r:cp866'))
     def initialize(file, options = {})
-      @encoding_options = {}
+      @record_class = options[:record_class] || MARC::Record
+      @encoding_options = {record_class: @record_class}
       # all can be nil
       [:internal_encoding, :external_encoding, :invalid, :replace, :validate_encoding].each do |key|
         @encoding_options[key] = options[key] if options.has_key?(key)
@@ -225,7 +226,7 @@ module MARC
     def each
       if block_given?
         each_raw do |raw|
-          record = decode(raw)
+          record = decode(raw, record_class: @record_class)
           yield record
         end
       else
@@ -276,8 +277,8 @@ module MARC
     #
     # Wraps the class method MARC::Reader::decode, using the encoding options of
     # the MARC::Reader instance.
-    def decode(marc)
-      MARC::Reader.decode(marc, @encoding_options)
+    def decode(marc, record_class: @record_class)
+      MARC::Reader.decode(marc, @encoding_options.merge({record_class: record_class}))
     end
 
     # A static method for turning raw MARC data in transission
@@ -288,6 +289,8 @@ module MARC
     #   [:forgiving]          needs more docs, true is some kind of forgiving
     #                         of certain kinds of bad MARC.
     def self.decode(marc, params = {})
+      record_class = params[:record_class] || MARC::Record
+      puts "Class is #{record_class}"
       if params.has_key?(:encoding)
         warn "DEPRECATION WARNING: MARC::Reader.decode :encoding option deprecated, please use :external_encoding"
         params[:external_encoding] = params.delete(:encoding)
@@ -303,7 +306,7 @@ module MARC
       # and want to avoid byte-vs-char confusion.
       marc.force_encoding("binary") if marc.respond_to?(:force_encoding)
 
-      record = Record.new
+      record = record_class.new
       record.leader = marc[0..LEADER_LENGTH - 1]
 
       # where the field data starts
@@ -366,10 +369,8 @@ module MARC
         # add a control field or data field
         if MARC::ControlField.control_tag?(tag)
           field_data = MARC::Reader.set_encoding(field_data, params)
-          record.append(MARC::ControlField.new(tag, field_data))
+          record.append_control_field(tag, field_data)
         else
-          field = MARC::DataField.new(tag)
-
           # get all subfields
           subfields = field_data.split(SUBFIELD_INDICATOR)
 
@@ -379,18 +380,15 @@ module MARC
 
           # get indicators
           indicators = MARC::Reader.set_encoding(subfields.shift, params)
-          field.indicator1 = indicators[0, 1]
-          field.indicator2 = indicators[1, 1]
+          ind1 = indicators[0]
+          ind2 = indicators[1]
 
-          # add each subfield to the field
-          subfields.each do |data|
-            data = MARC::Reader.set_encoding(data, params)
-            subfield = MARC::Subfield.new(data[0, 1], data[1..-1])
-            field.append(subfield)
+          # Get subfields as [code, data] pairs
+          subfield_pairs = subfields.map do |raw_data|
+            data = MARC::Reader.set_encoding(raw_data, params)
+            [data[0], data[1..-1]]
           end
-
-          # add the field to the record
-          record.append(field)
+          record.append_data_field(tag, ind1, ind2, subfield_pairs)
         end
       end
 
