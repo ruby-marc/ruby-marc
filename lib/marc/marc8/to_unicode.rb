@@ -65,7 +65,7 @@ module MARC
         normalization = options.fetch(:normalization, :nfc)
 
         # don't choke on empty marc8_string
-        return "" if marc8_string.nil? || marc8_string.empty?
+        return +"" if marc8_string.nil? || marc8_string.empty?
 
         # Make sure to call it 'binary', so we can slice it
         # byte by byte, and so ruby doesn't complain about bad

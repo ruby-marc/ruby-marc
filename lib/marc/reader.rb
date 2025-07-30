@@ -346,7 +346,7 @@ module MARC
         # if we were told to be forgiving we just use the
         # next available chuck of field data that we
         # split apart based on the END_OF_FIELD
-        field_data = ""
+        field_data = +""
         if params[:forgiving]
           field_data = all_fields.shift
 
