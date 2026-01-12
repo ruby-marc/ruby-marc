@@ -301,7 +301,12 @@ module MARC
       # And now that we've recorded the current encoding, we force
       # to binary encoding, because we're going to be doing byte arithmetic,
       # and want to avoid byte-vs-char confusion.
-      marc.force_encoding("binary") if marc.respond_to?(:force_encoding)
+
+      if (marc.respond_to?(:force_encoding) && marc.encoding != "ASCII-8BIT")
+        marc = marc.dup
+        marc.force_encoding("binary")
+      end
+
 
       record = Record.new
       record.leader = marc[0..LEADER_LENGTH - 1]

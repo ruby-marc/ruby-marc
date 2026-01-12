@@ -33,7 +33,7 @@ module MARC
     # @param [MARC::Record] record
     # @return [String] MARC-in-JSON representation of the record
     def self.encode(record)
-      JSON.fast_generate(record.to_hash)
+      JSON.generate(record.to_hash)
     end
 
     # @see MARC::JSONLWriter.encode
