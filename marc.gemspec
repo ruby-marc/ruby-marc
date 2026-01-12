@@ -23,6 +23,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "standard", "~>1.0"
   s.add_development_dependency "warning", "~>1.5"
   s.add_development_dependency "xml-simple"
+  s.add_development_dependency "rdoc"
 
   s.add_dependency "rexml" # rexml was unbundled from the stdlib in ruby 3
 end
