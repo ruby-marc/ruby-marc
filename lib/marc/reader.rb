@@ -301,7 +301,12 @@ module MARC
       # And now that we've recorded the current encoding, we force
       # to binary encoding, because we're going to be doing byte arithmetic,
       # and want to avoid byte-vs-char confusion.
-      marc.force_encoding("binary") if marc.respond_to?(:force_encoding)
+
+      if (marc.respond_to?(:force_encoding) && marc.encoding != "ASCII-8BIT")
+        marc = marc.dup
+        marc.force_encoding("binary")
+      end
+
 
       record = Record.new
       record.leader = marc[0..LEADER_LENGTH - 1]
@@ -346,7 +351,7 @@ module MARC
         # if we were told to be forgiving we just use the
         # next available chuck of field data that we
         # split apart based on the END_OF_FIELD
-        field_data = ""
+        field_data = +""
         if params[:forgiving]
           field_data = all_fields.shift
 

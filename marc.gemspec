@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.homepage = "https://github.com/ruby-marc/ruby-marc/"
   s.summary = "A ruby library for working with Machine Readable Cataloging"
   s.license = "MIT"
-  s.required_ruby_version = ">= 2.2.0"
+  s.required_ruby_version = ">= 2.3.0"
   s.authors = ["Kevin Clarke", "Bill Dueber", "William Groppe", "Jonathan Rochkind", "Ross Singer", "Ed Summers", "Chris Beer"]
 
   s.files = `git ls-files -z`.split("\x0")
