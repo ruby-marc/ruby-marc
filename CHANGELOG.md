@@ -2,7 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.3] - 2025-01-0-9
+## [1.3.1] - 2026-01-22
+
+This is mostly a cleanup release -- squash warnings
+about frozen strings in more recent rubys, update the
+CI configuration
+
+## [1.3] - 2025-01-09
 
 ### Breaking Change
 

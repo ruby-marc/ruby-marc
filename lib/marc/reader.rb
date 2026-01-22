@@ -307,7 +307,6 @@ module MARC
         marc.force_encoding("binary")
       end
 
-
       record = Record.new
       record.leader = marc[0..LEADER_LENGTH - 1]
 
@@ -447,10 +446,10 @@ module MARC
         # in future implementations.
         if params[:internal_encoding]
           str = if RUBY_VERSION >= "3.0"
-            str.encode(params[:internal_encoding], **params)
-          else
-            str.encode(params[:internal_encoding], params)
-          end
+                  str.encode(params[:internal_encoding], **params)
+                else
+                  str.encode(params[:internal_encoding], params)
+                end
         elsif params[:invalid] || params[:replace] || (params[:validate_encoding] == true)
 
           if params[:validate_encoding] == true && !str.valid_encoding?
@@ -487,11 +486,13 @@ module MARC
   class ForgivingReader < Reader
     def each
       @handle.each_line(END_OF_RECORD) do |raw|
-        record = MARC::Reader.decode(raw, @encoding_options.merge(forgiving: true))
-        yield record
-      rescue
-        # caught exception just keep barrelling along
-        # TODO add logging
+        begin
+          record = MARC::Reader.decode(raw, @encoding_options.merge(forgiving: true))
+          yield record
+        rescue
+          # caught exception just keep barrelling along
+          # TODO add logging
+        end
       end
     end
   end
