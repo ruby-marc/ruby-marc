@@ -26,39 +26,41 @@ module MARC
       end
 
       dc_hash["publisher"] = begin
-        get_field_value(record["260"]["a"]["b"])
-      rescue
-        nil
-      end
+                               get_field_value(record["260"]["a"]["b"])
+                             rescue
+                               nil
+                             end
       dc_hash["date"] = begin
-        get_field_value(record["260"]["c"])
-      rescue
-        nil
-      end
+                          get_field_value(record["260"]["c"])
+                        rescue
+                          nil
+                        end
       dc_hash["type"] = get_field_value(record["655"])
       dc_hash["format"] = begin
-        get_field_value(record["856"]["q"])
-      rescue
-        nil
-      end
+                            get_field_value(record["856"]["q"])
+                          rescue
+                            nil
+                          end
       dc_hash["identifier"] = begin
-        get_field_value(record["856"]["u"])
-      rescue
-        nil
-      end
+                                get_field_value(record["856"]["u"])
+                              rescue
+                                nil
+                              end
       dc_hash["source"] = begin
-        get_field_value(record["786"]["o"]["t"])
-      rescue
-        nil
-      end
+                            get_field_value(record["786"]["o"]["t"])
+                          rescue
+                            nil
+                          end
       dc_hash["language"] = get_field_value(record["546"])
 
       dc_hash["relation"] = []
       dc_hash["relation"] << get_field_value(record["530"])
       ("760".."787").each do |field|
-        dc_hash["relation"] << get_field_value(record[field]["o"]["t"])
-      rescue
-        nil
+        begin
+          dc_hash["relation"] << get_field_value(record[field]["o"]["t"])
+        rescue
+          nil
+        end
       end
 
       ["651", "752"].each do |field|

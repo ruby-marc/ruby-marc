@@ -62,12 +62,12 @@ module MARC
     # Second arg allow_oversized, default false, set to true
     # to raise on MARC record that can't fit into ISO 2709.
     def self.encode(record, allow_oversized = false)
-      directory = ""
-      fields = ""
+      directory = +""
+      fields = +""
       offset = 0
       record.each do |field|
         # encode the field
-        field_data = ""
+        field_data = +""
         if field.instance_of?(MARC::DataField)
           warn("Warn:  Missing indicator") unless field.indicator1 && field.indicator2
           field_data = (field.indicator1 || " ") + (field.indicator2 || " ")
