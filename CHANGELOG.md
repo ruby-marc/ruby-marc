@@ -2,11 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.3.1] - 2026-01-22
+## [1.4] - 2026-01-22
 
-This is mostly a cleanup release -- squash warnings
+### Breaking Change
+
+**ruby >= 2.4 is now required**.
+
+2.3 was EOL'd almost 7 years ago, and backporting support for other
+gems was deemed to be not worth it.
+
+This is mostly a cleanup release, to squash warnings
 about frozen strings in more recent rubys, update the
-CI configuration
+CI configuration.
 
 ## [1.3] - 2025-01-09
 
