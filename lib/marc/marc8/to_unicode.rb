@@ -65,14 +65,21 @@ module MARC
         normalization = options.fetch(:normalization, :nfc)
 
         # don't choke on empty marc8_string
-        return "" if marc8_string.nil? || marc8_string.empty?
+        return +"" if marc8_string.nil? || marc8_string.empty?
 
         # Make sure to call it 'binary', so we can slice it
         # byte by byte, and so ruby doesn't complain about bad
         # bytes for some other encoding. Yeah, we're changing
         # encoding on input! If it's Marc8, it ought to be tagged
         # binary already.
-        marc8_string.force_encoding("binary")
+
+        # Due to the changes with default frozen strings, we'll check
+        # to see if it's binary already, and only duplicate the string
+        # if it's not. It SHOULD be binary already.
+        unless marc8_string.encoding.to_s == "ASCII-8BIT"
+          marc8_string = marc8_string.dup
+          marc8_string.force_encoding("binary")
+        end
 
         uni_list = []
         combinings = []
@@ -130,7 +137,7 @@ module MARC
           end
 
           if (code_point < 0x20) ||
-              ((code_point > 0x80) && (code_point < 0xa0))
+             ((code_point > 0x80) && (code_point < 0xa0))
             uni = unichr(code_point)
             next
           end

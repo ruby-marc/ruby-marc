@@ -27,7 +27,7 @@ module MARC
     # The constructor which must be passed a tag value and
     # an optional value for the field.
 
-    def initialize(tag, value = "")
+    def initialize(tag, value = +"")
       @tag = tag
       @value = value
     end

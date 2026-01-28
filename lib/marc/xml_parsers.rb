@@ -56,7 +56,7 @@ module MARC
     SF_TAG = "subfield".freeze
 
     def init
-      @record = {record: nil, leader: "", field: nil, subfield: nil}
+      @record = {record: nil, leader: +"", field: nil, subfield: nil}
       @current_element = nil
       @ns = "http://www.loc.gov/MARC21/slim"
     end
@@ -115,7 +115,7 @@ module MARC
         when REC_TAG then yield_record
         when LEAD_TAG
           @record[:record].leader = @record[:leader]
-          @record[:leader] = ""
+          @record[:leader] = +""
           @current_element = nil if @current_element == :leader
         end
       end
@@ -238,7 +238,7 @@ module MARC
       data_field = nil
       control_field = nil
       subfield = nil
-      text = ""
+      text = +""
       attrs = nil
       if Module.constants.index("Nokogiri") && @parser.is_a?(Nokogiri::XML::Reader)
         datafield = nil
@@ -295,18 +295,18 @@ module MARC
           end
 
           if event.start_element?
-            text = ""
+            text = +""
             attrs = event[1]
             case strip_ns(event[0])
             when "controlfield"
-              text = ""
+              text = +""
               control_field = MARC::ControlField.new(attrs[TAG])
             when "datafield"
-              text = ""
+              text = +""
               data_field = MARC::DataField.new(attrs[TAG], attrs[IND1],
                 attrs[IND2])
             when "subfield"
-              text = ""
+              text = +""
               subfield = MARC::Subfield.new(attrs[CODE])
             end
           end
